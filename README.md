@@ -41,3 +41,11 @@ Architecture note: styles.css was consolidated into one token/theme layer and on
 
 ### Mobile-first navigation
 On screens up to 760px, Mihrab switches to a native-feeling bottom navigation bar. The desktop navigation is hidden and the same navigation state is rendered into the mobile bar, so page switching works reliably on touch devices.
+
+
+## Mobile-first performance
+- The primary UX is the mobile layout with a fixed bottom navigation.
+- The dashboard renders only the active view instead of rebuilding all views.
+- Ambient motion is CSS-only; there is no continuous canvas particle loop.
+- Heavy backdrop blur is limited to the topbar and primary hero.
+- Reduced-motion and Low Power Mode disable ambient animation.

@@ -244,24 +244,7 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
   },true);
 })();
 
-// Mihrab Master Blueprint — consolidated live interaction layer.
-(function(){
-  const reduceMotion=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const appRoot=()=>document.getElementById('app')||document.body;
-  const surfaces=()=>document.querySelectorAll('.topbar,.hero-main,.hero-side,.card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.awareness,.quote,.iframe-wrap,.day-chip,.review-choice,.task-item');
-  function bindReactive(){surfaces().forEach(el=>{if(el.dataset.mihrabReactive==='1')return;el.dataset.mihrabReactive='1';el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();el.style.setProperty('--mouse-x',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');el.style.setProperty('--mouse-y',((e.clientY-r.top)/r.height*100).toFixed(1)+'%')},{passive:true})})}
-  let audioCtx=null;
-  function premiumClick(){try{audioCtx ||= new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.setValueAtTime(760,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(1160,audioCtx.currentTime+.045);g.gain.setValueAtTime(.01,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.045);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.045)}catch{}}
-  function burst(x,y){if(reduceMotion())return;const wrap=document.createElement('span');wrap.className='focus-burst';wrap.style.left=x+'px';wrap.style.top=y+'px';for(let i=0;i<8;i++){const p=document.createElement('i'),a=Math.PI*2*i/8+(Math.random()-.5)*.25,d=20+Math.random()*15;p.style.setProperty('--tx',Math.cos(a)*d+'px');p.style.setProperty('--ty',Math.sin(a)*d+'px');wrap.appendChild(p)}document.body.appendChild(wrap);setTimeout(()=>wrap.remove(),820)}
-  document.addEventListener('click',e=>{const el=e.target.closest('.task-item input[type="checkbox"],.nav-btn,.btn,.icon-btn,.mode');if(el){premiumClick();if(e.target.matches('input[type="checkbox"]')&&e.target.checked)burst(e.clientX,e.clientY)}},true);
-  function highlightCurrentFocus(){const h=new Date().getHours();let focus='';if(h>=3&&h<6)focus='pr_f';else if(h>=11&&h<15)focus='pr_d';else if(h>=15&&h<17)focus='pr_a';else if(h>=17&&h<19)focus='pr_m';else if(h>=19||h<3)focus='pr_i';document.querySelectorAll('.task-item').forEach(el=>el.classList.toggle('highlight-pulse',el.dataset.taskId===focus))}
-  const ringValue=new WeakMap();
-  function animateRings(){if(reduceMotion())return;document.querySelectorAll('.ring b').forEach(el=>{const target=parseFloat((el.textContent||'0').replace('%',''))||0;const from=ringValue.get(el)??0;ringValue.set(el,target);if(from===target)return;const start=performance.now(),dur=620;const step=now=>{const t=Math.min(1,(now-start)/dur),e=1-Math.pow(1-t,4);el.textContent=Math.round(from+(target-from)*e)+'%';if(t<1)requestAnimationFrame(step)};requestAnimationFrame(step)})}
-  function initCanvas(){const canvas=document.getElementById('mihrab-ambient-canvas');if(!canvas||canvas.dataset.ready==='1')return;canvas.dataset.ready='1';const ctx=canvas.getContext('2d',{alpha:true});if(!ctx)return;const mouse={x:-9999,y:-9999,r:140};let particles=[],last=0;const dpr=Math.min(devicePixelRatio||1,1.5);const color=name=>{const v=getComputedStyle(document.body).getPropertyValue(name).trim();const m=v.match(/^#([0-9a-f]{6})$/i);if(!m)return{r:255,g:255,b:255};const n=parseInt(m[1],16);return{r:n>>16&255,g:n>>8&255,b:n&255}};function resize(){canvas.width=Math.round(innerWidth*dpr);canvas.height=Math.round(innerHeight*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}function seed(){particles=Array.from({length:35},()=>({x:Math.random()*innerWidth,y:innerHeight+Math.random()*40,size:.45+Math.random()*.8,vy:-(.10+Math.random()*.28),vx:(Math.random()-.5)*.08,phase:Math.random()*6.283}))}function draw(now){if(document.hidden || state.settings?.lowPower || state.settings?.ambient===false){ctx.clearRect(0,0,innerWidth,innerHeight);requestAnimationFrame(draw);return}if(now-last<33){requestAnimationFrame(draw);return}last=now;ctx.clearRect(0,0,innerWidth,innerHeight);if(reduceMotion()){requestAnimationFrame(draw);return}const a=color('--a'),c=color('--c');for(let i=0;i<particles.length;i++){const p=particles[i];p.x+=p.vx+Math.sin(now/2600+p.phase)*.015;p.y+=p.vy;if(mouse.x>-1000){const dx=p.x-mouse.x,dy=p.y-mouse.y,dist=Math.hypot(dx,dy)||1;if(dist<mouse.r){const f=(mouse.r-dist)/mouse.r;p.x+=(dx/dist)*f*.7;p.y+=(dy/dist)*f*.7}}if(p.y<-8){p.y=innerHeight+8;p.x=Math.random()*innerWidth}const col=i%2?c:a;ctx.beginPath();ctx.fillStyle=`rgba(${col.r},${col.g},${col.b},${i%2?.09:.075})`;ctx.shadowBlur=5;ctx.shadowColor=ctx.fillStyle;ctx.arc(p.x,p.y,p.size,0,6.283);ctx.fill()}ctx.shadowBlur=0;requestAnimationFrame(draw)}addEventListener('resize',()=>{resize();seed()});addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY},{passive:true});addEventListener('pointerleave',()=>{mouse.x=-9999;mouse.y=-9999},{passive:true});resize();seed();requestAnimationFrame(draw)}
-  const observer=new MutationObserver(()=>{bindReactive();highlightCurrentFocus();animateRings()});
-  observer.observe(appRoot(),{childList:true,subtree:true});
-  initCanvas();bindReactive();highlightCurrentFocus();animateRings();
-})();
+/* Live interaction layer intentionally CSS-only for performance. */
 
 /* =====================================================================
    MIHRAB LIFELONG LAYER — plan-safe, editable content, focus, backup
@@ -571,4 +554,88 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
   window.renderQuran=()=>en()?`<div class="section-title"><div><h2>📖 Qur’an</h2><p>Review during university. Rafiq remains a separate tool you open when needed.</p></div><span class="badge core">Review only</span></div><div class="grid grid-2"><section class="section-box"><h3>Today’s review</h3><div class="task-item ${tChecked('quran')?'done':''}" data-task-id="quran"><input type="checkbox" id="quranToday" ${tChecked('quran')?'checked':''} onchange="toggleToday('quran')"><label class="task-text" for="quranToday">Reviewed memorized Qur’an today — Juz ‘Amma / Tabarak / older memorized portions / pre-university memorization</label><span class="mihrab-badge badge-spirit">Core</span></div><div class="note" style="margin-top:10px">Best location: prayer room between lectures, then transit. If focus drops and similar passages start to mix, stop and rest.</div></section><section class="section-box quran-bridge"><div class="bridge-icon">✦</div><div><h3 style="margin-bottom:5px">Rafiq Qur’an</h3><p class="muted" style="margin:0">Your Cloudflare version. Open the app/site directly or load it inside Mihrab.</p></div><div class="bridge-actions"><a class="btn primary" href="${RAFIQ_URL}" target="_blank" rel="noopener">Open Rafiq ↗</a><button class="btn ${state.quranFrameOpen?'active':''}" onclick="toggleRafiqFrame()">${state.quranFrameOpen?'Hide embedded':'Show embedded'}</button></div></section></div>${state.quranFrameOpen?`<div class="section-title"><div><h2>✦ Rafiq Qur’an</h2><p>Loaded only when requested so the dashboard stays fast.</p></div><span class="badge">Cloudflare</span></div><div class="iframe-wrap"><div class="iframe-head"><b>Rafiq Qur’an</b><div style="display:flex;gap:7px;align-items:center"><span class="badge">Live</span><button class="icon-btn" onclick="toggleRafiqFrame()" aria-label="Close">×</button></div></div><iframe id="rafiqFrame" title="Rafiq Qur’an inside Mihrab" src="${RAFIQ_URL}" loading="lazy" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe></div>`:''}`:oldQuran();
   window.renderCourses=()=>en()?`<div class="section-title"><div><h2>📚 Courses & supporting systems</h2><p>Support work never outranks essentials.</p></div></div><div class="grid grid-3"><section class="section-box"><h3>🧠 Anki</h3><p>Due reviews first. New cards stay within budget. Best moments: transit, prayer room, and gaps.</p><div class="task-item"><label class="task-text">Today’s review count</label><input class="mini-input" type="number" min="0" value="${state.ankiToday||0}" onchange="state.ankiToday=Math.max(0,Number(this.value)||0);save()"></div></section><section class="section-box"><h3>🚀 McKinsey Forward</h3><p>About two hours/week. One of the first things to shrink under study pressure.</p><label class="task ${state.weekly.mckinsey?'done':''}"><input type="checkbox" ${state.weekly.mckinsey?'checked':''} onchange="state.weekly.mckinsey=this.checked;save();renderAll()"><span>Weekly share done</span></label></section><section class="section-box"><h3>💊 The Pharmacist's Guide to Dose Calculations</h3><p>2h 41m total · short 10–15m sessions. Also one of the first items to defer under pressure.</p><label class="task ${state.weekly.dose?'done':''}"><input type="checkbox" ${state.weekly.dose?'checked':''} onchange="state.weekly.dose=this.checked;save();renderAll()"><span>Weekly share done</span></label></section></div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🎓 HubSpot / Google</h3><p>20–30 minutes in spare time, in parallel with the bootcamp, without repeating the core curriculum.</p><label class="task ${state.weekly.cert?'done':''}"><input type="checkbox" ${state.weekly.cert?'checked':''} onchange="state.weekly.cert=this.checked;save();renderAll()"><span>Certificate share done</span></label></section><section class="section-box"><h3>📗 EasyPeasy</h3><p>Light reading inside the day, without bloating the main plan.</p></section></div><div class="section-box" style="margin-top:12px;border-color:color-mix(in srgb,var(--c) 28%,var(--line))"><h3>⏸️ Drug Commercialization</h3><p>Starts after the marketing bootcamp.</p></div>`:oldCourses();
   window.addEventListener('load',()=>{if(typeof renderAll==='function'){document.body.dataset.lowPower=state.settings?.lowPower?'true':'false';renderAll();}});
+})();
+
+
+/* ============================================================================
+   MIHRAB LEAN RUNTIME — mobile-first, targeted rendering, CSS-only ambience
+   ============================================================================ */
+(function MihrabLeanRuntime(){
+  'use strict';
+  const VIEWS=['home','marketing','shari','quran','courses','system'];
+  const NAV_DATA = (typeof NAV!=='undefined' ? NAV : [
+    ['home','⌂','مركز اليوم','Today'],['marketing','↗','التسويق','Marketing'],['shari','✦','العلم الشرعي','Islamic Studies'],
+    ['quran','◔','القرآن','Qur’an'],['courses','▣','الكورسات','Courses'],['system','⚙','النظام','System']
+  ]);
+
+  function makeNavMarkup(){
+    const en=state.lang==='en';
+    return NAV_DATA.map(([id,ic,ar,eng])=>`<button type="button" class="nav-btn ${state.view===id?'active':''}" data-view="${id}" aria-current="${state.view===id?'page':'false'}"><span class="nav-icon" aria-hidden="true">${ic}</span><span>${en?eng:ar}</span></button>`).join('');
+  }
+
+  window.nav=function(){
+    const markup=makeNavMarkup();
+    const top=document.getElementById('nav'); if(top) top.innerHTML=markup;
+    const mob=document.getElementById('mobileNav'); if(mob) mob.innerHTML=markup;
+    const lang=document.getElementById('langLabel'); if(lang) lang.textContent=state.lang==='en'?'ع':'EN';
+  };
+
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('#nav .nav-btn, #mobileNav .nav-btn');
+    if(!b)return;
+    e.preventDefault();
+    window.navigate(b.dataset.view);
+  },{passive:false});
+
+  function setVisibleView(id){
+    document.querySelectorAll('.view').forEach(v=>{
+      const on=v.id==='view-'+id;
+      v.classList.toggle('active',on);
+      v.hidden=!on;
+    });
+  }
+
+  function renderCurrentView(force=true){
+    const id=state.view||'home';
+    const view=document.getElementById('view-'+id);
+    if(!view)return;
+    if(force || !view.dataset.rendered) {
+      renderView(id);
+      view.dataset.rendered='1';
+    }
+    setVisibleView(id);
+    nav();
+    applyTheme?.();
+    document.body.dataset.mode=state.mode||'normal';
+    document.body.dataset.online=navigator.onLine?'true':'false';
+    document.body.dataset.lowPower=state.settings?.lowPower?'true':'false';
+  }
+
+  window.renderAll=function(){ renderCurrentView(true); };
+  window.navigate=function(v){
+    if(!VIEWS.includes(v))return;
+    state.view=v; save();
+    renderCurrentView(true);
+    window.scrollTo(0,0);
+  };
+
+  // Avoid rerendering the entire dashboard for theme/language changes while preserving the current view.
+  const oldSetLang=window.setLang;
+  window.setLang=function(v){
+    state.lang=v==='en'?'en':'ar'; save(); applyLanguage?.(); renderCurrentView(true);
+  };
+  const oldSetTheme=window.setTheme;
+  window.setTheme=function(t){ state.theme=t; save(); renderCurrentView(true); };
+  window.cycleTheme=function(){
+    const arr=['aurora','midnight','sunrise','paper','mono'];
+    const i=Math.max(0,arr.indexOf(state.theme));
+    state.theme=arr[(i+1)%arr.length]; save(); renderCurrentView(true);
+  };
+
+  // Lightweight weekly/theme interactions remain; no global observer and no canvas loop.
+  window.addEventListener('online',()=>{document.body.dataset.online='true'; const d=document.getElementById('mihrab-online-dot'); d?.setAttribute('title','Online');});
+  window.addEventListener('offline',()=>{document.body.dataset.online='false'; const d=document.getElementById('mihrab-online-dot'); d?.setAttribute('title','Offline');});
+
+  // First paint: only render the current view, not all six views.
+  renderCurrentView(true);
 })();
