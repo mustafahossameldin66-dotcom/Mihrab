@@ -73,4 +73,4 @@ On screens up to 760px, Mihrab switches to a native-feeling bottom navigation ba
 - All decorative effects are CSS-only. `prefers-reduced-motion` and Low Power Mode turn off the moving accents.
 
 
-Mobile navigation uses native hash links (#home, #marketing, etc.) plus a JS state renderer. This keeps navigation reliable on touch devices while preserving the desktop nav.
+Mihrab V12 adds a single touch-first mobile navigation engine, two-accent theme discipline, daily momentum signals, completion micro-feedback, and mobile-specific performance safeguards.
