@@ -77,7 +77,8 @@ function translateText(t){let s=t;const exact=I18N[s.trim()];if(exact)return exa
  .replaceAll('اليوم','Today').replaceAll('الأسبوع','Week').replaceAll('المحاضرات','lectures').replaceAll('محاضرة','lecture')
  .replaceAll('جلسة','session').replaceAll('حوالي','About').replaceAll('دقيقة','min').replaceAll('ساعة','h').replaceAll('تقدم','Progress').replaceAll('مهمة','task').replaceAll('المحتوى','Content').replaceAll('ملاحظة','Note');}
 function translateRendered(){}
-function navigate(v){state.view=v;save();renderAll();window.scrollTo({top:0,behavior:'smooth'})}
+function navigate(v){state.view=v;save();renderAll();window.scrollTo({top:0,behavior:'auto'})}
+window.navigate=navigate;
 function applyTheme(){applyLanguage()}
 function setTheme(t){state.theme=t;save();applyTheme();renderAll()} function cycleTheme(){const arr=['aurora','midnight','sunrise','paper','mono'];setTheme(arr[(arr.indexOf(state.theme)+1)%arr.length])}
 function renderHome(){
@@ -176,7 +177,7 @@ async function installPWA(){if(deferredInstallPrompt){deferredInstallPrompt.prom
 
 function renderView(v){const map={home:renderHome,marketing:renderMarketing,shari:renderShari,quran:renderQuran,courses:renderCourses,system:renderSystem};document.getElementById('view-'+v).innerHTML=map[v]()}
 function renderAll(){nav();applyTheme();Object.keys({home:1,marketing:1,shari:1,quran:1,courses:1,system:1}).forEach(renderView);document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+state.view));applyLanguage();nav()}
-load();
+load();renderAll();
 if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 
 
@@ -553,7 +554,7 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
   window.renderShari=()=>{if(!en())return oldShari();const day=todayName();const rows=DAYS.map(d=>`<div class="timeline-card ${d===day?'today':''}"><div class="day">${weekdayMapEn[d]} ${d===day?'· Today':''}</div><ul><li>${esc(({ 'السبت':'ZAD (notes) + Ahmed Al-Sayed + Ayman Abdel Rahim','الأحد':'ZAD (notes) + Fiqh al-Nafs + Al-Sarjani','الاثنين':'ZAD (notes) + Ahmed Al-Sayed + Ayman Abdel Rahim','الثلاثاء':'ZAD (notes) + Fiqh al-Nafs + Al-Sarjani','الأربعاء':'ZAD (notes) + Ahmed Al-Sayed + Ayman Abdel Rahim','الخميس':'ZAD (notes) + Fiqh al-Nafs + Al-Sarjani','الجمعة':'ZAD (3 lectures) + reflection (Ahmed Abdel Moneim)'})[d])}</li><li>${d==='الجمعة'?'Longer session + reflection':'About 70–85 minutes'}</li></ul></div>`).join('');return `<div class="section-title"><div><h2>🕌 Islamic Studies</h2><p>Independent and fixed. It does not compete with marketing.</p></div><span class="badge core">Core</span></div><div class="timeline">${rows}</div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>📚 Core sources</h3><p>Ahmed Al-Sayed — start with “Building Aqeedah for the Rising Generation.”</p><p><b style="color:var(--a)">Ayman Abdel Rahim — fixed core track.</b></p><p>Fiqh al-Nafs — Abdelrahman Thaker.</p><p>The Rightly Guided Caliphs — Ragheb Al-Sergany.</p><p>Friday — Ahmed Abdel Moneim: reflection and tafsir.</p></section><section class="section-box"><h3>🧭 Track structure</h3><p>“Building the Contemporary Muslim’s Awareness” is a real Ayman track, not a placeholder.</p><p>“The Muslim Home” stays optional, not mandatory.</p></section></div><div class="section-title"><div><h2>🧭 Building the Contemporary Muslim’s Awareness</h2><p>Ayman Abdel Rahim · 9 lectures · focus on orientation and action, not collecting information.</p></div><span class="badge core">Core</span></div><div class="awareness"><div class="grid grid-2"><div><h3 style="margin-top:0">🎯 Course goal</h3><p>Build or rebuild sound orientation and awareness, and understand how ideas influence behavior.</p><p class="muted">Language, religiosity, and culture shape the world of ideas that shows up in behavior; the final lectures focus on what to do with new ideas after learning.</p></div><div><h3 style="margin-top:0">🧭 Place in the plan</h3><p>Fixed core track on Saturday, Monday, Wednesday, with a longer Friday session.</p></div></div><div class="grid grid-3" style="margin-top:13px"><div class="note"><b>01</b><br>Orientation before information volume</div><div class="note"><b>02</b><br>History explaining ideas and behavior</div><div class="note"><b>03</b><br>From idea to action</div></div><div class="lecture-grid">${AWARENESS.map(n=>`<label class="lecture"><input type="checkbox" ${pChecked('aware_'+n)?'checked':''} onchange="togglePlan('aware_${n}')"><span>Lecture ${n} of 9</span></label>`).join('')}</div></div><div class="section-title"><div><h2>✅ Today’s Islamic execution</h2><p>${weekdayMapEn[day]} — check items as you finish them.</p></div></div><section class="section-box">${taskHTML(shariItems(day))}</section>`};
   window.renderQuran=()=>en()?`<div class="section-title"><div><h2>📖 Qur’an</h2><p>Review during university. Rafiq remains a separate tool you open when needed.</p></div><span class="badge core">Review only</span></div><div class="grid grid-2"><section class="section-box"><h3>Today’s review</h3><div class="task-item ${tChecked('quran')?'done':''}" data-task-id="quran"><input type="checkbox" id="quranToday" ${tChecked('quran')?'checked':''} onchange="toggleToday('quran')"><label class="task-text" for="quranToday">Reviewed memorized Qur’an today — Juz ‘Amma / Tabarak / older memorized portions / pre-university memorization</label><span class="mihrab-badge badge-spirit">Core</span></div><div class="note" style="margin-top:10px">Best location: prayer room between lectures, then transit. If focus drops and similar passages start to mix, stop and rest.</div></section><section class="section-box quran-bridge"><div class="bridge-icon">✦</div><div><h3 style="margin-bottom:5px">Rafiq Qur’an</h3><p class="muted" style="margin:0">Your Cloudflare version. Open the app/site directly or load it inside Mihrab.</p></div><div class="bridge-actions"><a class="btn primary" href="${RAFIQ_URL}" target="_blank" rel="noopener">Open Rafiq ↗</a><button class="btn ${state.quranFrameOpen?'active':''}" onclick="toggleRafiqFrame()">${state.quranFrameOpen?'Hide embedded':'Show embedded'}</button></div></section></div>${state.quranFrameOpen?`<div class="section-title"><div><h2>✦ Rafiq Qur’an</h2><p>Loaded only when requested so the dashboard stays fast.</p></div><span class="badge">Cloudflare</span></div><div class="iframe-wrap"><div class="iframe-head"><b>Rafiq Qur’an</b><div style="display:flex;gap:7px;align-items:center"><span class="badge">Live</span><button class="icon-btn" onclick="toggleRafiqFrame()" aria-label="Close">×</button></div></div><iframe id="rafiqFrame" title="Rafiq Qur’an inside Mihrab" src="${RAFIQ_URL}" loading="lazy" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe></div>`:''}`:oldQuran();
   window.renderCourses=()=>en()?`<div class="section-title"><div><h2>📚 Courses & supporting systems</h2><p>Support work never outranks essentials.</p></div></div><div class="grid grid-3"><section class="section-box"><h3>🧠 Anki</h3><p>Due reviews first. New cards stay within budget. Best moments: transit, prayer room, and gaps.</p><div class="task-item"><label class="task-text">Today’s review count</label><input class="mini-input" type="number" min="0" value="${state.ankiToday||0}" onchange="state.ankiToday=Math.max(0,Number(this.value)||0);save()"></div></section><section class="section-box"><h3>🚀 McKinsey Forward</h3><p>About two hours/week. One of the first things to shrink under study pressure.</p><label class="task ${state.weekly.mckinsey?'done':''}"><input type="checkbox" ${state.weekly.mckinsey?'checked':''} onchange="state.weekly.mckinsey=this.checked;save();renderAll()"><span>Weekly share done</span></label></section><section class="section-box"><h3>💊 The Pharmacist's Guide to Dose Calculations</h3><p>2h 41m total · short 10–15m sessions. Also one of the first items to defer under pressure.</p><label class="task ${state.weekly.dose?'done':''}"><input type="checkbox" ${state.weekly.dose?'checked':''} onchange="state.weekly.dose=this.checked;save();renderAll()"><span>Weekly share done</span></label></section></div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🎓 HubSpot / Google</h3><p>20–30 minutes in spare time, in parallel with the bootcamp, without repeating the core curriculum.</p><label class="task ${state.weekly.cert?'done':''}"><input type="checkbox" ${state.weekly.cert?'checked':''} onchange="state.weekly.cert=this.checked;save();renderAll()"><span>Certificate share done</span></label></section><section class="section-box"><h3>📗 EasyPeasy</h3><p>Light reading inside the day, without bloating the main plan.</p></section></div><div class="section-box" style="margin-top:12px;border-color:color-mix(in srgb,var(--c) 28%,var(--line))"><h3>⏸️ Drug Commercialization</h3><p>Starts after the marketing bootcamp.</p></div>`:oldCourses();
-  window.addEventListener('load',()=>{document.body.dataset.lowPower=state.settings?.lowPower?'true':'false';});
+  window.addEventListener('load',()=>{if(typeof renderAll==='function'){document.body.dataset.lowPower=state.settings?.lowPower?'true':'false';renderAll();}});
 })();
 
 
@@ -570,16 +571,28 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
 
   function makeNavMarkup(){
     const en=state.lang==='en';
-    return NAV_DATA.map(([id,ic,ar,eng])=>`<button type="button" class="nav-btn ${state.view===id?'active':''}" data-view="${id}" aria-current="${state.view===id?'page':'false'}" onclick="window.navigate('${id}')"><span class="nav-icon" aria-hidden="true">${ic}</span><span>${en?eng:ar}</span></button>`).join('');
+    return NAV_DATA.map(([id,ic,ar,eng])=>`<button type="button" class="nav-btn ${state.view===id?'active':''}" data-view="${id}" aria-current="${state.view===id?'page':'false'}"><span class="nav-icon" aria-hidden="true">${ic}</span><span>${en?eng:ar}</span></button>`).join('');
   }
 
   window.nav=function(){
     const markup=makeNavMarkup();
     const top=document.getElementById('nav'); if(top) top.innerHTML=markup;
     const mob=document.getElementById('mobileNav'); if(mob) mob.innerHTML=markup;
+    [top,mob].forEach(container=>{
+      if(!container) return;
+      container.querySelectorAll('.nav-btn').forEach(btn=>{
+        let lastTap=0;
+        const go=e=>{
+          e.preventDefault();e.stopPropagation();
+          const now=Date.now(); if(now-lastTap<350) return; lastTap=now;
+          window.navigate(btn.dataset.view);
+        };
+        btn.addEventListener('pointerup',go,{passive:false});
+        btn.addEventListener('click',go,{passive:false});
+      });
+    });
     const lang=document.getElementById('langLabel'); if(lang) lang.textContent=state.lang==='en'?'ع':'EN';
   };
-
 
   function setVisibleView(id){
     document.querySelectorAll('.view').forEach(v=>{
@@ -605,12 +618,12 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
     document.body.dataset.lowPower=state.settings?.lowPower?'true':'false';
   }
 
-  window.renderAll=function(){ ensure?.(); librarySeeds?.(); renderCurrentView(true); ensureModals?.(); autoBackup?.(); };
+  window.renderAll=function(){ renderCurrentView(true); };
   window.navigate=function(v){
     if(!VIEWS.includes(v))return;
     state.view=v; save();
     renderCurrentView(true);
-    window.scrollTo({top:0,left:0,behavior:'auto'});
+    window.scrollTo(0,0);
   };
 
   // Avoid rerendering the entire dashboard for theme/language changes while preserving the current view.
