@@ -33,3 +33,8 @@ Mihrab is a local-first PWA designed to stay useful for the long run: today-firs
 - Day modes are per-day overrides; they do not rewrite the base plan.
 - Missed daily work is not carried forward as debt.
 - Content tracks are separate from the schedule so you can swap finished content without changing the code.
+
+
+
+
+Architecture note: styles.css was consolidated into one token/theme layer and one responsive/interaction layer. Legacy stacked override blocks were removed.
