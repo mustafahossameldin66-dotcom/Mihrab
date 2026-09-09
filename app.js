@@ -29,7 +29,21 @@ function tChecked(id){return !!state.today[id]} function toggleToday(id){state.t
 function pChecked(id){return !!state.plan[id]} function togglePlan(id){state.plan[id]=!state.plan[id];save();renderAll()}
 function idFor(prefix,text){let h=0,raw=prefix+'|'+text;for(let i=0;i<raw.length;i++)h=(h*31+raw.charCodeAt(i))>>>0;return prefix+'_'+h.toString(36)}
 function pct(items,store){const n=items.filter(x=>store[x]).length;return {n,total:items.length,p:items.length?Math.round(n/items.length*100):0}}
-function taskHTML(items){return '<div class="tasks">'+items.map(([id,text])=>`<label class="task ${tChecked(id)?'done':''}"><input type="checkbox" ${tChecked(id)?'checked':''} onchange="toggleToday('${esc(id)}')"><span class="task-text">${esc(text)}</span></label>`).join('')+'</div>'}
+function taskBadge(id){
+ const spirit=['pr_f','pr_d','pr_a','pr_m','pr_i','azkar','bro','rafiq','quran','aw','zad','taj'];
+ const impact=['marketing','anki','azb','linkedin','review'];
+ if(id==='marketing') return state.lang==='en'?['Independence','wealth']:['استقلال','wealth'];
+ if(spirit.includes(id)) return state.lang==='en'?['Core','spirit']:['ورد','spirit'];
+ if(impact.includes(id)) return state.lang==='en'?['Impact','impact']:['أثر','impact'];
+ return null;
+}
+const TASK_EN={
+ pr_f:'Fajr — on time',pr_d:'Dhuhr — on time',pr_a:'Asr — on time',pr_m:'Maghrib — on time',pr_i:'Isha — on time',
+ azkar:'Morning/evening adhkar + du‘a for family and the deceased',bro:'Brother’s wird — Qur’an / night prayer / adhkar',rafiq:'Rafiq Qur’an project',quran:'Qur’an review — prayer room between lectures/sections or during transit',
+ marketing:'Marketing — '+marketingTarget(),anki:'Anki — due reviews first; new cards within budget',easy:'EasyPeasy Way to Quit — today’s reading',mouth:'Oral-care routine — morning & evening',skin:'Skincare routine — morning & evening',hair:'Hair routine — according to your routine',
+ aw:'Building the Contemporary Muslim’s Awareness — today’s session',zad:'Zad Academy — 3 lectures',taj:'Tajweed — video',azb:'Al-Azbi training transcription into Anki — ~1 hour',linkedin:'Weekly LinkedIn post',review:'Weekly review — 10–15 minutes'
+};
+function taskHTML(items){return '<div class="tasks">'+items.map(([id,text])=>{const done=tChecked(id);const badge=taskBadge(id);const label=(state.lang==='en'&&TASK_EN[id])?TASK_EN[id]:text;return `<div class="task-item ${done?'done':''}" data-task-id="${esc(id)}"><input type="checkbox" id="task_${esc(id)}" ${done?'checked':''} onchange="toggleToday('${esc(id)}')"><label class="task-text" for="task_${esc(id)}">${esc(label)}</label>${badge?`<span class="mihrab-badge badge-${badge[1]}">${esc(badge[0])}</span>`:''}</div>`}).join('')+'</div>'}
 function dayTasks(day){
  const base=[['pr_f','🕌 الفجر — في وقتها'],['pr_d','🕌 الظهر — في وقتها'],['pr_a','🕌 العصر — في وقتها'],['pr_m','🕌 المغرب — في وقتها'],['pr_i','🕌 العشاء — في وقتها'],['azkar','📿 أذكار الصباح والمساء + الدعاء للأهل والأموات'],['bro','🤲 ورد أخي — قرآن / قيام / أذكار'],['rafiq','✨ مشروع رفيق القرآن'],['quran','📖 مراجعة القرآن — المصلى بين المحاضرات/السكاشن أو المواصلات'],['marketing','💻 التسويق — '+marketingTarget()],['anki','🧠 Anki — المستحق أولًا، والجديد حسب الميزانية'],['easy','📗 EasyPeasy Way to Quit — قراءة اليوم'],['mouth','🪥 روتين الفم — صباحًا ومساءً'],['skin','🧴 روتين البشرة — صباحًا ومساءً'],['hair','💆 روتين الشعر — حسب روتينك']];
  const extra={'السبت':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الأحد':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة'],['linkedin','📝 بوست LinkedIn الأسبوعي'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الاثنين':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الثلاثاء':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الأربعاء':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الخميس':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الجمعة':[['aw','🧭 تأسيس وعي المسلم المعاصر — حصة أطول'],['review','🔍 المراجعة الأسبوعية — 10–15 دقيقة ليلاً'],['zad','🎓 أكاديمية زاد — اختياري: تعويض محاضرة فاتت فقط']]};
@@ -71,8 +85,8 @@ function renderHome(){
  const done=pr.n, total=pr.total, remaining=Math.max(total-done,0);
  const modes=['كلية','بدون كلية','ديب وورك'];
  const en=state.lang==='en';
- const T=en?{start:'Start today ↓',marketing:'Marketing ↗',shari:'Islamic studies ↗',quran:'Qur’an ↗',today:'Today',remaining:'Remaining',hours:'h',target:'Target',execute:'Today’s execution',list:'Today’s list',next:'Next',rule:'Today’s rule',r1:'Reviews before new cards',r2:'Islamic studies + Qur’an stay fixed',r3:'Courses shrink first',ess:'Essentials first',done:'You’re done for today',left:'items left',focus:'Focus only on what matters today. Protect the essentials, and let the rest wait for space.'}
- :{start:'ابدأ ↓',marketing:'التسويق ↗',shari:'الشرعي ↗',quran:'القرآن ↗',today:'اليوم',remaining:'باقي',hours:'س',target:'الهدف',execute:'⚡ تنفيذ اليوم',list:'قائمة اليوم',next:'بعدها',rule:'قاعدة اليوم',r1:'المراجعات قبل الجديد',r2:'الشرعي والقرآن ثابتان',r3:'الكورسات تتقلص أولًا',ess:'الأساسيات أولًا',done:'خلصت يومك',left:'بنود باقية',focus:'ركز على اللي مطلوب النهارده فقط. الأساسيات أولًا، والباقي ياخد مساحته لما تفضى.'};
+ const T=en?{start:'Start today ↓',marketing:'Marketing ↗',shari:'Islamic studies ↗',quran:'Qur’an ↗',today:'Today',remaining:'Remaining',hours:'h',target:'Target',execute:'Today’s execution',list:'Daily duties & self-building',next:'Impact & independence',rule:'Fixed pillars & principles',r1:'Reviews before new cards',r2:'Islamic studies + Qur’an stay fixed',r3:'Courses shrink first',ess:'Essentials first',done:'You’re done for today',left:'items left',focus:'Focus only on what matters today. Protect the essentials, and let the rest wait for space.'}
+ :{start:'ابدأ ↓',marketing:'التسويق ↗',shari:'الشرعي ↗',quran:'القرآن ↗',today:'اليوم',remaining:'باقي',hours:'س',target:'الهدف',execute:'⚡ تنفيذ اليوم',list:'فروض اليوم وبناء النفس',next:'صناعة الأثر والاستقلال',rule:'الأركان والمبادئ الثابتة',r1:'المراجعات قبل الجديد',r2:'الشرعي والقرآن ثابتان',r3:'الكورسات تتقلص أولًا',ess:'الأساسيات أولًا',done:'خلصت يومك',left:'بنود باقية',focus:'ركز على اللي مطلوب النهارده فقط. الأساسيات أولًا، والباقي ياخد مساحته لما تفضى.'};
  return `<div class="hero">
    <section class="hero-main">
      <div class="kicker">● ${esc(en?translateText(day):day)} · ${esc(en?translateText(todayDayType()):todayDayType())}</div>
@@ -100,9 +114,9 @@ function renderHome(){
  <div class="bento">
    <section class="card tall"><h3>${T.list}</h3>${taskHTML(items)}</section>
    <section class="card"><h3>${T.next}</h3><div class="tasks">
-     <label class="task" onclick="navigate('marketing')"><span>💻 ${en?'Marketing task':'مهمة التسويق'}</span><span>↗</span></label>
-     <label class="task" onclick="navigate('shari')"><span>🕌 ${en?'Islamic content':'محتوى الشرعي'}</span><span>↗</span></label>
-     <label class="task" onclick="navigate('quran')"><span>📖 ${en?'Qur’an review':'مراجعة القرآن'}</span><span>↗</span></label>
+     <div class="task-item quick-link" onclick="navigate('marketing')"><span>💻 ${en?'Marketing task':'مهمة التسويق'}</span><span>↗</span></div>
+     <div class="task-item quick-link" onclick="navigate('shari')"><span>🕌 ${en?'Islamic content':'محتوى الشرعي'}</span><span>↗</span></div>
+     <div class="task-item quick-link" onclick="navigate('quran')"><span>📖 ${en?'Qur’an review':'مراجعة القرآن'}</span><span>↗</span></div>
    </div></section>
    <section class="card"><h3>${T.rule}</h3><div class="mini-stat"><span>${T.r1}</span><b>1</b></div><div class="mini-stat" style="margin-top:7px"><span>${T.r2}</span><b>2</b></div><div class="mini-stat" style="margin-top:7px"><span>${T.r3}</span><b>3</b></div></section>
  </div>`
@@ -119,7 +133,7 @@ function renderQuran(){
  <div class="grid grid-2">
   <section class="section-box">
    <h3>مراجعة اليوم</h3>
-   <label class="task ${tChecked('quran')?'done':''}"><input type="checkbox" ${tChecked('quran')?'checked':''} onchange="toggleToday('quran')"><span>راجعت المحفوظ اليوم — عمّ / تبارك / القديم / ما تم حفظه قبل الدراسة</span></label>
+   <div class="task-item ${tChecked('quran')?'done':''}" data-task-id="quran"><input type="checkbox" id="quranToday" ${tChecked('quran')?'checked':''} onchange="toggleToday('quran')"><label class="task-text" for="quranToday">${state.lang==='en'?'Reviewed memorized Qur’an today — Juz ‘Amma / Tabarak / older memorized portions / pre-university memorization':'راجعت المحفوظ اليوم — عمّ / تبارك / القديم / ما تم حفظه قبل الدراسة'}</label><span class="mihrab-badge badge-spirit">${state.lang==='en'?'Core':'ورد'}</span></div>
    <div class="note" style="margin-top:10px">المكان الأفضل: المصلى بين المحاضرات والسكاشن، ثم المواصلات. لو التركيز وقع وبدأ الخلط بين المتشابهات: قف وخذ راحة.</div>
   </section>
   <section class="section-box quran-bridge">
@@ -166,114 +180,21 @@ load();renderAll();
 if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 
 
-
-(()=>{
-  const selector='.hero-main,.hero-side,.card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.awareness,.quote,.iframe-wrap,.day-chip,.review-choice';
-  const bind=()=>document.querySelectorAll(selector).forEach(el=>{
-    if(el.dataset.rxBound)return;el.dataset.rxBound='1';el.classList.add('reactive-card');
-    el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();el.style.setProperty('--gx',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');el.style.setProperty('--gy',((e.clientY-r.top)/r.height*100).toFixed(1)+'%')},{passive:true});
-    el.addEventListener('pointerleave',()=>{el.style.setProperty('--gx','80%');el.style.setProperty('--gy','15%')},{passive:true});
-  });
-  bind(); new MutationObserver(bind).observe(document.getElementById('app'),{subtree:true,childList:true});
-})();
-
-
-
-(()=>{
-  const prefersReduce=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const initAurora=()=>{
-    if(document.querySelector('.live-aurora-layer')) return;
-    const layer=document.createElement('div');
-    layer.className='live-aurora-layer';
-    layer.innerHTML='<span class="aurora-blob aurora-gold"></span><span class="aurora-blob aurora-royal"></span><span class="aurora-blob aurora-silver"></span><span class="aurora-vignette"></span>';
-    document.body.insertBefore(layer,document.body.firstChild);
-  };
-  const markReactive=()=>{
-    const selectors='.topbar,.hero-main,.hero-side,.card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.review-choice,.awareness,.quran-bridge,.iframe-wrap';
-    document.querySelectorAll(selectors).forEach(el=>{
-      el.classList.add('reactive-surface');
-      if(!el.querySelector(':scope > .reactive-glow')) el.insertAdjacentHTML('beforeend','<span class="reactive-glow" aria-hidden="true"></span>');
-    });
-  };
-  const pointer=(e)=>{
-    const el=e.target.closest('.reactive-surface');
-    if(!el) return;
-    const r=el.getBoundingClientRect();
-    el.style.setProperty('--rx',`${Math.max(0,Math.min(100,((e.clientX-r.left)/r.width)*100))}%`);
-    el.style.setProperty('--ry',`${Math.max(0,Math.min(100,((e.clientY-r.top)/r.height)*100))}%`);
-  };
-  const burst=(x,y)=>{
-    if(prefersReduce()) return;
-    const wrap=document.createElement('span'); wrap.className='focus-burst'; wrap.style.left=x+'px';wrap.style.top=y+'px';
-    const n=8;
-    for(let i=0;i<n;i++){
-      const p=document.createElement('i');
-      const a=(Math.PI*2*i/n)+(Math.random()-.5)*.28, d=22+Math.random()*16;
-      p.style.setProperty('--tx',`${Math.cos(a)*d}px`);p.style.setProperty('--ty',`${Math.sin(a)*d}px`);p.style.animationDelay=(Math.random()*45)+'ms';wrap.appendChild(p);
-    }
-    document.body.appendChild(wrap); setTimeout(()=>wrap.remove(),850);
-  };
-  const animateRings=()=>{
-    document.querySelectorAll('.ring b').forEach((el,index)=>{
-      const target=parseFloat((el.textContent||'0').replace('%',''))||0;
-      const key='ring-'+index;
-      const from=Number(window.__focusRingValues?.[key] ?? 0);
-      if(!window.__focusRingValues) window.__focusRingValues={};
-      window.__focusRingValues[key]=target;
-      if(target===from){el.style.textShadow=target>0?'0 0 18px rgba(197,160,89,.18)':'none';return}
-      const start=performance.now(),dur=720;
-      const step=(now)=>{
-        const t=Math.min(1,(now-start)/dur), eased=1-Math.pow(1-t,4), v=from+(target-from)*eased;
-        el.textContent=Math.round(v)+'%';el.style.textShadow=target>0?'0 0 20px rgba(197,160,89,.22)':'none';
-        if(t<1) requestAnimationFrame(step); else el.textContent=Math.round(target)+'%';
-      };
-      requestAnimationFrame(step);
-    });
-  };
-  const observer=new MutationObserver(()=>{markReactive();animateRings()});
-  initAurora(); markReactive(); animateRings();
-  document.addEventListener('pointermove',pointer,{passive:true});
-  document.addEventListener('click',e=>{const box=e.target.closest('.task input[type="checkbox"],.lecture input[type="checkbox"]'); if(box) burst(e.clientX,e.clientY)},true);
-  observer.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
-})();
-
-
-
-(()=>{
-  const bind=()=>document.querySelectorAll('.hero-main,.hero-side,.card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.review-choice,.awareness,.quote,.iframe-wrap').forEach(el=>{
-    if(el.dataset.luxBound)return; el.dataset.luxBound='1';
-    el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();el.style.setProperty('--gx',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');el.style.setProperty('--gy',((e.clientY-r.top)/r.height*100).toFixed(1)+'%')},{passive:true});
-  });
-  bind();
-  new MutationObserver(bind).observe(document.getElementById('app'),{subtree:true,childList:true});
-})();
-
-
-
-/* Ensure the Luxe palette is the default while keeping existing user selection intact. */
-try{ if(!localStorage.getItem('focusos_state_v1')) { state.theme='midnight'; } }catch(e){}
-
-
-
-(()=>{
-  const c=document.getElementById('luxLiveBg');
-  if(c){c.width=1;c.height=1;}
-})();
-;
-
-// Mihrab V5: keep the Arabic brand mark and tagline consistent with the active language.
-(function syncBrandLanguage(){
-  const originalRenderAll = window.renderAll;
-  if (typeof originalRenderAll !== 'function' || window.__mihrabBrandV5Bound) return;
-  window.renderAll = function(){
-    originalRenderAll();
-    const lang = window.state?.lang || 'ar';
-    const tag = document.getElementById('brandTagline');
-    if (tag) tag.textContent = lang === 'en' ? 'Build yourself. Create impact. Earn independence.' : 'بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.';
-  };
-  window.__mihrabBrandV5Bound = true;
-})();
-(function patchBrandNow(){
-  const tag=document.getElementById('brandTagline');
-  if(tag) tag.textContent=(window.state?.lang==='en')?'Build yourself. Create impact. Earn independence.':'بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.';
+// Mihrab Master Blueprint — consolidated live interaction layer.
+(function(){
+  const reduceMotion=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const appRoot=()=>document.getElementById('app')||document.body;
+  const surfaces=()=>document.querySelectorAll('.topbar,.hero-main,.hero-side,.card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.awareness,.quote,.iframe-wrap,.day-chip,.review-choice,.task-item');
+  function bindReactive(){surfaces().forEach(el=>{if(el.dataset.mihrabReactive==='1')return;el.dataset.mihrabReactive='1';el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();el.style.setProperty('--mouse-x',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');el.style.setProperty('--mouse-y',((e.clientY-r.top)/r.height*100).toFixed(1)+'%')},{passive:true})})}
+  let audioCtx=null;
+  function premiumClick(){try{audioCtx ||= new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.setValueAtTime(760,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(1160,audioCtx.currentTime+.045);g.gain.setValueAtTime(.01,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.045);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.045)}catch{}}
+  function burst(x,y){if(reduceMotion())return;const wrap=document.createElement('span');wrap.className='focus-burst';wrap.style.left=x+'px';wrap.style.top=y+'px';for(let i=0;i<8;i++){const p=document.createElement('i'),a=Math.PI*2*i/8+(Math.random()-.5)*.25,d=20+Math.random()*15;p.style.setProperty('--tx',Math.cos(a)*d+'px');p.style.setProperty('--ty',Math.sin(a)*d+'px');wrap.appendChild(p)}document.body.appendChild(wrap);setTimeout(()=>wrap.remove(),820)}
+  document.addEventListener('click',e=>{const el=e.target.closest('.task-item input[type="checkbox"],.nav-btn,.btn,.icon-btn,.mode');if(el){premiumClick();if(e.target.matches('input[type="checkbox"]')&&e.target.checked)burst(e.clientX,e.clientY)}},true);
+  function highlightCurrentFocus(){const h=new Date().getHours();let focus='';if(h>=3&&h<6)focus='pr_f';else if(h>=11&&h<15)focus='pr_d';else if(h>=15&&h<17)focus='pr_a';else if(h>=17&&h<19)focus='pr_m';else if(h>=19||h<3)focus='pr_i';document.querySelectorAll('.task-item').forEach(el=>el.classList.toggle('highlight-pulse',el.dataset.taskId===focus))}
+  const ringValue=new WeakMap();
+  function animateRings(){if(reduceMotion())return;document.querySelectorAll('.ring b').forEach(el=>{const target=parseFloat((el.textContent||'0').replace('%',''))||0;const from=ringValue.get(el)??0;ringValue.set(el,target);if(from===target)return;const start=performance.now(),dur=620;const step=now=>{const t=Math.min(1,(now-start)/dur),e=1-Math.pow(1-t,4);el.textContent=Math.round(from+(target-from)*e)+'%';if(t<1)requestAnimationFrame(step)};requestAnimationFrame(step)})}
+  function initCanvas(){const canvas=document.getElementById('mihrab-ambient-canvas');if(!canvas||canvas.dataset.ready==='1')return;canvas.dataset.ready='1';const ctx=canvas.getContext('2d',{alpha:true});if(!ctx)return;const mouse={x:-9999,y:-9999,r:140};let particles=[],last=0;const dpr=Math.min(devicePixelRatio||1,1.5);const color=name=>{const v=getComputedStyle(document.body).getPropertyValue(name).trim();const m=v.match(/^#([0-9a-f]{6})$/i);if(!m)return{r:255,g:255,b:255};const n=parseInt(m[1],16);return{r:n>>16&255,g:n>>8&255,b:n&255}};function resize(){canvas.width=Math.round(innerWidth*dpr);canvas.height=Math.round(innerHeight*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}function seed(){particles=Array.from({length:35},()=>({x:Math.random()*innerWidth,y:innerHeight+Math.random()*40,size:.45+Math.random()*.8,vy:-(.10+Math.random()*.28),vx:(Math.random()-.5)*.08,phase:Math.random()*6.283}))}function draw(now){if(document.hidden){requestAnimationFrame(draw);return}if(now-last<33){requestAnimationFrame(draw);return}last=now;ctx.clearRect(0,0,innerWidth,innerHeight);if(reduceMotion()){requestAnimationFrame(draw);return}const a=color('--a'),c=color('--c');for(let i=0;i<particles.length;i++){const p=particles[i];p.x+=p.vx+Math.sin(now/2600+p.phase)*.015;p.y+=p.vy;if(mouse.x>-1000){const dx=p.x-mouse.x,dy=p.y-mouse.y,dist=Math.hypot(dx,dy)||1;if(dist<mouse.r){const f=(mouse.r-dist)/mouse.r;p.x+=(dx/dist)*f*.7;p.y+=(dy/dist)*f*.7}}if(p.y<-8){p.y=innerHeight+8;p.x=Math.random()*innerWidth}const col=i%2?c:a;ctx.beginPath();ctx.fillStyle=`rgba(${col.r},${col.g},${col.b},${i%2?.09:.075})`;ctx.shadowBlur=5;ctx.shadowColor=ctx.fillStyle;ctx.arc(p.x,p.y,p.size,0,6.283);ctx.fill()}ctx.shadowBlur=0;requestAnimationFrame(draw)}addEventListener('resize',()=>{resize();seed()});addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY},{passive:true});addEventListener('pointerleave',()=>{mouse.x=-9999;mouse.y=-9999},{passive:true});resize();seed();requestAnimationFrame(draw)}
+  const observer=new MutationObserver(()=>{bindReactive();highlightCurrentFocus();animateRings()});
+  observer.observe(appRoot(),{childList:true,subtree:true});
+  initCanvas();bindReactive();highlightCurrentFocus();animateRings();
 })();
