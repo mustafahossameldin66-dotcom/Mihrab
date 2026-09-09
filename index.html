@@ -19,43 +19,6 @@
 
 
 
-/* ================================================================
-   Mihrab — Quiet Luxury identity lock
-   ================================================================ */
-:root{
-  --mihrab-gold:#C5A059;
-  --mihrab-platinum:#F4F4F6;
-  --mihrab-line:rgba(255,255,255,.045);
-}
-.brand-text b{
-  font-family:"Tajawal","Noto Sans Arabic","Segoe UI",sans-serif;
-  font-weight:650;
-  letter-spacing:-.025em;
-}
-.brand-text small{
-  display:block;
-  margin-top:2px;
-  color:var(--muted);
-  font-family:"Tajawal","Noto Sans Arabic","Segoe UI",sans-serif;
-  font-size:11px;
-  font-weight:500;
-  letter-spacing:0;
-}
-body[data-lang="en"] .brand-text small{font-family:"Inter","Noto Sans","Segoe UI",sans-serif;letter-spacing:-.012em}
-body h1,body h2,body h3,body h4{letter-spacing:-.03em;text-shadow:none!important}
-.hero-main,.hero-side,.card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card{
-  backdrop-filter:blur(28px);
-  -webkit-backdrop-filter:blur(28px);
-  transition:all .6s cubic-bezier(.16,1,.3,1);
-}
-@media (hover:hover){
-  .hero-main:hover,.hero-side:hover,.card:hover,.section-box:hover,.timeline-card:hover{
-    transform:translateY(-2px);
-    border-color:color-mix(in srgb,var(--c) 25%,var(--line));
-    box-shadow:0 40px 90px rgba(0,0,0,.55);
-  }
-}
-.number,.stat-card strong,.ring b,.ring span{font-variant-numeric:tabular-nums}
 <link href="./styles.css" rel="stylesheet"/><link href="./assets/mihrab-logo.svg" rel="icon" type="image/svg+xml"/></head>
 <body data-theme="aurora"><canvas aria-hidden="true" id="luxLiveBg"></canvas><div aria-hidden="true" class="lux-vignette"></div><div aria-hidden="true" class="lux-pointer-light"></div>
 <div class="app">
@@ -76,7 +39,7 @@ body h1,body h2,body h3,body h4{letter-spacing:-.03em;text-shadow:none!important
 </div>
 
 
-<script defer="False" src="./app.js"></script></body>
+<script defer src="./app.js"></script></body>
 
 
 </html>

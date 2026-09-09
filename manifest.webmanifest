@@ -2,6 +2,7 @@
   "name": "Mihrab",
   "short_name": "Mihrab",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "dir": "auto",
   "lang": "ar",
