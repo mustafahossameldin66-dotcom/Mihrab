@@ -1,0 +1,304 @@
+
+const RAFIQ_URL='https://rafiq-quran.pages.dev/';
+
+
+
+const MARKETING = [["المرحلة الأولى: التأسيس، السيو، وفهم المريض", [["الأسبوع 1: أساسيات التسويق وأدوات 2026", ["اليوم 1 (عقلية المسوق): مشاهدة فيديو عن تعريف التسويق الحديث. | 🔍 What is Marketing basics video", "اليوم 2 (المزيج 4Ps): فهم الـ 4Ps لتطبيقها على الخدمات الطبية. | 🔍 The 4Ps of marketing mix tutorial", "اليوم 3 (التسويق الطبي): قراءة عن القيود وأخلاقيات تسويق الدواء. | 🔍 Healthcare marketing compliance", "اليوم 4 (الذكاء الاصطناعي): فيديو تطبيقي عن استخدام AI في التحليل. | 🔍 How to use AI in market research", "اليوم 5 (أبحاث السوق): استخدام AI لاستخراج بيانات عن سوق صيدلية الفيروز. | 🔍 AI prompt engineering for marketing"], ["المشروع الموحد (ساعتين ونص): تطبيق الـ 4Ps وتحليل SWOT لـ (صيدلية الفيروز). (ادرس الـ SWOT بعدين اعمل تطبيق اليوم ده)", "تحدي الأسبوع (ساعة): حلّل إعلان طبي يعجبك واستخرج رسالته التسويقية.", "تحليل منافس (نص ساعة): تصفح صفحة منافس قوي لمشروعك ولاحظ نوعية المحتوى.", "البورتفوليو (نص ساعة): خذ Screenshot لشغلك وارفعها في Notion مع شرح (المشكلة > الحل).", "اختبار (نص ساعة): اذكر 3 قيود أخلاقية لتسويق الأدوية (أضفها لـ Anki)."]], ["الأسبوع 2: رحلة العميل (Funnels)", ["اليوم 1 (شخصية العميل): استخدام قوالب Knowledge base Google Sheets لبناء Buyer Persona لمريض صيدلية الفيروز المثالي. | 🔍 How to create a buyer persona", "اليوم 2 (نموذج AIDA): مشاهدة شرح لمراحل AIDA وتأثيرها. | 🔍 AIDA model copywriting video", "اليوم 3 (قمع المبيعات): رسم قمع الـ TOFU, MOFU, BOFU. | 🔍 Marketing Funnel TOFU MOFU explained", "اليوم 4 (رحلة العميل): رسم خريطة مبسطة لمراحل رحلة مريض في صيدلية الفيروز. | 🔍 Customer journey mapping tutorial", "اليوم 5 (مقاييس الاستحواذ): حفظ معادلات الـ CAC و LTV وتطبيقاتها. | 🔍 CAC vs LTV marketing metrics"], ["المشروع الموحد (ساعتين ونص): رسم قمع مبيعات (Funnel) يجذب الزوار لصيدلية الفيروز ويحولهم لعملاء دائمين.", "تحدي الأسبوع (ساعة): ابنِ شخصية عميل (Buyer Persona) مفصلة لعميلك المستهدف.", "تحليل منافس (نص ساعة): ادخل على منصة طبية (مثل Vezeeta) وحلل كيف ينقلون المستخدم من البحث للحجز.", "البورتفوليو (نص ساعة): ارفع رسمة الـ Funnel والـ Persona ضمن ملف مشروعك.", "اختبار (نص ساعة): ما الفرق بين TOFU و BOFU؟"]], ["الأسبوع 3: تحسين محركات البحث (SEO)", ["اليوم 1 (أساسيات السيو): مشاهدة آلية عمل محركات البحث (Crawling & Indexing). | 🔍 How search engines work SEO video", "اليوم 2 (الكلمات المفتاحية): استخدام أدوات مجانية للبحث عن كلمات تخص استشارات الأدوية أونلاين. | 🔍 Keyword research medical SEO tutorial", "اليوم 3 (On-page SEO): فيديو تطبيقي لضبط عناصر الـ On-page (Title, H1). | 🔍 On-page SEO checklist guide", "اليوم 4 (Search Console): تصفح واجهة Google Search Console ومعرفة أهميتها. | 🔍 Google Search Console basics", "اليوم 5 (Local SEO): خطوات تحسين ملف Google Business Profile لصيدلية الفيروز في الأقصر. | 🔍 Google Business Profile optimization"], ["المشروع الموحد (ساعتين ونص): استخراج 5 كلمات مفتاحية وكتابة هيكل مقال طبي يجلب زيارات لصيدلية الفيروز.", "تحدي الأسبوع (ساعة): استخدم AI لاقتراح 10 أفكار مقالات، وبعدين اختار إنت 3 منها بتقييمك الشخصي.", "تحليل منافس (نص ساعة): ابحث عن مقال طبي في الطبي Altibbi ولاحظ توزيع الكلمات المفتاحية والـ H2/H3.", "البورتفوليو (نص ساعة): ارفع تقرير الكلمات المفتاحية وهيكل المقال.", "اختبار (نص ساعة): ما أهمية Google Business Profile لعيادة أو صيدلية محلية؟"]]]], ["المرحلة الثانية: صناعة المحتوى والتواجد الرقمي", [["الأسبوع 4: تسويق المحتوى وكتابة الإعلانات", ["اليوم 1 (المحتوى الطبي): أساليب تبسيط المعلومات الطبية المعقدة للمرضى. | 🔍 Medical content writing tips", "اليوم 2 (الـ Copywriting): فيديو تطبيقي لكتابة نصوص بيعية مقنعة. | 🔍 Copywriting basics for beginners video", "اليوم 3 (العناوين Hooks): التدريب على صياغة Hooks تخطف الانتباه. | 🔍 Catchy headlines hooks copywriting", "اليوم 4 (اتخاذ إجراء CTA): دراسة جمل الـ CTA المناسبة للقطاع الصحي. | 🔍 Call to action examples medical", "اليوم 5 (Canva للتصميم): جولة بصرية في Canva لتصميم قوالب طبية احترافية. | 🔍 Canva for social media marketing tutorial"], ["المشروع الموحد (ساعتين ونص): كتابة وتصميم 3 منشورات بيعية وتوعوية تُنشر على صفحة صيدلية الفيروز.", "تحدي الأسبوع (ساعة): اكتب 5 Hooks قوية لإعلان يروج لخدمة داخل الصيدلية.", "تحليل منافس (نص ساعة): راجع حسابات Eva Pharma وحلل طريقة صياغتهم للمحتوى ليكون جذاباً للمرضى.", "البورتفوليو (نص ساعة): ارفع التصميمات والنصوص (Copy).", "اختبار (نص ساعة): ما هو الـ Hook ولماذا هو الأهم في أي إعلان تسويقي؟"]], ["الأسبوع 5: منصات التواصل الاجتماعي", ["اليوم 1 (الخوارزميات): فيديو حديث يشرح خوارزميات Meta و TikTok. | 🔍 Social media algorithms update 2026", "اليوم 2 (التسويق B2B): جولة في LinkedIn لفهم كيفية بناء علاقات مع الأطباء. | 🔍 LinkedIn Marketing B2B tutorial", "اليوم 3 (الفيديوهات القصيرة): صياغة سكربت Reels سريع الإيقاع. | 🔍 Short form video marketing strategy", "اليوم 4 (تقويم المحتوى): فيديو تطبيقي لإنشاء Content Calendar. | 🔍 Social media content calendar setup", "اليوم 5 (إدارة المجتمعات): كيفية الرد الدبلوماسي على التقييمات الطبية السلبية. | 🔍 Community management handling negative reviews"], ["المشروع الموحد (ساعتين ونص): إعداد Content Calendar متكامل لمدة شهر خاص بصفحة صيدلية الفيروز.", "تحدي الأسبوع (ساعة): صمم سيناريو جاهز (Template) للرد على أزمة لمريض يشتكي من خدمة طبية.", "تحليل منافس (نص ساعة): راجع صفحة Jamjoom Pharma أو شركة مشابهة على LinkedIn ولاحظ المحتوى الـ B2B.", "البورتفوليو (نص ساعة): ارفع الـ Content Calendar بصيغة PDF.", "اختبار (نص ساعة): كيف توازن بين المحتوى التعليمي والبيعي في خطة الشهر؟"]]]], ["المرحلة الثالثة: الإعلانات المدفوعة والاختبارات", [["الأسبوع 6: إعلانات Meta و A/B Testing", ["اليوم 1 (سياسات الإعلانات): دراسة صارمة لسياسات Meta الخاصة بصحة الإنسان لتجنب الحظر. | 🔍 Meta Ads healthcare policies guide", "اليوم 2 (هيكل الحملة): فيديو يشرح واجهة مدير الإعلانات (Campaign > Ad Set > Ad). | 🔍 Facebook ads manager tutorial 2026", "اليوم 3 (A/B Testing): كيف تبرمج منصة الإعلانات لاختبار عنوانين مختلفين. | 🔍 A/B testing in Meta Ads setup", "اليوم 4 (التتبع والمقاييس): فهم دور الـ Conversions API ومعادلة ROAS. | 🔍 Meta Conversions API vs Pixel explained", "اليوم 5 (إطلاق الإعلان): ربط بطاقة الدفع وتجهيز الحملة الحقيقية لصيدلية الفيروز. | 🔍 How to launch first Facebook ad"], ["المشروع الموحد (ساعتين ونص): إطلاق حملة تفاعل حقيقية (بميزانية 100-300 جنيه) لمحتوى توعوي خاص بصيدليتك ومراقبة أرقامها.", "تحدي الأسبوع (ساعة): صمم خطة A/B Test (صورتين مختلفتين وعنوانين) للحملة قبل إطلاقها.", "تحليل منافس (نص ساعة): استخدم Meta Ad Library للبحث عن إعلانات منافسيك المباشرين وحللها.", "البورتفوليو (نص ساعة): ارفع لقطات شاشة (Screenshots) توثق إعدادك للحملة ونتائجها الأولية.", "اختبار (نص ساعة): ما الذي قد يسبب إغلاق حسابك الإعلاني فوراً في المجال الطبي؟"]], ["الأسبوع 7: إعلانات Google وتحسين التحويل (CRO)", ["اليوم 1 (Search Campaigns): فيديو يشرح واجهة إعلانات بحث جوجل (Google Ads). | 🔍 Google Search Ads tutorial", "اليوم 2 (Keyword Match): فهم دقيق لأنواع المطابقة (Broad, Phrase, Exact). | 🔍 Google Ads Keyword Match Types", "اليوم 3 (Quality Score): كيف تقلل تكلفة النقرة عبر تحسين نقاط الجودة. | 🔍 Google Ads Quality Score explained", "اليوم 4 (Landing Pages): فيديو يستعرض أفضل ممارسات صفحات الهبوط الطبية. | 🔍 Medical landing page UX breakdown", "اليوم 5 (Lead Magnets): التخطيط لمغناطيس إيميلات يجذب جمهور صيدلية الفيروز. | 🔍 Healthcare lead magnet ideas"], ["المشروع الموحد (ساعتين ونص): تخطيط حملة بحث (Search Campaign) على جوجل لاستقطاب كلمات مفتاحية للصيدلية (مثل: استشارة دوائية أونلاين).", "تحدي الأسبوع (ساعة): ارسم هيكل ورقي (Wireframe) لصفحة هبوط مخصصة لاستقبال الزيارات من إعلان جوجل.", "تحليل منافس (نص ساعة): ابحث على جوجل عن خدمة طبية وحلل الإعلان (Ad) المتصدر في نتائج البحث.", "البورتفوليو (نص ساعة): ارفع خطة الكلمات المفتاحية وهيكل صفحة الهبوط.", "اختبار (نص ساعة): متى نستخدم Phrase Match بدلاً من Exact Match؟"]], ["الأسبوع 8: التحليلات وقراءة البيانات (Data Analytics)", ["اليوم 1 (تحليلات جوجل): استكشاف واجهة GA4 وفهم تقارير مصادر الزيارات. | 🔍 Google Analytics 4 dashboard tour", "اليوم 2 (التتبع الدقيق): فيديو يشرح إنشاء وتتبع الـ UTM Parameters. | 🔍 How to use UTM parameters tracking", "اليوم 3 (مقاييس الأداء): فهم مدلول الـ Bounce Rate ومقاييس التفاعل. | 🔍 GA4 engagement metrics explained", "اليوم 4 (Looker Studio): مشاهدة بناء لوحة تقارير (Dashboard) من الصفر. | 🔍 Looker Studio tutorial basics", "اليوم 5 (قراءة التقارير): جلب بيانات حملة Meta الفعلية (من الأسبوع 6) لتحليلها. | 🔍 How to analyze marketing campaign data"], ["المشروع الموحد (ساعتين ونص): تحليل الأرقام الحقيقية لحملتك السابقة، واستخراج 3 رؤى (Insights) لتحسين الحملة القادمة لصيدلية الفيروز.", "تحدي الأسبوع (ساعة): أنشئ روابط متتبعة (UTM Links) لمنشورات الصيدلية، وارسم Dashboard بسيط للتقارير.", "تحليل منافس (نص ساعة): ابحث عن دراسة حالة (Case Study) لنجاح حملة تسويق طبي ولاحظ مقاييس النجاح المستخدمة.", "البورتفوليو (نص ساعة): ارفع تقرير تحليلك للحملة (الأرقام والدروس المستفادة).", "اختبار (نص ساعة): لماذا يفضل استخدام UTM Parameters دائماً في الإعلانات؟"]]]], ["المرحلة الرابعة: الاستراتيجية والانطلاق لسوق العمل", [["الأسبوع 9: الاستراتيجية الشاملة والتسويق المتخصص", ["اليوم 1 (B2B Medical): أساليب الـ Medical Detailing لاستهداف الأطباء. | 🔍 Medical sales representative skills", "اليوم 2 (الخطة الشاملة): فيديو يوضح كيفية دمج جميع قنوات التسويق معاً. | 🔍 Digital Marketing Strategy framework", "اليوم 3 (الأهداف الذكية): التدرب على صياغة أهداف بنموذج SMART لصيدلية الفيروز. | 🔍 SMART goals marketing examples", "اليوم 4 (مؤشرات KPIs): تحديد الـ KPIs الأساسية لمراقبة الخطة. | 🔍 Key Performance Indicators tracking", "اليوم 5 (توزيع الميزانية): أسس التخطيط المالي وتوزيع الميزانية على المنصات. | 🔍 Marketing budget allocation strategy"], ["المشروع الموحد (ساعتين ونص): كتابة أهداف SMART، وتوزيع ميزانية ربع سنوية لصيدلية الفيروز على مختلف قنوات التسويق.", "تحدي الأسبوع (ساعة): صمم هيكل عرض تقديمي (Pitch Deck) لتقنع مستثمر بتمويل الخطة التسويقية للصيدلية.", "تحليل منافس (نص ساعة): حلل استراتيجية مركز طبي كبير ولاحظ كيف يربط محتوى منصاته ببعضها.", "البورتفوليو (نص ساعة): ارفع استراتيجية الميزانية وأهداف الـ SMART.", "اختبار (نص ساعة): ما هي الشروط الخمسة لكتابة هدف ذكي (SMART)؟"]], ["الأسبوع 10: دراسة الحالة النهائية والانطلاق لسوق العمل 🚀", ["اليوم 1 (الـ Portfolio): تجميع كافة مخرجات الأسابيع الـ 9 في دراسة حالة (Case Study) واحدة ضخمة تروي قصة بناء وتسويق صيدلية الفيروز من الصفر.", "اليوم 2 (الشهادات): استكمال وإنهاء مسار الشهادة الموازي (HubSpot/Google) - المفروض تكون قربت تخلص بما إنه كان بيمشي جنب الخطة من الأول.", "اليوم 3 (LinkedIn): كتابة السيرة الذاتية لتعكس خبرتك المزدوجة، وإنشاء حساب لينكد إن احترافي، ونشر الـ Case Study الخاصة بك.", "اليوم 4 (المقابلات): التحضير لأسئلة مقابلات التسويق الطبي، وتجهيز رسالة تغطية (Cover Letter) مخصصة.", "اليوم 5 (التقديم): التقديم الفعلي والمركز على 10-20 فرصة عمل حر أو Internship ذات جودة عالية."], ["تحدي التخرج (5 ساعات): افتح Anki، قُم بتفريغ ومراجعة كافة البطاقات المتراكمة لترسيخ المفاهيم التي ستواجهك في المقابلات الوظيفية، ثم تأكد من أن الـ Portfolio الخاص بك يعمل بشكل مثالي كـ Link للمشاركة.", "اليوم 7: أغلق اللاب توب، احتفل بهذا الإنجاز الضخم، واستعد لاستقبال أول عميل! 🎉"]]]]];
+const PRIORITY = ["⭐⭐⭐ لازم يتحفظ: 4Ps، STP، SWOT، AIDA، Marketing Funnel (TOFU/MOFU/BOFU)، Buyer Persona، USP، CTA، SEO (On-page / Off-page / Technical)، CAC، LTV، CTR، CPC، CPM، ROAS، Conversion Rate، UTM، SMART، KPIs.", "⭐⭐ يتفهم ويتطبق: تعريف AMA، تاريخ التسويق، Marketing 1.0/2.0/3.0/5.0، قصة التطور، أمثلة الشركات.", "⭐ يُرجع إليه عند الحاجة: الإحصائيات، الدراسات، والأمثلة الطويلة."];
+const DAYS=['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+const JS_WEEKDAY_AR=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const NAV=[['home','⌂','مركز اليوم','Today'],['marketing','↗','التسويق','Marketing'],['shari','✦','العلم الشرعي','Islamic Studies'],['quran','☾','القرآن','Qur’an'],['courses','▣','الكورسات','Courses'],['system','◌','النظام','System']];
+const SHARI_MAP={'السبت':'زاد (تفريغ) + أحمد السيد + أيمن عبد الرحيم','الأحد':'زاد (تفريغ) + فقه النفس + السرجاني','الاثنين':'زاد (تفريغ) + أحمد السيد + أيمن عبد الرحيم','الثلاثاء':'زاد (تفريغ) + فقه النفس + السرجاني','الأربعاء':'زاد (تفريغ) + أحمد السيد + أيمن عبد الرحيم','الخميس':'زاد (تفريغ) + فقه النفس + السرجاني','الجمعة':'زاد (3 محاضرات) + تدبر (أحمد عبد المنعم)'};
+const AWARENESS=[1,2,3,4,5,6,7,8,9];
+const OLD_KEY='dersh-integrated-v4';
+const KEY='study-dashboard-focus-v7';
+let state={theme:'mono',lang:'ar',view:'home',dayType:'كلية',todayDate:'',today:{},plan:{},weekly:{marketingHours:0,mckinsey:false,dose:false,review:false,rating:''},weekDayTypes:{},quranFrameOpen:false};
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function load(){try{const raw=localStorage.getItem(KEY);if(raw){const x=JSON.parse(raw);state={...state,...x,lang:x.lang||state.lang||'ar',today:x.today||{},plan:x.plan||{},weekly:{...state.weekly,...(x.weekly||{})},weekDayTypes:x.weekDayTypes||{},quranFrameOpen:!!x.quranFrameOpen};}else{const old=localStorage.getItem(OLD_KEY);if(old){const x=JSON.parse(old);state.today=x.today||{};state.plan=x.plan||{};state.weekly={...state.weekly,...(x.weekly||{})};}}}catch(e){} resetDay(); applyTheme();}
+function effectiveDate(){const d=new Date();if(d.getHours()<5)d.setDate(d.getDate()-1);return d}
+function keyDate(){return effectiveDate().toLocaleDateString('en-CA')}
+function resetDay(){const k=keyDate();if(state.todayDate!==k){state.todayDate=k;state.today={};save()}}
+function todayName(){return JS_WEEKDAY_AR[effectiveDate().getDay()]}
+function todayDayType(){return state.weekDayTypes[todayName()]||state.dayType||'كلية'}
+function setDayType(v){state.dayType=v;state.weekDayTypes[todayName()]=v;save();renderAll()}
+function toggleRafiqFrame(){state.quranFrameOpen=!state.quranFrameOpen;save();renderAll();}
+function marketingTarget(){const t=todayDayType();return t==='كلية'?'45–60 دقيقة':t==='بدون كلية'?'2–2.5 ساعة':'3.5–4 ساعات'}
+function localDaySerial(){const d=new Date();return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000)}
+function tChecked(id){return !!state.today[id]} function toggleToday(id){state.today[id]=!state.today[id];save();renderAll()} function setWeeklyRating(v){state.weekly.rating=v;state.weekly.review=true;save();renderAll()}
+function pChecked(id){return !!state.plan[id]} function togglePlan(id){state.plan[id]=!state.plan[id];save();renderAll()}
+function idFor(prefix,text){let h=0,raw=prefix+'|'+text;for(let i=0;i<raw.length;i++)h=(h*31+raw.charCodeAt(i))>>>0;return prefix+'_'+h.toString(36)}
+function pct(items,store){const n=items.filter(x=>store[x]).length;return {n,total:items.length,p:items.length?Math.round(n/items.length*100):0}}
+function taskHTML(items){return '<div class="tasks">'+items.map(([id,text])=>`<label class="task ${tChecked(id)?'done':''}"><input type="checkbox" ${tChecked(id)?'checked':''} onchange="toggleToday('${esc(id)}')"><span class="task-text">${esc(text)}</span></label>`).join('')+'</div>'}
+function dayTasks(day){
+ const base=[['pr_f','🕌 الفجر — في وقتها'],['pr_d','🕌 الظهر — في وقتها'],['pr_a','🕌 العصر — في وقتها'],['pr_m','🕌 المغرب — في وقتها'],['pr_i','🕌 العشاء — في وقتها'],['azkar','📿 أذكار الصباح والمساء + الدعاء للأهل والأموات'],['bro','🤲 ورد أخي — قرآن / قيام / أذكار'],['rafiq','✨ مشروع رفيق القرآن'],['quran','📖 مراجعة القرآن — المصلى بين المحاضرات/السكاشن أو المواصلات'],['marketing','💻 التسويق — '+marketingTarget()],['anki','🧠 Anki — المستحق أولًا، والجديد حسب الميزانية'],['easy','📗 EasyPeasy Way to Quit — قراءة اليوم'],['mouth','🪥 روتين الفم — صباحًا ومساءً'],['skin','🧴 روتين البشرة — صباحًا ومساءً'],['hair','💆 روتين الشعر — حسب روتينك']];
+ const extra={'السبت':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الأحد':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة'],['linkedin','📝 بوست LinkedIn الأسبوعي'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الاثنين':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الثلاثاء':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الأربعاء':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الخميس':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الجمعة':[['aw','🧭 تأسيس وعي المسلم المعاصر — حصة أطول'],['review','🔍 المراجعة الأسبوعية — 10–15 دقيقة ليلاً'],['zad','🎓 أكاديمية زاد — اختياري: تعويض محاضرة فاتت فقط']]};
+ return base.concat(extra[day]||[])
+}
+function shariItems(day){if(day==='الجمعة')return [['sz1','زاد — محاضرة 1'],['sz2','زاد — محاضرة 2'],['sz3','زاد — محاضرة 3'],['st','تدبر — أحمد عبد المنعم']];const raw=SHARI_MAP[day]||'';const arr=raw.replace(/^زاد \(تفريغ\) \+ /,'').split(' + ');return [['z','زاد — محاضرة اليوم'],['s2',arr[0]||'المصدر الثاني'],['s3',arr[1]||'المصدر الثالث']]}
+function nav(){document.getElementById('nav').innerHTML=NAV.map(([id,ic,ar,en])=>`<button class="nav-btn ${state.view===id?'active':''}" data-view="${id}" onclick="navigate('${id}')">${ic}&nbsp; ${state.lang==='en'?en:ar}</button>`).join('');const lab=document.getElementById('langLabel');if(lab)lab.textContent=state.lang==='en'?'ع':'EN'}
+function setLang(v){state.lang=v==='en'?'en':'ar';save();applyLanguage();renderAll();}
+function applyLanguage(){document.documentElement.lang=state.lang;document.documentElement.dir=state.lang==='en'?'ltr':'rtl';document.body.dataset.lang=state.lang;document.body.dataset.theme=state.theme;document.documentElement.style.colorScheme=state.theme==='paper'?'light':'dark';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=getComputedStyle(document.body).getPropertyValue('--bg').trim()||'#0b0f12';}
+const I18N={
+'Mihrab':'Mihrab',
+'بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.':'Build yourself. Create impact. Earn independence.',
+
+'لوحة واحدة':'One dashboard','Mihrab':'Mihrab','مركز اليوم':'Today','التسويق':'Marketing','العلم الشرعي':'Islamic Studies','القرآن':'Qur’an','الكورسات':'Courses','النظام':'System',
+'رتّب يومك.':'Shape your day.','وابنِ مستقبلك بهدوء.':'Build your future calmly.','مركز واحد لكل ما تحتاجه اليوم: الأساسيات الدينية والقرآن، ثم التسويق كأولوية مهنية، والكورسات المساندة بدون ما تتحول اللوحة نفسها إلى عبء.':'One place for today: faith, Qur’an, professional marketing, and supporting courses — without turning the board into another burden.',
+'إنجاز اليوم':'Today’s progress','جرعة التسويق اليوم':'Today’s marketing dose','ابدأ تنفيذ اليوم ↓':'Start today ↓','الخطة المهنية ↗':'Career plan ↗','الشرعي ↗':'Islamic plan ↗','أسبوعك في لقطة':'Your week at a glance','اختار نوع كل يوم مرة واحدة من النظام، واللوحة تستخدمه تلقائيًا.':'Set each day type once in System, and the board uses it automatically.','تنفيذ اليوم':'Today’s execution','لا تعويض اندفاعي.':'No catch-up sprint.','الأساسيات أولًا':'Essentials first','قائمة اليوم':'Today’s list','ماذا بعد؟':'What’s next?','افتح مهمة التسويق التفصيلية':'Open detailed marketing task','افتح محتوى اليوم الشرعي':'Open today’s Islamic content','افتح مراجعة القرآن + رفيق':'Open Qur’an review + Rafiq','ثلاث قواعد':'Three rules','المراجعات قبل الجديد':'Reviews before new cards','الشرعي والقرآن لا يُقصّان':'Islamic studies + Qur’an stay protected','McKinsey + Dose أول ما يتقلص':'McKinsey + Dose shrink first',
+'التسويق هذا الأسبوع':'Marketing this week','هدف الأسبوع':'Weekly target','الشرعي':'Islamic studies','مراجعة':'Review','مساندة لا تسبق الأساسيات.':'Support work never outranks essentials.','الأساسيات الدينية والقرآن، ثم التسويق كأولوية مهنية، والكورسات المساندة':'faith and Qur’an first, then professional marketing and supporting courses','كل يوم مرة واحدة':'once for each day','المراجعة المستحقة أولًا':'Due reviews first','الجديد حسب الميزانية':'New cards within budget','في وقتها':'On time','أذكار الصباح والمساء + الدعاء للأهل والأموات':'Morning/evening adhkar + supplication for family and the deceased','ورد أخي — قرآن / قيام / أذكار':'Brother’s wird — Qur’an / night prayer / adhkar','مراجعة القرآن':'Qur’an review','المصلى بين المحاضرات/السكاشن أو المواصلات':'prayer room between lectures/sections or during transit','قراءة اليوم':'Today’s reading','روتين الفم — صباحًا ومساءً':'Oral-care routine — morning & evening','روتين البشرة — صباحًا ومساءً':'Skincare routine — morning & evening','روتين الشعر — حسب روتينك':'Hair routine — according to your routine',
+'معسكر التسويق الطبي الرقمي':'Digital Medical Marketing Bootcamp','أولوية مهنية':'Professional priority','طريقة اليوم':'Daily method','Buffer Rule':'Buffer Rule','التقدم الكلي':'Overall progress','تقدم الأسبوع':'Weekly progress','أيام التعلم':'Learning days','التطبيق العميق':'Deep application','نظام Anki داخل المعسكر':'Anki system in the bootcamp','بوابة إنشاء البطاقة':'Card creation gate','معيار نجاح المشروع':'Project success criterion','بعد الأسبوع 10':'After week 10','مؤجل إلى ما بعد معسكر التسويق.':'Deferred until after the marketing bootcamp.',
+'مسار مستقل وثابت. لا يدخل في منافسة مع التسويق.':'A fixed, independent track. It does not compete with marketing.','أساسي':'Core','المصادر الأساسية':'Core sources','ترتيب المسارات':'Track order','تنفيذ اليوم الشرعي':'Today’s Islamic execution','تأسيس وعي المسلم المعاصر':'Building the Contemporary Muslim’s Awareness','هدف الدورة':'Course goal','مكانها في الخطة':'Place in the plan','المحاضرة':'Lecture','من 9':'of 9','تنبيه':'Note','الجمعه':'Friday','جلسة أطول + تدبر':'Longer session + reflection',
+'مساحة مراجعة هادئة':'A quiet review space','لا حفظ جديد أثناء الدراسة؛ الاتصال بالمحفوظ هو الهدف.':'No new memorization during university; staying connected to what you memorized is the goal.','مراجعة اليوم':'Today’s review','رفيق القرآن داخل نفس التجربة':'Rafiq inside the same experience','الوصول إلى رفيق القرآن من هنا، بدون ما تحوّل اللوحة إلى نسخة منه.':'Access Rafiq from here without turning this board into a copy of it.',
+'الكورسات والأنظمة المساندة':'Courses & supporting systems','المراجعة المستحقة أولًا. الجديد بميزانية ثابتة. أماكنه المفضلة: المواصلات، المصلى، والفواصل.':'Due reviews first. New cards stay within a fixed budget. Best moments: transit, prayer room, and gaps.','حوالي ساعتين أسبوعيًا. أول ما ينكمش عند ضغط الدراسة.':'About two hours weekly. One of the first things to shrink under pressure.','أنجزت نصيب الأسبوع':'Finished this week’s share','بالتوازي مع المعسكر':'Alongside the bootcamp','أنجزت نصيب الشهادة الموازية':'Finished this week’s parallel certificate share','يظل موجودًا كقراءة خفيفة داخل اليوم، ولا يضخم الخطة الرئيسية.':'Keep it as light daily reading without bloating the main plan.','الأنظمة المساندة':'Supporting systems',
+'النظام والمراجعة':'System & review','هنا تضبط طريقة تشغيل اللوحة بدل ما تغيّر الخطة نفسها.':'Tune how the board runs here without changing the plan itself.','شكل اللوحة':'Board appearance','الثيم يغيّر الخلفية، البطاقات، الحواف، الظلال، الإضاءة وطابع الواجهة — مش مجرد لون زر.':'The theme changes the background, cards, borders, shadows, glow, and overall feel — not just a button color.','نوع كل يوم':'Day type','يحدد جرعة التسويق لذلك اليوم':'Sets that day’s marketing dose','تشغيل':'On','المرجع':'Reference','التقييم الأسبوعي':'Weekly review','اختار تقييمك الحقيقي للأسبوع — الاختيار بيتحفظ ويُعتبر المراجعة الأسبوعية منجزة.':'Choose your real weekly rating — it saves and counts as the weekly review.','محفوظ':'Saved','لم يُقيَّم':'Not rated','مراجعة أسبوعية':'Weekly review','الساعات':'Hours','أدخل الساعات الفعلية':'Enter actual hours','أوضاع الطاقة':'Energy modes','قواعد التشغيل':'Operating rules',
+'السبت':'Saturday','الأحد':'Sunday','الاثنين':'Monday','الثلاثاء':'Tuesday','الأربعاء':'Wednesday','الخميس':'Thursday','الجمعة':'Friday',
+'كلية':'College','بدون كلية':'No college','ديب وورك':'Deep work','راحة':'Rest','غير محدد':'Not set','ممتاز':'Excellent','جيد جدًا':'Very good','متذبذب':'Unstable','أسبوع طوارئ':'Emergency week','80–90%+ والتقدم ثابت':'80–90%+ and steady progress','ماشي كويس مع شوية تعثر':'Going well with some friction','فيه حاجة محتاجة تعديل':'Something needs adjustment','الأولوية كانت للضروريات':'Essentials had priority',
+'ملاحظة الدورة':'Course note','Module':'Module',
+'✨ مشروع رفيق القرآن':'✨ Rafiq Qur’an project','📖 مراجعة القرآن — المصلى بين المحاضرات/السكاشن أو المواصلات':'📖 Qur’an review — prayer room between lectures/sections or transit',
+'زاد (تفريغ) + أحمد السيد + أيمن عبد الرحيم':'ZAD (notes) + Ahmed Al-Sayed + Ayman Abdel Rahim','زاد (تفريغ) + فقه النفس + السرجاني':'ZAD (notes) + Fiqh al-Nafs + Al-Sarjani','زاد (3 محاضرات) + تدبر (أحمد عبد المنعم)':'ZAD (3 lectures) + reflection (Ahmed Abdel Moneim)','حوالي 70–85 دقيقة':'About 70–85 minutes','جلسة أطول + تدبر':'Longer session + reflection','تدبر':'Reflection','فقه النفس':'Fiqh al-Nafs','السرجاني':'Al-Sarjani','أحمد السيد':'Ahmed Al-Sayed','أيمن عبد الرحيم':'Ayman Abdel Rahim','زاد':'ZAD','أحمد عبد المنعم':'Ahmed Abdel Moneim','مصادر أساسية':'Core sources','المسارات اللاحقة':'Later tracks','الجمعة':'Friday','التسويق الطبي الرقمي':'Digital medical marketing','العلم الشرعي':'Islamic studies','القرآن':'Qur’an','الكورسات':'Courses','النظام':'System',
+}
+function translateText(t){let s=t;const exact=I18N[s.trim()];if(exact)return exact;return s
+ .replaceAll('السبت','Saturday').replaceAll('الأحد','Sunday').replaceAll('الاثنين','Monday').replaceAll('الثلاثاء','Tuesday').replaceAll('الأربعاء','Wednesday').replaceAll('الخميس','Thursday').replaceAll('الجمعة','Friday')
+ .replaceAll('اليوم','Today').replaceAll('الأسبوع','Week').replaceAll('المحاضرات','lectures').replaceAll('محاضرة','lecture')
+ .replaceAll('جلسة','session').replaceAll('حوالي','About').replaceAll('دقيقة','min').replaceAll('ساعة','h').replaceAll('تقدم','Progress').replaceAll('مهمة','task').replaceAll('المحتوى','Content').replaceAll('ملاحظة','Note');}
+function translateRendered(){if(state.lang!=='en')return;const roots=[document.querySelector('.topbar'),...document.querySelectorAll('.view')].filter(Boolean);const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);for(const n of nodes){if(!n.parentElement||/SCRIPT|STYLE|INPUT|TEXTAREA|SELECT/.test(n.parentElement.tagName))continue;const raw=n.nodeValue;const t=raw.trim();if(!t)continue;const out=translateText(t);if(out!==t)n.nodeValue=raw.replace(t,out);} }
+function navigate(v){state.view=v;save();renderAll();window.scrollTo({top:0,behavior:'smooth'})}
+function applyTheme(){applyLanguage()}
+function setTheme(t){state.theme=t;save();applyTheme();renderAll()} function cycleTheme(){const arr=['aurora','midnight','sunrise','paper','mono'];setTheme(arr[(arr.indexOf(state.theme)+1)%arr.length])}
+function renderHome(){
+ const day=todayName(), items=dayTasks(day), pr=pct(items.map(x=>x[0]),state.today);
+ const done=pr.n, total=pr.total, remaining=Math.max(total-done,0);
+ const modes=['كلية','بدون كلية','ديب وورك'];
+ return `<div class="hero">
+   <section class="hero-main">
+     <div class="kicker">● ${esc(day)} · ${esc(todayDayType())}</div>
+     <h1>رتّب يومك.<br><span style="color:var(--a)">وخلّيه بسيط.</span></h1>
+     <p>ركز على اللي مطلوب النهارده فقط. الأساسيات أولًا، والباقي ياخد مساحته لما تفضى.</p>
+     <div class="hero-actions">
+       <button class="btn primary" onclick="document.getElementById('todayTasks').scrollIntoView({behavior:'smooth'})">ابدأ ↓</button>
+       <button class="btn" onclick="navigate('marketing')">التسويق ↗</button>
+       <button class="btn" onclick="navigate('shari')">الشرعي ↗</button>
+       <button class="btn" onclick="navigate('quran')">القرآن ↗</button>
+     </div>
+   </section>
+   <aside class="hero-side">
+     <div><div class="kicker">إنجاز اليوم</div><div class="ring" style="--p:${pr.p}%"><div><b>${pr.p}%</b><span>${done} / ${total}</span></div></div></div>
+     <div><div class="muted tiny" style="margin-bottom:6px">جرعة التسويق</div><div class="mode-row">${modes.map(t=>`<button class="mode ${todayDayType()===t?'active':''}" onclick="setDayType('${t}')">${state.lang==='en'?translateText(t):t}</button>`).join('')}</div><div class="tiny muted" style="margin-top:8px">${remaining?remaining+' بنود باقية':'خلصت يومك'}</div></div>
+   </aside>
+ </div>
+ <div class="stats-grid">
+   <div class="stat-card"><small>اليوم</small><strong>${done}/${total}</strong></div>
+   <div class="stat-card"><small>باقي</small><strong>${remaining}</strong></div>
+   <div class="stat-card"><small>التسويق</small><strong>${state.weekly.marketingHours||0}س</strong></div>
+   <div class="stat-card"><small>الهدف</small><strong>12س</strong></div>
+ </div>
+ <div class="section-title" id="todayTasks"><div><h2>⚡ تنفيذ اليوم</h2><p>${esc(day)} · الأساسيات أولًا.</p></div></div>
+ <div class="bento">
+   <section class="card tall"><h3>قائمة اليوم</h3>${taskHTML(items)}</section>
+   <section class="card"><h3>بعدها</h3><div class="tasks">
+     <label class="task" onclick="navigate('marketing')"><span>💻 مهمة التسويق</span><span>↗</span></label>
+     <label class="task" onclick="navigate('shari')"><span>🕌 محتوى الشرعي</span><span>↗</span></label>
+     <label class="task" onclick="navigate('quran')"><span>📖 مراجعة القرآن</span><span>↗</span></label>
+   </div></section>
+   <section class="card"><h3>قاعدة اليوم</h3><div class="mini-stat"><span>المراجعات قبل الجديد</span><b>1</b></div><div class="mini-stat" style="margin-top:7px"><span>الشرعي والقرآن ثابتان</span><b>2</b></div><div class="mini-stat" style="margin-top:7px"><span>الكورسات تتقلص أولًا</span><b>3</b></div></section>
+ </div>`
+}
+
+function renderMarketing(){let overallIds=[],out=`<div class="section-title"><div><h2>💻 معسكر التسويق الطبي الرقمي</h2><p>10 أسابيع · 12 ساعة/أسبوع · كل أسبوع يضيف قطعة إلى دراسة حالة واحدة.</p></div><span class="badge core">أولوية مهنية</span></div><section class="awareness" style="margin-bottom:14px"><div class="kicker">THE UNIFIED CASE STUDY</div><h2 style="margin:8px 0">صيدلية الفيروز الإكلينيكية</h2><p class="muted" style="line-height:1.9;margin:0">مشروع موحّد: صيدلية إكلينيكية افتراضية في حي الفيروز، الأقصر، تقدم استشارات دوائية أونلاين ومتابعة للمرضى.</p></section><div class="grid grid-2"><section class="section-box"><h3>🧠 طريقة اليوم</h3><p>🎥 ساعة تعلم بصري/فيديو → 🤖 15 دقيقة عصف AI → ✍️ 15 دقيقة توليف شخصي بإيدك → 🧠 30 دقيقة Anki.</p><div class="note">سؤال التطبيق الثابت: «موضوع النهارده — إزاي بيتطبق على صيدلية الفيروز تحديدًا؟»</div></section><section class="section-box"><h3>🛡️ Buffer Rule</h3><p>فاتك يوم؟ لا تعوضه في اليوم التالي. زحزح الجدول. وقت الضغط يقل الإنتاج الجديد قبل الأساسيات.</p></section></div>`;
+ MARKETING.forEach(([phase,weeks])=>{out+=`<div class="section-title"><div><h2>${esc(phase)}</h2></div></div>`;weeks.forEach(([title,days,deep])=>{const ids=days.concat(deep).map(x=>idFor(title,x));const pr=pct(ids,state.plan);overallIds.push(...ids);out+=`<details class="week-card"><summary><span><b>${esc(title)}</b></span><span class="badge">${pr.p}% · ${pr.n}/${pr.total}</span></summary><div class="week-body"><div class="progress-head"><span>تقدم الأسبوع</span><b>${pr.p}%</b></div><div class="progress"><i style="width:${pr.p}%"></i></div><div class="week-grid" style="margin-top:12px"><div class="week-block"><h4>📚 أيام التعلم</h4>${days.map(x=>{const id=idFor(title,x),d=pChecked(id);return `<label class="mtask ${d?'done':''}"><input type="checkbox" ${d?'checked':''} onchange="togglePlan('${id}')"><span>${esc(x)}</span></label>`}).join('')}</div><div class="week-block"><h4>🔻 التطبيق العميق</h4>${deep.map(x=>{const id=idFor(title,x),d=pChecked(id);return `<label class="mtask ${d?'done':''}"><input type="checkbox" ${d?'checked':''} onchange="togglePlan('${id}')"><span>${esc(x)}</span></label>`}).join('')}</div></div></div></details>`})});
+ const ov=pct(overallIds,state.plan);out+=`<div class="section-title"><div><h2>🧠 نظام Anki داخل المعسكر</h2><p>المعلومة التي لا تحتاج الاحتفاظ بها طويلًا لا تتحول تلقائيًا إلى بطاقة.</p></div></div><div class="grid grid-3">${PRIORITY.map(x=>`<div class="section-box"><p style="line-height:1.85">${esc(x)}</p></div>`).join('')}</div><div class="grid grid-2" style="margin-top:12px"><div class="section-box"><h3>✅ بوابة إنشاء البطاقة</h3><p>هل سأحتاجها بعد 3 شهور؟ هل سأستخدمها في شغل حقيقي؟ هل سأضطر للبحث عنها كل مرة؟ نعم على واحدة أو أكثر → بطاقة.</p></div><div class="section-box"><h3>🎯 معيار نجاح المشروع</h3><p>مشكلة واضحة → حل مفهوم → نتيجة موثقة في الـPortfolio.</p></div></div><div class="section-box" style="margin-top:12px"><div class="progress-head"><span>التقدم الكلي</span><b>${ov.p}%</b></div><div class="progress"><i style="width:${ov.p}%"></i></div></div><div class="section-box" style="margin-top:12px;border-color:color-mix(in srgb,var(--c) 28%,var(--line))"><h3>🚀 بعد الأسبوع 10</h3><p>Drug Commercialization مؤجل لما بعد المعسكر. الشهادة الموازية (HubSpot / Google) تظل 20–30 دقيقة وقت الفراغ ولا تكرر محتوى المعسكر.</p></div>`;return out}
+function renderShari(){const day=todayName();const rows=DAYS.map(d=>`<div class="timeline-card ${d===day?'today':''}"><div class="day">${d} ${d===day?'· اليوم':''}</div><ul><li>${esc(SHARI_MAP[d])}</li>${d==='الجمعة'?'<li>جلسة أطول + تدبر</li>':'<li>حوالي 70–85 دقيقة</li>'}</ul></div>`).join('');
+ return `<div class="section-title"><div><h2>🕌 العلم الشرعي</h2><p>مسار مستقل وثابت. لا يدخل في منافسة مع التسويق.</p></div><span class="badge core">أساسي</span></div><div class="timeline">${rows}</div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>📚 المصادر الأساسية</h3><p>أحمد السيد — نبدأ بـ «بناء العقيدة للجيل الصاعد».</p><p><b style="color:var(--a)">أيمن عبد الرحيم — مسار أساسي ثابت.</b></p><p>فقه النفس — عبد الرحمن ذاكر.</p><p>الخلفاء الراشدين — راغب السرجاني.</p><p>الجمعة — أحمد عبد المنعم: تدبر وتفسير.</p></section><section class="section-box"><h3>🧭 ترتيب المسارات</h3><p>«تأسيس وعي المسلم المعاصر» موجود هنا كمسار أساسي من محتوى أيمن، وليس بطاقة وهمية في النظام.</p><p>«البيت المسلم» يمكن الرجوع إليه عند الحاجة فقط، وليس مسارًا إلزاميًا موازيًا.</p></section></div><div class="section-title"><div><h2>🧭 تأسيس وعي المسلم المعاصر</h2><p>أيمن عبد الرحيم · 9 محاضرات · الهدف تأسيس/إعادة توجيه الوعي، لا جمع أكبر عدد من المعلومات.</p></div><span class="badge core">Core</span></div><div class="awareness"><div class="grid grid-2"><div><h3 style="margin-top:0">🎯 هدف الدورة</h3><p style="line-height:1.9;margin:0">إعادة أو تأسيس توجه ووعي صحيح — وليس جمع أكبر قدر من المعلومات — مع فهم كيف يؤثر عالم الأفكار في السلوك.</p><p class="muted" style="line-height:1.9;margin:9px 0 0">اللغة + التدين + الثقافة تشكّل عالم الأفكار الذي ينعكس على عالم السلوك، وآخر المحاضرات تركز على ما يمكن فعله بالأفكار الجديدة بعد التعلم.</p></div><div><h3 style="margin-top:0">🧭 مكانها في الخطة</h3><p style="line-height:1.9;margin:0">أيمن عبد الرحيم مسار أساسي ثابت. التنفيذ الأسبوعي الأساسي: السبت والاثنين والأربعاء، مع حصة أطول الجمعة. في ضغط اليوم لا تُلغى هويته من الخطة؛ الذي يمكن ضغطه هو الجرعة التنفيذية.</p></div></div><div class="grid grid-3" style="margin-top:13px"><div class="note"><b>01</b><br>التوجه والوعي قبل الكم المعلوماتي</div><div class="note"><b>02</b><br>تاريخ يشرح أثر عالم الأفكار على السلوك</div><div class="note"><b>03</b><br>الانتقال من الفكرة إلى ما نفعله بها</div></div><div class="lecture-grid">${AWARENESS.map(n=>`<label class="lecture"><input type="checkbox" ${pChecked('aware_'+n)?'checked':''} onchange="togglePlan('aware_${n}')"><span>المحاضرة ${n} من 9</span></label>`).join('')}</div><div class="note" style="margin-top:10px">💡 ملاحظة الدورة: يوجد Trailer منفصل في بعض المنصات، لكنه ليس واحدًا من المحاضرات التسع الأساسية.</div></div><div class="section-title"><div><h2>✅ تنفيذ اليوم الشرعي</h2><p>${day} — علّم البنود لما تخلصها.</p></div></div><section class="section-box">${taskHTML(shariItems(day))}</section>`}
+function renderQuran(){
+ const open=!!state.quranFrameOpen;
+ return `<div class="section-title"><div><h2>📖 القرآن</h2><p>مراجعة المحفوظ أثناء الدراسة؛ رفيق القرآن يظل أداة مستقلة تدخل لها وقت ما تحتاج.</p></div><span class="badge core">مراجعة فقط</span></div>
+ <div class="grid grid-2">
+  <section class="section-box">
+   <h3>مراجعة اليوم</h3>
+   <label class="task ${tChecked('quran')?'done':''}"><input type="checkbox" ${tChecked('quran')?'checked':''} onchange="toggleToday('quran')"><span>راجعت المحفوظ اليوم — عمّ / تبارك / القديم / ما تم حفظه قبل الدراسة</span></label>
+   <div class="note" style="margin-top:10px">المكان الأفضل: المصلى بين المحاضرات والسكاشن، ثم المواصلات. لو التركيز وقع وبدأ الخلط بين المتشابهات: قف وخذ راحة.</div>
+  </section>
+  <section class="section-box quran-bridge">
+   <div class="bridge-icon">✦</div>
+   <div><h3 style="margin-bottom:5px">رفيق القرآن</h3><p class="muted" style="margin:0">نسختك المنشورة على Cloudflare. لو رفيق مثبت كتطبيق على جهازك، افتحه من زر «فتح رفيق»؛ وإلا سيفتح الموقع.</p></div>
+   <div class="bridge-actions"><a class="btn primary" href="${RAFIQ_URL}" target="_blank" rel="noopener">فتح رفيق ↗</a><button class="btn ${open?'active':''}" onclick="toggleRafiqFrame()">${open?'إخفاء داخل اللوحة':'عرض داخل اللوحة'}</button></div>
+  </section>
+ </div>
+ ${open?`<div class="section-title"><div><h2>✦ رفيق القرآن</h2><p>يُحمّل الإطار فقط عند طلبه حتى تظل اللوحة سريعة وخفيفة.</p></div><span class="badge">Cloudflare</span></div><div class="iframe-wrap"><div class="iframe-head"><b>رفيق القرآن</b><div style="display:flex;gap:7px;align-items:center"><span class="badge">Live</span><button class="icon-btn" onclick="toggleRafiqFrame()" aria-label="إغلاق">×</button></div></div><iframe id="rafiqFrame" title="رفيق القرآن داخل Mihrab" src="${RAFIQ_URL}" loading="eager" allow="autoplay; fullscreen"></iframe></div>`:''}`;
+}
+function renderCourses(){return `<div class="section-title"><div><h2>📚 الكورسات والأنظمة المساندة</h2><p>مساندة لا تسبق الأساسيات.</p></div></div><div class="grid grid-3"><section class="section-box"><h3>🧠 Anki</h3><p>المراجعة المستحقة أولًا. الجديد بميزانية ثابتة. أماكنه المفضلة: المواصلات، المصلى، والفواصل.</p></section><section class="section-box"><h3>🚀 McKinsey Forward</h3><p>حوالي ساعتين أسبوعيًا. أول ما ينكمش عند ضغط الدراسة.</p><label class="task ${state.weekly.mckinsey?'done':''}"><input type="checkbox" ${state.weekly.mckinsey?'checked':''} onchange="state.weekly.mckinsey=this.checked;save();renderAll()"><span>أنجزت نصيب الأسبوع</span></label></section><section class="section-box"><h3>💊 The Pharmacist's Guide to Dose Calculations</h3><p>2:41 ساعة إجماليًا · جلسات قصيرة 10–15 دقيقة تقريبًا. أيضًا من أول الأشياء التي يمكن تأجيلها عند الضغط.</p><label class="task ${state.weekly.dose?'done':''}"><input type="checkbox" ${state.weekly.dose?'checked':''} onchange="state.weekly.dose=this.checked;save();renderAll()"><span>أنجزت نصيب الأسبوع</span></label></section></div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🎓 HubSpot / Google</h3><p>20–30 دقيقة وقت الفراغ، بالتوازي مع المعسكر، بدون إعادة شرح ما تدرسه بالفعل.</p><label class="task ${state.weekly.cert?'done':''}"><input type="checkbox" ${state.weekly.cert?'checked':''} onchange="state.weekly.cert=this.checked;save();renderAll()"><span>أنجزت نصيب الشهادة الموازية</span></label></section><section class="section-box"><h3>📗 EasyPeasy</h3><p>يظل موجودًا كقراءة خفيفة داخل اليوم، ولا يضخم الخطة الرئيسية.</p></section></div><div class="section-box" style="margin-top:12px;border-color:color-mix(in srgb,var(--c) 28%,var(--line))"><h3>⏸️ Drug Commercialization</h3><p>مؤجل إلى ما بعد معسكر التسويق.</p></div>`}
+function renderSystem(){
+ const themes = state.lang==='en'
+  ? [['aurora','Aurora','Deep emerald — soft light'],['midnight','Midnight','Royal navy — deep violet'],['sunrise','Velvet','Velvet — amber & burgundy'],['paper','Champagne','Warm ivory — quiet gold'],['mono','Obsidian','Charcoal black — polished gold']]
+  : [['aurora','Aurora','زمرد ليلي — ضوء ناعم'],['midnight','Midnight','كحلي ملكي — بنفسجي عميق'],['sunrise','Velvet','مخملي — عنبر وبرغندي'],['paper','Champagne','عاجي دافئ — ذهب هادئ'],['mono','Obsidian','أسود فحمي — ذهب مصقول']];
+ const rating=state.weekly.rating||'';
+ const reviewChoices=state.lang==='en'
+  ? [['excellent','🌟','Excellent','80–90%+ and steady progress'],['good','👍','Very good','Going well with some friction'],['unstable','⚖️','Unstable','Something needs adjustment'],['emergency','🚨','Emergency week','Essentials had priority']]
+  : [['excellent','🌟','ممتاز','80–90%+ والتقدم ثابت'],['good','👍','جيد جدًا','ماشي كويس مع شوية تعثر'],['unstable','⚖️','متذبذب','فيه حاجة محتاجة تعديل'],['emergency','🚨','أسبوع طوارئ','الأولوية كانت للضروريات']];
+ const dayTypeLabels = state.lang==='en'
+   ? {'كلية':'College','بدون كلية':'No college','ديب وورك':'Deep work','راحة':'Rest'}
+   : {'كلية':'كلية','بدون كلية':'بدون كلية','ديب وورك':'ديب وورك','راحة':'راحة'};
+ const dayLabels = state.lang==='en'
+   ? {'السبت':'Saturday','الأحد':'Sunday','الاثنين':'Monday','الثلاثاء':'Tuesday','الأربعاء':'Wednesday','الخميس':'Thursday','الجمعة':'Friday'}
+   : Object.fromEntries(DAYS.map(d=>[d,d]));
+ return `<div class="section-title"><div><h2>⚙️ ${state.lang==='en'?'System & review':'النظام والمراجعة'}</h2><p>${state.lang==='en'?'Tune how the board runs without changing the plan itself.':'هنا تضبط طريقة تشغيل اللوحة بدل ما تغيّر الخطة نفسها.'}</p></div><span class="badge core">${state.lang==='en'?'Control':'تحكم'}</span></div>
+ <section class="section-box"><h3>🎨 ${state.lang==='en'?'Board appearance':'شكل اللوحة'}</h3><p class="muted" style="margin-top:-3px">${state.lang==='en'?'The theme changes the background, surfaces, borders, shadows, glow, and overall feel — not just one button color.':'الثيم يغيّر الخلفية، البطاقات، الحواف، الظلال، الإضاءة وطابع الواجهة — مش مجرد لون زر.'}</p><div class="theme-grid">${themes.map(([id,n,desc])=>`<button type="button" class="theme-card ${state.theme===id?'active':''}" onclick="setTheme('${id}')"><div class="swatch swatch-${id}"></div><b>${n}</b><small>${desc}</small></button>`).join('')}</div></section>
+ <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 7px"><div><h3 style="margin:0">🌐 ${state.lang==='en'?'Interface language':'لغة الواجهة'}</h3><p>${state.lang==='en'?'Switch between Arabic and English any time.':'بدّل بين العربية والإنجليزية في أي وقت.'}</p></div><span class="badge">${state.lang==='en'?'EN':'عربي'}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ${state.lang==='ar'?'primary':''}" onclick="setLang('ar')">العربية</button><button class="btn ${state.lang==='en'?'primary':''}" onclick="setLang('en')">English</button></div></section>
+ <div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🗓️ ${state.lang==='en'?'Day types':'نوع كل يوم'}</h3>${DAYS.map(d=>`<div class="quote-settings"><div><b>${dayLabels[d]}</b><div class="tiny muted">${state.lang==='en'?'Sets the marketing dose for that day':'يحدد جرعة التسويق لذلك اليوم'}</div></div><select aria-label="${state.lang==='en'?'Day type for ':'نوع يوم '}${dayLabels[d]}" onchange="state.weekDayTypes['${d}']=this.value;save();renderAll()">${['كلية','بدون كلية','ديب وورك','راحة'].map(v=>`<option value="${v}" ${(state.weekDayTypes[d]||'كلية')===v?'selected':''}>${dayTypeLabels[v]}</option>`).join('')}</select></div>`).join('')}</section>
+ <section class="section-box"><h3>🎨 ${state.lang==='en'?'Board identity':'هوية اللوحة'}</h3><p class="muted" style="margin-top:-3px">${state.lang==='en'?'Themes, language, and day types live here. The plan itself stays fixed.':'الثيمات واللغة ونوع كل يوم هنا. الخطة نفسها تفضل ثابتة.'}</p><div class="note">${state.lang==='en'?'These controls change presentation and operation only while keeping your plan intact.':'التغيير هنا بصري وتشغيلي فقط: الثيم يغيّر الخلفية والزجاج والحدود والظلال والإضاءة مع الحفاظ على نفس المحتوى.'}</div></section></div>
+ <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h2 style="font-size:20px">🔎 ${state.lang==='en'?'Weekly review':'التقييم الأسبوعي'}</h2><p>${state.lang==='en'?'Choose your real weekly rating — it saves and counts as the weekly review.':'اختار تقييمك الحقيقي للأسبوع — الاختيار بيتحفظ ويُعتبر المراجعة الأسبوعية منجزة.'}</p></div><span class="badge ${rating?'core':''}">${rating?(state.lang==='en'?'Saved':'محفوظ'):(state.lang==='en'?'Not rated':'لم يُقيَّم')}</span></div><div class="review-grid">${reviewChoices.map(([id,e,t,d])=>`<label class="review-choice ${rating===id?'selected':''}"><input type="radio" name="weekly-rating" ${rating===id?'checked':''} onchange="setWeeklyRating('${id}')"><span class="emoji">${e}</span><b>${t}</b><small>${d}</small></label>`).join('')}</div><div class="note" style="margin-top:11px">${state.lang==='en'?'Weekly review: 10–15 minutes. Ask: what was easy to sustain, what kept slipping, and what will you reduce or lock in next week?':'المراجعة الأسبوعية: 10–15 دقيقة. اسأل نفسك: ماذا التزمت به بسهولة؟ ماذا ظل يتأجل؟ وما الذي سأخففه أو أثبته الأسبوع القادم؟'}</div></section>
+ <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 8px"><div><h3 style="margin:0">📱 ${state.lang==='en'?'Use it as an app':'استخدمها كتطبيق'}</h3><p>${state.lang==='en'?'Install Mihrab on your phone home screen as a standalone app.':'ثبّت Mihrab على شاشة الموبايل لفتحها كتطبيق مستقل بدل المتصفح.'}</p></div><span class="badge">PWA</span></div><button class="btn primary" onclick="installPWA()" id="installBtn">${state.lang==='en'?'Install on device ↗':'تثبيت على الجهاز ↗'}</button><div class="tiny muted" style="margin-top:8px">${state.lang==='en'?'Home-screen install: yes. A live home-screen widget requires a native app; this board is designed as a lightweight, installable PWA.':'الهوم سكرين: نعم. Widget حيّ فوق الشاشة الرئيسية يحتاج تطبيقًا أصليًا؛ اللوحة هنا مصممة لتكون PWA خفيفة وقابلة للتثبيت.'}</div></section>
+ <div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>📊 ${state.lang==='en'?'Marketing this week':'التسويق هذا الأسبوع'}</h3><div class="progress-head"><span>${state.lang==='en'?'Hours':'الساعات'}</span><b>${state.weekly.marketingHours||0} / 12</b></div><div class="progress"><i style="width:${Math.min(100,(state.weekly.marketingHours||0)/12*100)}%"></i></div><div class="field" style="margin-top:10px"><label>${state.lang==='en'?'Enter actual hours':'أدخل الساعات الفعلية'}</label><input type="number" min="0" step="0.5" value="${state.weekly.marketingHours||0}" onchange="state.weekly.marketingHours=parseFloat(this.value)||0;save();renderAll()"></div></section><section class="section-box"><h3>🛡️ ${state.lang==='en'?'Energy modes':'أوضاع الطاقة'}</h3><p><b>🟢 ${state.lang==='en'?'Normal:':'طبيعي:'}</b> ${state.lang==='en'?'Full plan.':'الخطة كاملة.'}</p><p><b>🟡 ${state.lang==='en'?'Low energy:':'منخفض الطاقة:'}</b> ${state.lang==='en'?'Prayer/adhkar + some Qur’an + small marketing output + old Anki only. Side content pauses first.':'الصلاة/الأذكار + قدر من القرآن + إنتاج تسويق صغير + Anki قديم فقط. المحتوى الجانبي يتوقف أولًا.'}</p><p><b>🔴 ${state.lang==='en'?'Exceptional:':'استثنائي:'}</b> ${state.lang==='en'?'Prayer + adhkar + a little Qur’an + rest.':'الصلاة + الأذكار + قرآن يسير + راحة.'}</p></section></div>
+ <div class="section-box" style="margin-top:12px"><h3>🧩 ${state.lang==='en'?'Operating rules':'قواعد التشغيل'}</h3><div class="grid grid-2"><div>${(state.lang==='en'?['Sleep 6–8 hours.','During exams: regular Anki continues; new production reduces first.','If two days are lost in a row: no forced catch-up; review why.']:['النوم 6–8 ساعات.','امتحانات: Anki regular مستمر، والإنتاج الجديد يقل أولًا.','لو يومان ضاعا وراء بعض: لا تعويض قهري؛ راجع السبب.']).map(x=>`<p>${x}</p>`).join('')}</div><div>${(state.lang==='en'?['Islamic studies stay fixed.','Qur’an stays fixed but timing is flexible.','Marketing is the professional priority; McKinsey and Dose shrink first.']:['الشرعي ثابت.','القرآن ثابت لكن توقيته مرن.','Marketing هو الأولوية المهنية؛ McKinsey وDose أول من يتقلص.']).map(x=>`<p>${x}</p>`).join('')}</div></div></div>`;
+}
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;document.getElementById('installBtn')?.removeAttribute('disabled')});
+window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;const b=document.getElementById('installBtn');if(b){b.textContent='✓ تم التثبيت';b.disabled=true}});
+async function installPWA(){if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;return} alert(state.lang==='en'?'From the browser menu, choose Install app / Add to Home Screen.':'من قائمة المتصفح اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».')}
+
+function renderView(v){const map={home:renderHome,marketing:renderMarketing,shari:renderShari,quran:renderQuran,courses:renderCourses,system:renderSystem};document.getElementById('view-'+v).innerHTML=map[v]()}
+function renderAll(){nav();applyTheme();Object.keys({home:1,marketing:1,shari:1,quran:1,courses:1,system:1}).forEach(renderView);document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+state.view));applyLanguage();translateRendered();nav()}
+load();renderAll();
+if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+
+
+
+(()=>{
+  const selector='.hero-main,.hero-side,.card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.awareness,.quote,.iframe-wrap,.day-chip,.review-choice';
+  const bind=()=>document.querySelectorAll(selector).forEach(el=>{
+    if(el.dataset.rxBound)return;el.dataset.rxBound='1';el.classList.add('reactive-card');
+    el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();el.style.setProperty('--gx',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');el.style.setProperty('--gy',((e.clientY-r.top)/r.height*100).toFixed(1)+'%')},{passive:true});
+    el.addEventListener('pointerleave',()=>{el.style.setProperty('--gx','80%');el.style.setProperty('--gy','15%')},{passive:true});
+  });
+  bind(); new MutationObserver(bind).observe(document.getElementById('app'),{subtree:true,childList:true});
+})();
+
+
+
+(()=>{
+  const prefersReduce=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const initAurora=()=>{
+    if(document.querySelector('.live-aurora-layer')) return;
+    const layer=document.createElement('div');
+    layer.className='live-aurora-layer';
+    layer.innerHTML='<span class="aurora-blob aurora-gold"></span><span class="aurora-blob aurora-royal"></span><span class="aurora-blob aurora-silver"></span><span class="aurora-vignette"></span>';
+    document.body.insertBefore(layer,document.body.firstChild);
+  };
+  const markReactive=()=>{
+    const selectors='.topbar,.hero-main,.hero-side,.card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.review-choice,.awareness,.quran-bridge,.iframe-wrap';
+    document.querySelectorAll(selectors).forEach(el=>{
+      el.classList.add('reactive-surface');
+      if(!el.querySelector(':scope > .reactive-glow')) el.insertAdjacentHTML('beforeend','<span class="reactive-glow" aria-hidden="true"></span>');
+    });
+  };
+  const pointer=(e)=>{
+    const el=e.target.closest('.reactive-surface');
+    if(!el) return;
+    const r=el.getBoundingClientRect();
+    el.style.setProperty('--rx',`${Math.max(0,Math.min(100,((e.clientX-r.left)/r.width)*100))}%`);
+    el.style.setProperty('--ry',`${Math.max(0,Math.min(100,((e.clientY-r.top)/r.height)*100))}%`);
+  };
+  const burst=(x,y)=>{
+    if(prefersReduce()) return;
+    const wrap=document.createElement('span'); wrap.className='focus-burst'; wrap.style.left=x+'px';wrap.style.top=y+'px';
+    const n=8;
+    for(let i=0;i<n;i++){
+      const p=document.createElement('i');
+      const a=(Math.PI*2*i/n)+(Math.random()-.5)*.28, d=22+Math.random()*16;
+      p.style.setProperty('--tx',`${Math.cos(a)*d}px`);p.style.setProperty('--ty',`${Math.sin(a)*d}px`);p.style.animationDelay=(Math.random()*45)+'ms';wrap.appendChild(p);
+    }
+    document.body.appendChild(wrap); setTimeout(()=>wrap.remove(),850);
+  };
+  const animateRings=()=>{
+    document.querySelectorAll('.ring b').forEach((el,index)=>{
+      const target=parseFloat((el.textContent||'0').replace('%',''))||0;
+      const key='ring-'+index;
+      const from=Number(window.__focusRingValues?.[key] ?? 0);
+      if(!window.__focusRingValues) window.__focusRingValues={};
+      window.__focusRingValues[key]=target;
+      if(target===from){el.style.textShadow=target>0?'0 0 18px rgba(197,160,89,.18)':'none';return}
+      const start=performance.now(),dur=720;
+      const step=(now)=>{
+        const t=Math.min(1,(now-start)/dur), eased=1-Math.pow(1-t,4), v=from+(target-from)*eased;
+        el.textContent=Math.round(v)+'%';el.style.textShadow=target>0?'0 0 20px rgba(197,160,89,.22)':'none';
+        if(t<1) requestAnimationFrame(step); else el.textContent=Math.round(target)+'%';
+      };
+      requestAnimationFrame(step);
+    });
+  };
+  const observer=new MutationObserver(()=>{markReactive();animateRings()});
+  initAurora(); markReactive(); animateRings();
+  document.addEventListener('pointermove',pointer,{passive:true});
+  document.addEventListener('click',e=>{const box=e.target.closest('.task input[type="checkbox"],.lecture input[type="checkbox"]'); if(box) burst(e.clientX,e.clientY)},true);
+  observer.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
+})();
+
+
+
+(()=>{
+  const bind=()=>document.querySelectorAll('.hero-main,.hero-side,.card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.review-choice,.awareness,.quote,.iframe-wrap').forEach(el=>{
+    if(el.dataset.luxBound)return; el.dataset.luxBound='1';
+    el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();el.style.setProperty('--gx',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');el.style.setProperty('--gy',((e.clientY-r.top)/r.height*100).toFixed(1)+'%')},{passive:true});
+  });
+  bind();
+  new MutationObserver(bind).observe(document.getElementById('app'),{subtree:true,childList:true});
+})();
+
+
+
+/* Ensure the Luxe palette is the default while keeping existing user selection intact. */
+try{ if(!localStorage.getItem('focusos_state_v1')) { state.theme='midnight'; } }catch(e){}
+
+
+
+(()=>{
+  const c=document.getElementById('luxLiveBg'); if(!c)return;
+  const ctx=c.getContext('2d',{alpha:false}); if(!ctx)return;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+  let W=0,H=0,dpr=1,raf=0,last=0,particles=[];
+  const palettes={
+    aurora:{bg:'#070b0d',gold:[197,160,89],a:[74,170,152],b:[79,105,150],silver:[180,187,198]},
+    midnight:{bg:'#080911',gold:[198,177,239],a:[110,86,171],b:[87,132,180],silver:[177,185,203]},
+    sunrise:{bg:'#100b0c',gold:[214,171,104],a:[146,76,85],b:[122,86,74],silver:[190,180,177]},
+    paper:{bg:'#eee5d8',gold:[176,131,57],a:[75,121,101],b:[112,112,157],silver:[150,143,130]},
+    mono:{bg:'#080a0d',gold:[197,160,89],a:[88,107,126],b:[114,125,145],silver:[182,188,196]}
+  };
+  const theme=()=>document.body?.getAttribute('data-theme')||'aurora';
+  const rgb=(a,al)=>`rgba(${a[0]},${a[1]},${a[2]},${al})`;
+  const resize=()=>{
+    W=innerWidth;H=innerHeight;dpr=Math.min(devicePixelRatio||1,1.35);
+    c.width=Math.max(1,Math.floor(W*dpr));c.height=Math.max(1,Math.floor(H*dpr));c.style.width=W+'px';c.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);
+    const n=Math.min(96,Math.max(42,Math.round(W*H/22000)));
+    particles=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*.95+.18,o:Math.random()*.42+.08,s:Math.random()*.05+.012,p:Math.random()*6.28,tw:Math.random()*.018+.004,drift:(Math.random()-.5)*.025}));
+  };
+  const orb=(x,y,r,col,alpha)=>{const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,rgb(col,alpha));g.addColorStop(.28,rgb(col,alpha*.44));g.addColorStop(.68,rgb(col,alpha*.10));g.addColorStop(1,rgb(col,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const orbit=(cx,cy,rx,ry,rot,col,alpha,lw=.7)=>{ctx.save();ctx.translate(cx,cy);ctx.rotate(rot);ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);ctx.strokeStyle=rgb(col,alpha);ctx.lineWidth=lw;ctx.stroke();ctx.restore();};
+  const tick=ts=>{
+    if(ts-last<24){raf=requestAnimationFrame(tick);return} last=ts;
+    const p=palettes[theme()]||palettes.aurora; const dark=theme()!=='paper';
+    ctx.clearRect(0,0,W,H);
+    const grad=ctx.createLinearGradient(0,0,W,H);
+    if(dark){grad.addColorStop(0,p.bg);grad.addColorStop(.42,'#0b0e13');grad.addColorStop(1,'#060709')}else{grad.addColorStop(0,'#efe7db');grad.addColorStop(.5,'#e9dfd0');grad.addColorStop(1,'#f5eee4')}
+    ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+    const t=ts*.00008;
+    const pulse=0.92+Math.sin(ts*.00042)*.08;
+    orb(W*.83+Math.sin(t*1.1)*45,H*.13+Math.cos(t*.8)*28,W*.30,p.gold,(dark?.17:.07)*pulse);
+    orb(W*.12+Math.cos(t*.74)*58,H*.82+Math.sin(t*.9)*30,W*.34,p.b,(dark?.095:.045)*pulse);
+    orb(W*.55+Math.sin(t*.38)*W*.13,H*.52+Math.cos(t*.28)*H*.11,W*.36,p.a,(dark?.055:.025)*pulse);
+    orbit(W*.76,H*.23,W*.29,H*.11,-.18,p.gold,.105,0.75);
+    orbit(W*.24,H*.75,W*.24,H*.085,.28,p.b,.065,0.65);
+    orbit(W*.49,H*.50,W*.42,H*.16,-.08,p.silver,.028,.6);
+    // slow silver filament
+    const fx=(W*.12+(ts*.022%(W*1.55)))-W*.20;
+    const fg=ctx.createLinearGradient(fx,0,fx+W*.16,0);
+    fg.addColorStop(0,'rgba(255,255,255,0)');fg.addColorStop(.5,dark?'rgba(255,255,255,.033)':'rgba(80,70,58,.022)');fg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=fg;ctx.fillRect(0,0,W,H);
+    for(const q of particles){
+      q.p+=q.tw; q.y-=q.s*(reduce.matches?.22:1); q.x+=Math.sin(q.p)*q.drift;
+      if(q.y<-8){q.y=H+8;q.x=Math.random()*W}
+      const a=q.o*(.55+.45*Math.sin(q.p));ctx.fillStyle=dark?rgb(p.gold,a*.55):`rgba(80,68,54,${a*.12})`;ctx.beginPath();ctx.arc(q.x,q.y,q.r,0,6.28);ctx.fill();
+    }
+    raf=requestAnimationFrame(tick);
+  };
+  resize(); addEventListener('resize',resize,{passive:true}); raf=requestAnimationFrame(tick);
+})();

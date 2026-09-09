@@ -1,0 +1,19 @@
+{
+  "name": "Mihrab",
+  "short_name": "Mihrab",
+  "start_url": "./",
+  "display": "standalone",
+  "dir": "auto",
+  "lang": "ar",
+  "description": "بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.",
+  "background_color": "#03070c",
+  "theme_color": "#03070c",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
