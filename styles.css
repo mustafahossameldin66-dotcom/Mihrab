@@ -563,3 +563,81 @@ body[data-lang="en"] .task-item::before{right:auto;left:-5px}
 @media(max-width:980px){.day-compass{grid-template-columns:1fr auto}.compass-actions{grid-column:1/-1;justify-content:flex-start}.compass-metrics{border-inline-end:0;padding-inline-end:0}}
 @media(max-width:760px){.day-compass{grid-template-columns:1fr;gap:12px;margin-top:8px;padding:14px;border-radius:17px}.compass-copy strong{font-size:18px}.compass-metrics{justify-content:flex-start;padding:0;border:0;gap:18px}.compass-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.compass-btn{min-height:39px}.compass-btn:first-child{grid-column:1/-1}.journey-head h2{font-size:20px}.journey-percent b{font-size:23px}.journey-stages{grid-template-columns:1fr 1fr}.journey-stage{min-height:92px;padding:10px}.milestone-grid{gap:6px}.milestone-grid>div{padding:10px 5px}.milestone-grid b{font-size:18px}}
 @media(prefers-reduced-motion:reduce){.compass-btn,.journey-stage{transition:none!important}}
+
+/* ============================================================================
+   MIHRAB SIGNATURE EDITION — richer glass, light and architectural detail
+   ============================================================================ */
+:root{
+  --lux-shadow:0 24px 58px rgba(0,0,0,.30),0 4px 14px rgba(0,0,0,.14);
+  --lux-border:rgba(255,255,255,.095);
+}
+body{
+  background:
+    radial-gradient(900px 600px at 88% -8%,color-mix(in srgb,var(--a) 19%,transparent),transparent 66%),
+    radial-gradient(780px 520px at -12% 92%,color-mix(in srgb,var(--b) 17%,transparent),transparent 68%),
+    radial-gradient(520px 350px at 50% 42%,color-mix(in srgb,var(--c) 5%,transparent),transparent 72%),
+    var(--bg)!important;
+}
+body::before,body::after{opacity:.24!important;filter:blur(96px)!important}
+.app::after{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.40;
+  background-image:
+    radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--text) 19%,transparent) 1px,transparent 1.5px),
+    linear-gradient(135deg,transparent 47%,color-mix(in srgb,var(--a) 9%,transparent) 48%,transparent 50%);
+  background-size:32px 32px,120px 120px;
+  mask-image:radial-gradient(ellipse 90% 70% at 50% 5%,black,transparent 77%);
+  animation:mihrab-star-drift 38s linear infinite;
+}
+@keyframes mihrab-star-drift{to{background-position:32px 64px,120px 120px}}
+
+.topbar{
+  background:linear-gradient(105deg,color-mix(in srgb,var(--surface) 93%,rgba(255,255,255,.055)),color-mix(in srgb,var(--surface2) 86%,transparent))!important;
+  border-color:var(--lux-border)!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.11),inset 0 -1px 0 rgba(0,0,0,.15)!important;
+  backdrop-filter:blur(22px) saturate(145%)!important;-webkit-backdrop-filter:blur(22px) saturate(145%)!important;
+}
+.mihrab-mark{background:radial-gradient(circle at 34% 26%,rgba(255,255,255,.14),transparent 42%),color-mix(in srgb,var(--c) 8%,transparent)!important;box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,0 0 30px color-mix(in srgb,var(--c) 15%,transparent)!important}
+.top-nav{background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.07)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.nav-btn.active{background:linear-gradient(145deg,color-mix(in srgb,var(--c) 15%,transparent),color-mix(in srgb,var(--a) 7%,transparent))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 8px 20px rgba(0,0,0,.14)!important}
+.icon-btn{background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.015))!important;border-color:rgba(255,255,255,.09)!important}
+
+.hero-main{
+  background:linear-gradient(135deg,color-mix(in srgb,var(--surface2) 90%,rgba(255,255,255,.06)),color-mix(in srgb,var(--surface) 90%,transparent))!important;
+  border-color:color-mix(in srgb,var(--a) 21%,var(--lux-border))!important;
+  box-shadow:0 34px 84px rgba(0,0,0,.34),0 0 48px color-mix(in srgb,var(--a) 8%,transparent),inset 0 1px 0 rgba(255,255,255,.10)!important;
+}
+.hero-main::before{width:300px!important;height:300px!important;inset:-7px 26px auto auto!important;border-width:1px!important;border-color:color-mix(in srgb,var(--c) 26%,transparent)!important;opacity:.55!important;filter:drop-shadow(0 0 18px color-mix(in srgb,var(--a) 12%,transparent));animation:mihrab-arch-float 12s ease-in-out infinite}
+.hero-main::after{width:450px!important;height:450px!important;left:-170px!important;bottom:-230px!important;background:radial-gradient(circle,color-mix(in srgb,var(--b) 35%,transparent),transparent 66%)!important;filter:blur(3px)}
+@keyframes mihrab-arch-float{0%,100%{transform:rotate(12deg) translateY(0)}50%{transform:rotate(9deg) translateY(10px)}}
+.hero-side{background:linear-gradient(155deg,color-mix(in srgb,var(--a) 9%,var(--surface)),color-mix(in srgb,var(--b) 8%,var(--surface2)))!important;border-color:color-mix(in srgb,var(--b) 22%,var(--lux-border))!important;box-shadow:var(--lux-shadow),inset 0 1px 0 rgba(255,255,255,.10)!important}
+.hero-side::after{content:"";position:absolute;width:120px;height:120px;border:1px solid color-mix(in srgb,var(--c) 25%,transparent);border-radius:50%;left:-36px;top:-38px;opacity:.7;box-shadow:0 0 0 12px color-mix(in srgb,var(--c) 3%,transparent),0 0 0 25px color-mix(in srgb,var(--c) 2%,transparent)}
+.hero-main h1{text-shadow:0 4px 28px rgba(0,0,0,.25)}
+
+.ring{box-shadow:inset 0 0 32px rgba(0,0,0,.5),0 20px 44px rgba(0,0,0,.34),0 0 0 8px rgba(255,255,255,.025),0 0 46px color-mix(in srgb,var(--a) 17%,transparent)!important}.ring::before{background:radial-gradient(circle at 35% 28%,color-mix(in srgb,var(--a) 10%,var(--bg2)),var(--bg2) 69%)!important}
+
+.section-box,.week-card,.timeline-card,.theme-card,.review-choice,.quote,.awareness,.iframe-wrap{
+  background:linear-gradient(145deg,color-mix(in srgb,var(--surface) 94%,rgba(255,255,255,.035)),color-mix(in srgb,var(--surface2) 84%,transparent))!important;
+  border-color:var(--lux-border)!important;
+  box-shadow:var(--lux-shadow),inset 0 1px 0 rgba(255,255,255,.075)!important;
+}
+.section-box,.week-card,.timeline-card,.theme-card,.review-choice,.quote,.awareness{isolation:isolate}
+.section-box::after,.week-card::after,.timeline-card::after,.theme-card::after,.review-choice::after,.quote::after,.awareness::after{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.52;
+  background:linear-gradient(125deg,rgba(255,255,255,.075),transparent 23%,transparent 75%,rgba(255,255,255,.025));
+}
+.section-box:hover,.week-card:hover,.timeline-card:hover,.theme-card:hover,.review-choice:hover{box-shadow:0 30px 72px rgba(0,0,0,.36),0 0 30px color-mix(in srgb,var(--c) 7%,transparent),inset 0 1px 0 rgba(255,255,255,.10)!important}
+.stat-card{background:linear-gradient(145deg,color-mix(in srgb,var(--surface2) 94%,rgba(255,255,255,.045)),color-mix(in srgb,var(--surface) 88%,transparent))!important;border-color:rgba(255,255,255,.075)!important;box-shadow:0 16px 32px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.075)!important}.stat-card::after{content:"";position:absolute;width:80px;height:80px;border-radius:50%;inset:auto -35px -42px auto;background:color-mix(in srgb,var(--a) 18%,transparent);filter:blur(13px)}
+
+.day-compass{border-color:color-mix(in srgb,var(--a) 28%,var(--lux-border))!important;box-shadow:0 26px 70px rgba(0,0,0,.27),0 0 36px color-mix(in srgb,var(--a) 7%,transparent),inset 0 1px 0 rgba(255,255,255,.10)!important;background:linear-gradient(120deg,color-mix(in srgb,var(--a) 14%,var(--surface2)),color-mix(in srgb,var(--b) 10%,var(--surface)))!important}.day-compass::before{content:"✦";position:absolute;left:34%;top:-13px;color:var(--c);opacity:.36;font-size:35px;text-shadow:0 0 20px var(--c);animation:mihrab-orbit 8s ease-in-out infinite}@keyframes mihrab-orbit{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(9px) rotate(20deg)}}
+.journey-stage{background:linear-gradient(145deg,rgba(255,255,255,.035),transparent)!important;border-color:rgba(255,255,255,.075)!important}.journey-stage.reached{box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 10px 24px color-mix(in srgb,var(--a) 7%,transparent)}.milestone-grid>div{background:linear-gradient(145deg,color-mix(in srgb,var(--c) 7%,var(--surface3)),var(--surface3))!important}
+.mihrab-modal{background:linear-gradient(145deg,color-mix(in srgb,var(--surface2) 96%,#08121a),color-mix(in srgb,var(--surface) 96%,#080c16))!important;border-color:rgba(255,255,255,.11)!important;box-shadow:0 40px 120px rgba(0,0,0,.68),0 0 60px color-mix(in srgb,var(--c) 10%,transparent)!important}.mihrab-overlay{background:rgba(1,4,9,.72)!important;backdrop-filter:blur(18px) saturate(125%)!important;-webkit-backdrop-filter:blur(18px) saturate(125%)!important}
+
+@media(max-width:760px){
+  body::before,body::after{opacity:.16!important;filter:blur(70px)!important}.app::after{opacity:.23;background-size:32px 32px,96px 96px}
+  .topbar{backdrop-filter:blur(18px) saturate(135%)!important;-webkit-backdrop-filter:blur(18px) saturate(135%)!important;box-shadow:0 15px 36px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.08)!important}
+  .mobile-nav{background:linear-gradient(145deg,color-mix(in srgb,var(--surface2) 94%,transparent),color-mix(in srgb,var(--surface) 94%,transparent))!important;border-color:rgba(255,255,255,.09)!important;box-shadow:0 18px 44px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.09)!important}
+  .hero-main::before{width:200px!important;height:200px!important;opacity:.42!important}.hero-main::after{width:300px!important;height:300px!important}.hero-side::after{width:86px;height:86px}
+  .section-box,.week-card,.timeline-card,.theme-card,.review-choice,.quote,.awareness,.iframe-wrap{box-shadow:0 13px 28px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.06)!important}
+}
+@media(prefers-reduced-motion:reduce){.app::after,.hero-main::before,.day-compass::before{animation:none!important}}
+body[data-low-power="true"] .app::after{display:none}body[data-low-power="true"] .hero-main::before,body[data-low-power="true"] .day-compass::before{animation:none!important}body[data-low-power="true"] .section-box,body[data-low-power="true"] .week-card,body[data-low-power="true"] .timeline-card{box-shadow:0 10px 20px rgba(0,0,0,.16)!important}
