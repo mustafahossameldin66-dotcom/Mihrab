@@ -740,3 +740,106 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
 
   renderAll();
 })();
+
+/* =====================================================================
+   MIHRAB MOMENTUM — personal signals, milestones and gentle reward loops
+   ===================================================================== */
+(function MihrabMomentum(){
+  const en=()=>state.lang==='en';
+  const today=()=>keyDate();
+  state.settings ||= {};
+  state.settings.visualMode ||= 'signature';
+  state.settings.haptics ??= false;
+  state.settings.sound ??= false;
+  state.portfolio ||= [];
+  state.achievementLog ||= [];
+
+  function applyVisualMode(){document.body.dataset.visual=state.settings.visualMode||'signature'}
+  function showPanel(html){
+    if(!document.getElementById('mihrabOverlay'))window.openQuickCapture();
+    const modal=document.getElementById('mihrabModal'),overlay=document.getElementById('mihrabOverlay');
+    if(!modal||!overlay)return; modal.innerHTML=html; overlay.classList.add('open');
+  }
+  function season(){
+    const m=new Date().getMonth(), isEnglish=en();
+    const seasons=isEnglish?[
+      ['Quiet foundation','Make the system easy to return to.'],['Build & deepen','Protect consistent work over intensity.'],['Make it visible','Turn learning into proof and output.'],['Close & renew','Keep what worked; simplify the rest.']
+    ]:[
+      ['تأسيس هادئ','خلّي النظام سهل ترجع له.'],['بناء وتعمّق','احمِ الثبات قبل الشدة.'],['أثر ظاهر','حوّل التعلّم إلى شغل ودليل.'],['إغلاق وتجديد','ثبّت ما نجح وبسّط الباقي.']
+    ];
+    return seasons[Math.floor(m/3)];
+  }
+  function spark(){
+    const messages=en()?[
+      ['A small honest step counts.','Open the next useful thing, not everything.'],['Consistency is a form of self-respect.','Keep the promise small enough to keep.'],['Make room for what matters.','The plan serves your life, not the reverse.'],['Your future is built in ordinary sessions.','One focused block is a real win.'],['Protect the essentials, then breathe.','You do not need to earn rest.'],['Clarity beats intensity.','Pick one next move and begin.'],['Your system is here to make life lighter.','Capture it, then return to the moment.']
+    ]:[
+      ['خطوة صغيرة صادقة تفرق.','افتح الحاجة المفيدة التالية، مش كل حاجة.'],['الثبات شكل من احترامك لنفسك.','خلّي الوعد صغير كفاية إنك تقدر تلتزم به.'],['افسح مكان للي يهم.','الخطة تخدم حياتك، مش العكس.'],['مستقبلك بيتبني في الجلسات العادية.','بلوك تركيز واحد مكسب حقيقي.'],['احمِ الأساسيات، وبعدها خُد نفس.','مش لازم تكسب الراحة.'],['الوضوح أهم من الشدة.','اختار خطوة واحدة وابدأ.'],['النظام هنا عشان يخفف الحياة.','التقط الفكرة ثم ارجع للحظة.']
+    ];
+    return messages[new Date().getDay()%messages.length];
+  }
+  function sparkMarkup(){
+    const [title,copy]=spark(),[seasonTitle,seasonCopy]=season(), custom=state.settings.mantra||'';
+    return `<section class="daily-spark"><div class="spark-orb">✦</div><div class="spark-copy"><span class="compass-kicker">${en()?'TODAY\'S SIGNAL':'إشارة اليوم'}</span><b>${esc(custom||title)}</b><p>${esc(custom?copy:copy)}</p></div><div class="spark-season"><span>${en()?'CURRENT SEASON':'موسمك الحالي'}</span><b>${esc(seasonTitle)}</b><small>${esc(seasonCopy)}</small></div><div class="spark-launch"><button onclick="smartTime(5)"><b>5</b><small>${en()?'min':'د'}</small></button><button onclick="smartTime(15)"><b>15</b><small>${en()?'min':'د'}</small></button><button onclick="smartTime(30)"><b>30</b><small>${en()?'min':'د'}</small></button><button onclick="smartTime(60)"><b>60</b><small>${en()?'min':'د'}</small></button></div><button class="spark-edit" onclick="openPersonalMantra()" title="${en()?'Personalize signal':'خصص الإشارة'}">✎</button></section>`;
+  }
+
+  window.openPersonalMantra=()=>{
+    const current=state.settings.mantra||'';
+    showPanel(`<div class="mihrab-modal-head"><b>${en()?'Your opening line':'رسالتك عند الفتح'}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><p class="muted">${en()?'Optional. Keep it short—one line that returns you to yourself.':'اختيارية. خليه سطر واحد يرجّعك لنفسك.'}</p><div class="field-lite"><textarea id="personalMantra" maxlength="160" placeholder="${en()?'For example: Begin gently.':'مثال: ابدأ بهدوء.'}">${esc(current)}</textarea></div><div class="modal-actions"><button class="btn" onclick="clearPersonalMantra()">${en()?'Use daily signal':'استخدم الإشارة اليومية'}</button><button class="btn primary" onclick="savePersonalMantra()">${en()?'Save':'حفظ'}</button></div></div>`);
+  };
+  window.savePersonalMantra=()=>{state.settings.mantra=document.getElementById('personalMantra')?.value.trim()||'';save();closeMihrabModal();renderAll()};
+  window.clearPersonalMantra=()=>{state.settings.mantra='';save();closeMihrabModal();renderAll()};
+
+  function chime(){
+    if(!state.settings.sound)return;
+    try{const Ctx=window.AudioContext||window.webkitAudioContext,ctx=new Ctx(),now=ctx.currentTime;[523.25,659.25].forEach((freq,i)=>{const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(.0001,now+i*.07);gain.gain.exponentialRampToValueAtTime(.035,now+i*.07+.01);gain.gain.exponentialRampToValueAtTime(.0001,now+i*.07+.22);osc.connect(gain).connect(ctx.destination);osc.start(now+i*.07);osc.stop(now+i*.07+.23)});setTimeout(()=>ctx.close(),500)}catch(e){}
+  }
+  function celebrate(){
+    if(state.settings.haptics&&navigator.vibrate)navigator.vibrate([12,28,12]);
+    chime();
+    const old=document.getElementById('mihrabCelebration');old?.remove();
+    const toast=document.createElement('div');toast.id='mihrabCelebration';toast.className='mihrab-celebration';toast.innerHTML=`<div>✦</div><b>${en()?'Noted. Keep the rhythm.':'اتسجلت. كمّل على نفس الإيقاع.'}</b><span>${en()?'A small win becomes part of the story.':'مكسب صغير بقى جزء من الحكاية.'}</span>`;
+    document.body.appendChild(toast);setTimeout(()=>toast.classList.add('show'),10);setTimeout(()=>toast.classList.remove('show'),2200);setTimeout(()=>toast.remove(),2700);
+  }
+  const previousToggle=window.toggleToday;
+  window.toggleToday=function(id){const was=!!state.today[id];previousToggle(id);if(!was&&state.today[id])celebrate()};
+
+  window.setVisualMode=mode=>{state.settings.visualMode=mode==='calm'?'calm':'signature';save();applyVisualMode();renderAll()};
+  window.enableSessionNudge=async()=>{
+    if(!('Notification' in window)){alert(en()?'Notifications are not supported in this browser.':'المتصفح ده لا يدعم الإشعارات.');return;}
+    const permission=await Notification.requestPermission();
+    if(permission!=='granted')return;
+    setTimeout(()=>new Notification(en()?'Mihrab · gentle check-in':'مِحراب · تذكير هادئ',{body:en()?'Ready for one small next step?':'جاهز لخطوة صغيرة مفيدة؟',icon:'./assets/icon-192.png'}),25*60*1000);
+    alert(en()?'A single gentle check-in is set for 25 minutes from now while this app stays open.':'تذكير واحد هيوصلك بعد ٢٥ دقيقة طالما التطبيق مفتوح.');
+  };
+
+  window.openPortfolio=()=>{
+    showPanel(`<div class="mihrab-modal-head"><b>${en()?'Add proof of work':'أضف دليل شغل'}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><p class="muted">${en()?'A link, result, screenshot location, or lesson worth remembering.':'رابط، نتيجة، مكان Screenshot، أو درس يستحق يتسجل.'}</p><div class="field-lite"><label>${en()?'Title':'العنوان'}</label><input id="portfolioTitle" placeholder="${en()?'For example: Al-Fairouz case study':'مثال: دراسة حالة صيدلية الفيروز'}"></div><div class="field-lite" style="margin-top:10px"><label>${en()?'Link or location (optional)':'رابط أو مكان الحفظ (اختياري)'}</label><input id="portfolioLink" placeholder="https://…"></div><div class="field-lite" style="margin-top:10px"><label>${en()?'What did this prove?':'إيه اللي يثبتّه الشغل ده؟'}</label><textarea id="portfolioNote" placeholder="${en()?'One sentence is enough.':'سطر واحد كفاية.'}"></textarea></div><div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${en()?'Cancel':'إلغاء'}</button><button class="btn primary" onclick="savePortfolio()">${en()?'Save proof':'احفظ الدليل'}</button></div></div>`);
+  };
+  window.savePortfolio=()=>{
+    const title=document.getElementById('portfolioTitle')?.value.trim();if(!title)return;
+    state.portfolio.unshift({id:'work_'+Date.now().toString(36),title,link:document.getElementById('portfolioLink')?.value.trim()||'',note:document.getElementById('portfolioNote')?.value.trim()||'',createdAt:new Date().toISOString()});
+    state.achievementLog.unshift({type:'proof',date:today(),title});state.achievementLog=state.achievementLog.slice(0,120);save();closeMihrabModal();renderAll();celebrate();
+  };
+  window.removePortfolio=id=>{state.portfolio=state.portfolio.filter(x=>x.id!==id);save();renderAll()};
+
+  function dateText(value){try{return new Date(value).toLocaleDateString(en()?'en-GB':'ar-EG',{day:'numeric',month:'short'})}catch(e){return value}}
+  function safeHref(value){try{const url=new URL(String(value||''),location.href);return ['https:','http:'].includes(url.protocol)?url.href:''}catch(e){return ''}}
+  function momentumPanels(){
+    const entries=[...(state.achievementLog||[]).map(x=>({icon:x.type==='proof'?'↗':'✦',title:x.title||(en()?'Day closed with intention':'يوم اتقفل بنية هادية'),date:x.date})),...(state.portfolio||[]).map(x=>({icon:'▣',title:x.title,date:x.createdAt}))].slice(0,6);
+    const proof=(state.portfolio||[]).slice(0,4);
+    return `<div class="grid grid-2 momentum-grid"><section class="section-box"><div class="section-title" style="margin:0 0 9px"><div><h3>${en()?'Proof vault':'خزانة الأثر'}</h3><p>${en()?'Small evidence that you are actually building.':'أدلة صغيرة إنك فعلًا بتبني.'}</p></div><button class="btn" onclick="openPortfolio()">＋ ${en()?'Add':'أضف'}</button></div><div class="proof-list">${proof.length?proof.map(x=>`<div class="proof-item"><span>↗</span><div><b>${esc(x.title)}</b><small>${esc(x.note|| (en()?'Saved proof of work':'دليل شغل محفوظ'))}</small>${safeHref(x.link)?`<a href="${esc(safeHref(x.link))}" target="_blank" rel="noopener">${en()?'Open link':'افتح الرابط'} ↗</a>`:''}</div><button aria-label="${en()?'Remove':'حذف'}" onclick="removePortfolio('${esc(x.id)}')">×</button></div>`).join(''):`<div class="empty-mini">${en()?'Your best work will collect here—not just completed boxes.':'أفضل شغلك هيتجمع هنا، مش مجرد Checkboxes مكتملة.'}</div>`}</div></section><section class="section-box"><div class="section-title" style="margin:0 0 9px"><div><h3>${en()?'Your recent story':'حكايتك الأخيرة'}</h3><p>${en()?'A quiet history of what you kept.':'تاريخ هادئ للي حافظت عليه.'}</p></div></div><div class="story-list">${entries.length?entries.map(x=>`<div class="story-item"><span>${x.icon}</span><div><b>${esc(x.title)}</b><small>${dateText(x.date)}</small></div></div>`).join(''):`<div class="empty-mini">${en()?'Close a day or save proof of work and it will appear here.':'اقفل يوم أو احفظ دليل شغل، وهيظهر هنا.'}</div>`}</div></section></div>`;
+  }
+  function preferencePanel(){
+    const visual=state.settings.visualMode||'signature';
+    return `<section class="section-box momentum-preferences"><div class="section-title" style="margin:0 0 10px"><div><h3>${en()?'Make it feel like yours':'خلّيه يحس إنه بتاعك'}</h3><p>${en()?'Choose the energy you want when you open Mihrab.':'اختار الإحساس اللي تريده كل مرة تفتح مِحراب.'}</p></div></div><div class="preference-grid"><button class="preference-choice ${visual==='signature'?'active':''}" onclick="setVisualMode('signature')"><span>✦</span><b>${en()?'Signature':'Signature'}</b><small>${en()?'Richer light and glass':'إضاءة وزجاج أغنى'}</small></button><button class="preference-choice ${visual==='calm'?'active':''}" onclick="setVisualMode('calm')"><span>◌</span><b>${en()?'Calm':'Calm'}</b><small>${en()?'Less motion, more quiet':'حركة أقل وهدوء أكثر'}</small></button><label class="preference-switch"><input type="checkbox" ${state.settings.haptics?'checked':''} onchange="state.settings.haptics=this.checked;save()"><span>⌁</span><b>${en()?'Haptic confirmation':'لمسة تأكيد'}</b><small>${en()?'A tiny vibration when supported':'اهتزاز خفيف إن كان مدعومًا'}</small></label><label class="preference-switch"><input type="checkbox" ${state.settings.sound?'checked':''} onchange="state.settings.sound=this.checked;save()"><span>♪</span><b>${en()?'Completion sound':'صوت الإتمام'}</b><small>${en()?'A soft, optional two-note chime':'نغمة خفيفة اختيارية'}</small></label></div><div class="nudge-row"><div><b>${en()?'One gentle check-in':'تذكير هادئ واحد'}</b><small>${en()?'25 minutes from now while the app is open.':'بعد ٢٥ دقيقة طالما التطبيق مفتوح.'}</small></div><button class="btn" onclick="enableSessionNudge()">${en()?'Set it':'فعّله'}</button></div></section>`;
+  }
+
+  const previousHome=window.renderHome;
+  window.renderHome=function(){applyVisualMode();return previousHome().replace('<div class="hero">',sparkMarkup()+'<div class="hero">')};
+  const previousSystem=window.renderSystem;
+  window.renderSystem=function(){applyVisualMode();return previousSystem()+momentumPanels()+preferencePanel()};
+
+  const action=new URLSearchParams(location.search).get('action');
+  if(action==='focus'||action==='capture')setTimeout(()=>action==='focus'?window.startFocus?.():window.openQuickCapture?.(),180);
+  applyVisualMode();renderAll();
+})();

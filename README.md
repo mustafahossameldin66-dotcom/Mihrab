@@ -37,6 +37,19 @@ Mihrab is a local-first PWA designed to stay useful for the long run: today-firs
 - Daily notes and track notes keep small insights close to the relevant day or content path without becoming a second task manager.
 - The Year Journey turns the marketing curriculum into four visible stages so small daily work stays connected to a long-term direction.
 
+## Momentum features
+- A rotating daily signal, a personal opening line, and 5/15/30/60-minute launch buttons make reopening the app feel useful immediately.
+- A local Proof Vault stores links, output locations, and short notes for work you have actually produced.
+- Recent Story keeps a compact local timeline of saved proof and intentionally closed days.
+- Signature and Calm visual modes let you choose between a rich live atmosphere and a quieter experience; sound and vibration confirmations are optional.
+- Installed-app shortcuts can open Focus or Quick Capture directly where the platform supports PWA shortcuts.
+- A 25-minute reminder is available only while the open app remains active. Reliable background scheduling and native home-screen widgets require a native mobile app.
+
+## Signature visual layer
+- The interface uses slow ambient light, travelling edge lighting, layered glass, cinematic view transitions, and animated progress illumination.
+- Arabic headings use an elegant local-font stack; no remote font service is required, so the app remains private and works offline with its system fallbacks.
+- All live visual effects respect `prefers-reduced-motion`, Calm mode, and Low Power Mode.
+
 
 
 
