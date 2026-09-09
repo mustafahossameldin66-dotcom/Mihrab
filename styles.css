@@ -153,3 +153,142 @@ body[data-theme="paper"] .mihrab-mark{background:rgba(255,255,255,.26);border-co
 .bridge-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;border:1px solid color-mix(in srgb,var(--c) 20%,var(--line));background:color-mix(in srgb,var(--c) 7%,transparent);color:var(--c);font-size:20px}
 .bridge-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
 @media(max-width:760px){.quran-bridge{grid-template-columns:1fr}.bridge-actions{justify-content:flex-start}.bridge-icon{display:none}}
+
+/* ============================================================================
+   MOBILE-FIRST POLISH — Mihrab should feel native on a phone, not compressed
+   ============================================================================ */
+.mobile-nav{display:none}
+.nav-icon{display:inline-grid;place-items:center;font-size:13px;line-height:1}
+
+@media (max-width: 760px){
+  html{font-size:16px;scroll-behavior:smooth}
+  body{min-width:0;padding-bottom:0}
+  .app{width:100%;max-width:none;margin:0;padding:8px 10px calc(92px + env(safe-area-inset-bottom))}
+  main{width:100%;min-width:0}
+  footer{display:none}
+
+  /* Compact mobile topbar: brand + actions only. Navigation moves to bottom. */
+  .topbar{
+    position:sticky;top:6px;z-index:50;width:100%;
+    min-height:56px;padding:6px 7px;border-radius:18px;
+    display:flex;align-items:center;gap:7px;
+    background:color-mix(in srgb,var(--surface) 88%,transparent);
+    box-shadow:0 12px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .brand-cluster{flex:1;min-width:0;gap:8px}
+  .mihrab-mark{width:38px;height:38px;border-radius:12px}
+  .mihrab-mark svg{width:27px;height:27px}
+  .brand-copy{min-width:0}
+  .brand-ar{font-size:18px;line-height:1}
+  .brand-en{font-size:8px;margin-top:3px}
+  .brand-copy small{display:none}
+  .top-actions{gap:4px;flex:none}
+  .top-actions .icon-btn{width:34px;height:34px;border-radius:11px;font-size:11px}
+  .command-btn{display:grid!important}
+  .quick-capture-top{display:grid!important}
+  .lang-toggle{display:grid!important}
+  .top-actions .online-dot{width:6px;height:6px}
+  .top-nav{display:none!important}
+
+  .mobile-nav{
+    position:fixed;left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:60;
+    display:flex;align-items:stretch;justify-content:space-between;gap:3px;
+    padding:5px;border:1px solid var(--line);border-radius:18px;
+    background:color-mix(in srgb,var(--surface) 92%,transparent);
+    backdrop-filter:blur(26px) saturate(120%);-webkit-backdrop-filter:blur(26px) saturate(120%);
+    box-shadow:0 18px 48px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .mobile-nav .nav-btn{
+    flex:1;min-width:0;height:54px;padding:6px 4px;border-radius:13px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    font-size:9px;line-height:1.05;color:var(--muted);white-space:nowrap;
+  }
+  .mobile-nav .nav-btn .nav-icon{font-size:14px}
+  .mobile-nav .nav-btn.active{color:var(--text);background:color-mix(in srgb,var(--c) 9%,transparent)}
+  .mobile-nav .nav-btn.active::after{left:24%;right:24%;bottom:3px}
+
+  /* Remove the desktop-ish squeeze. Mobile = one readable column. */
+  .hero{grid-template-columns:1fr;gap:10px;margin-top:8px}
+  .hero-main,.hero-side{min-height:auto;padding:17px;border-radius:17px}
+  .hero-main h1,body[data-lang="en"] .hero-main h1{font-size:30px;line-height:1.12;margin:10px 0 9px;letter-spacing:-.035em}
+  .hero-main p{font-size:13px;line-height:1.75}
+  .hero-actions{gap:7px;margin-top:14px}
+  .hero-actions .btn{flex:1;min-width:0;padding:10px 9px;font-size:12px}
+  .hero-side{display:grid;grid-template-columns:1fr;gap:14px}
+  .ring{width:120px;height:120px}
+  .ring b{font-size:26px}
+
+  .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+  .stat-card{padding:13px;border-radius:15px}
+  .stat-card strong{font-size:23px;margin-top:4px}
+  .stats-grid .stat-card:nth-child(3),.stats-grid .stat-card:nth-child(4){display:none}
+
+  .section-title{align-items:flex-start;flex-direction:column;gap:6px;margin:20px 2px 9px}
+  .section-title h2{font-size:19px}
+  .section-title p{font-size:11px;line-height:1.55;margin-top:2px}
+  .section-title>.badge{align-self:flex-start}
+
+  .grid,.grid-2,.grid-3,.grid-4,.bento,.week-grid,.form-grid{grid-template-columns:1fr!important}
+  .card,.section-box{padding:15px;border-radius:16px}
+  .card h3,.section-box h3{font-size:15px;margin-bottom:8px}
+  .note{padding:10px 11px;font-size:12px;line-height:1.7}
+
+  .week-strip{grid-template-columns:repeat(7,minmax(74px,1fr));gap:6px;overflow-x:auto;padding-bottom:3px}
+  .day-chip{padding:9px 7px;border-radius:12px}
+  .day-chip strong{font-size:11px}.day-chip small{font-size:9px}
+  .timeline{grid-template-columns:1fr;overflow:visible}
+  .timeline-card{min-height:auto;padding:13px;border-radius:15px}
+  .timeline-card ul{font-size:12px;line-height:1.7}
+
+  .theme-grid{grid-template-columns:1fr 1fr!important;gap:8px}
+  .theme-card{padding:8px;border-radius:14px}
+  .swatch{height:70px;border-radius:11px}
+  .theme-card b{font-size:11px;margin-top:7px}.theme-card small{font-size:9px}
+
+  .review-grid{grid-template-columns:1fr 1fr!important;gap:8px}
+  .review-choice{min-height:90px;padding:12px;border-radius:14px}
+  .review-choice .emoji{font-size:18px;margin-bottom:5px}.review-choice b{font-size:12px}.review-choice small{font-size:9px}
+
+  .task-item{padding:12px 2px;gap:10px}
+  .task-text,.task-item label{font-size:13px!important;line-height:1.55}
+  .task-item input[type="checkbox"]{width:18px;height:18px;min-width:18px}
+  .mihrab-badge{font-size:9px;padding:2px 6px}
+
+  .lecture-grid{grid-template-columns:1fr!important}
+  .lecture{padding:10px;border-radius:13px;font-size:12px}
+  .week-card summary{padding:13px 14px}
+  .week-body{padding:13px 14px}
+  .mtask{font-size:12px;line-height:1.55;padding:9px 0}
+
+  .quick-grid{grid-template-columns:1fr 1fr!important;gap:8px}
+  .quick-action{min-height:62px;padding:10px!important;border-radius:14px}
+  .library-item{grid-template-columns:1fr;gap:8px}
+  .library-meta{justify-content:flex-start;flex-wrap:wrap}
+  .library-main b{font-size:13px}.library-main small{font-size:10px}
+
+  .iframe-wrap{border-radius:16px}
+  iframe{height:72vh;min-height:520px}
+
+  .mihrab-overlay{padding:6vh 8px calc(12px + env(safe-area-inset-bottom))}
+  .mihrab-modal{width:100%;max-width:none;border-radius:17px}
+  .mihrab-modal-head input{font-size:14px}
+
+  /* Reduce live work on small screens but keep the luxury atmosphere. */
+  .live-aurora-layer .aurora-blob{filter:blur(80px);opacity:.12}
+  #mihrab-ambient-canvas{opacity:.26!important}
+  .hero-main::after{width:240px;height:240px}
+}
+
+@media (max-width: 390px){
+  .app{padding-left:8px;padding-right:8px}
+  .mobile-nav{left:7px;right:7px}
+  .mobile-nav .nav-btn{font-size:8px}
+  .mobile-nav .nav-btn .nav-icon{font-size:13px}
+  .hero-main h1,body[data-lang="en"] .hero-main h1{font-size:27px}
+  .top-actions .quick-capture-top,.top-actions .command-btn{display:none!important}
+  .stats-grid{grid-template-columns:1fr 1fr}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .mobile-nav,.mobile-nav *{transition:none!important;animation:none!important}
+}

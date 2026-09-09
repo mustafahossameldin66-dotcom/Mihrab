@@ -50,7 +50,7 @@ function dayTasks(day){
  return base.concat(extra[day]||[])
 }
 function shariItems(day){if(day==='الجمعة')return [['sz1','زاد — محاضرة 1'],['sz2','زاد — محاضرة 2'],['sz3','زاد — محاضرة 3'],['st','تدبر — أحمد عبد المنعم']];const raw=SHARI_MAP[day]||'';const arr=raw.replace(/^زاد \(تفريغ\) \+ /,'').split(' + ');return [['z','زاد — محاضرة اليوم'],['s2',arr[0]||'المصدر الثاني'],['s3',arr[1]||'المصدر الثالث']]}
-function nav(){document.getElementById('nav').innerHTML=NAV.map(([id,ic,ar,en])=>`<button class="nav-btn ${state.view===id?'active':''}" data-view="${id}" onclick="navigate('${id}')">${ic}&nbsp; ${state.lang==='en'?en:ar}</button>`).join('');const lab=document.getElementById('langLabel');if(lab)lab.textContent=state.lang==='en'?'ع':'EN'}
+function nav(){const markup=NAV.map(([id,ic,ar,en])=>`<button class="nav-btn ${state.view===id?'active':''}" data-view="${id}" onclick="navigate('${id}')"><span class="nav-icon" aria-hidden="true">${ic}</span><span>${state.lang==='en'?en:ar}</span></button>`).join('');const top=document.getElementById('nav');if(top)top.innerHTML=markup;const mobile=document.getElementById('mobileNav');if(mobile)mobile.innerHTML=markup;const lab=document.getElementById('langLabel');if(lab)lab.textContent=state.lang==='en'?'ع':'EN'}
 function setLang(v){state.lang=v==='en'?'en':'ar';save();applyLanguage();renderAll();}
 function applyLanguage(){document.documentElement.lang=state.lang;document.documentElement.dir=state.lang==='en'?'ltr':'rtl';document.body.dataset.lang=state.lang;document.body.dataset.theme=state.theme;document.documentElement.style.colorScheme=state.theme==='paper'?'light':'dark';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=getComputedStyle(document.body).getPropertyValue('--bg').trim()||'#0b0f12';const tag=document.getElementById('brandTagline');if(tag)tag.textContent=state.lang==='en'?'Build yourself. Create impact. Earn independence.':'بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.';}
 const I18N={
@@ -464,7 +464,9 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
 
   // Make full English mode robust for the new controls and avoid text-node translation hacks.
   const oldNav=window.nav; window.nav=function(){
-    document.getElementById('nav').innerHTML=NAV.map(([id,ic,ar,en])=>`<button class="nav-btn ${state.view===id?'active':''}" data-view="${id}" onclick="navigate('${id}')">${ic}&nbsp; ${state.lang==='en'?en:ar}</button>`).join('');
+    const markup=NAV.map(([id,ic,ar,en])=>`<button class="nav-btn ${state.view===id?'active':''}" data-view="${id}" onclick="navigate('${id}')"><span class="nav-icon">${ic}</span><span>${state.lang==='en'?en:ar}</span></button>`).join('');
+    const top=document.getElementById('nav'); if(top) top.innerHTML=markup;
+    const mobile=document.getElementById('mobileNav'); if(mobile) mobile.innerHTML=markup;
     const lab=document.getElementById('langLabel');if(lab)lab.textContent=state.lang==='en'?'ع':'EN';
   };
   // Keep the original view map, but decorate every render with new command affordances.

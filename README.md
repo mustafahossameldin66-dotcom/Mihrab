@@ -38,3 +38,6 @@ Mihrab is a local-first PWA designed to stay useful for the long run: today-firs
 
 
 Architecture note: styles.css was consolidated into one token/theme layer and one responsive/interaction layer. Legacy stacked override blocks were removed.
+
+### Mobile-first navigation
+On screens up to 760px, Mihrab switches to a native-feeling bottom navigation bar. The desktop navigation is hidden and the same navigation state is rendered into the mobile bar, so page switching works reliably on touch devices.
