@@ -115,3 +115,10 @@ Theme-aware title gradient, subtle task completion sweep/pop, progress shimmer, 
 - Removed the dead legacy `load()` path; migration is single-source.
 - Directional visual effects use logical CSS properties.
 - Champagne is a true light theme.
+
+
+## V27 deployment hardening
+- Versioned asset filenames (`app-v27.js`, `styles-v27.css`) prevent stale query-string cache collisions.
+- Navigation is present in HTML before JavaScript boots, then synchronized by the single router.
+- Service worker uses a new cache namespace and network-first navigation.
+- Boot errors are surfaced instead of leaving a blank shell.
