@@ -49,3 +49,9 @@ On screens up to 760px, Mihrab switches to a native-feeling bottom navigation ba
 - Ambient motion is CSS-only; there is no continuous canvas particle loop.
 - Heavy backdrop blur is limited to the topbar and primary hero.
 - Reduced-motion and Low Power Mode disable ambient animation.
+
+## Visual polish
+- The refreshed interface uses a subtle architectural background pattern, layered colour light, and a calmer animated pulse around key progress elements.
+- Cards, action buttons, and completed tasks provide clear touch and keyboard feedback without relying on costly effects.
+- The design adapts its spacing, navigation, visual density, and effects below 760px so it feels native on a phone while retaining a spacious laptop layout.
+- All decorative effects are CSS-only. `prefers-reduced-motion` and Low Power Mode turn off the moving accents.

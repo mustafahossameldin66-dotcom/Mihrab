@@ -391,3 +391,153 @@ body::after{animation:mihrab-ambient-b 38s ease-in-out infinite!important}
 }
 body[data-low-power="true"]::before,body[data-low-power="true"]::after{animation:none!important;opacity:.06!important}
 body[data-low-power="true"] #mihrab-ambient-canvas{display:none!important}
+
+/* ============================================================================
+   VIVID YET QUIET — final visual rhythm, designed for touch first
+   ============================================================================ */
+:root{
+  --mihrab-glow:color-mix(in srgb,var(--a) 20%,transparent);
+  --mihrab-gold-glow:color-mix(in srgb,var(--c) 18%,transparent);
+}
+
+/* A small architectural pattern adds character without an image download or JS. */
+body{
+  background:
+    radial-gradient(900px 520px at 88% -12%,color-mix(in srgb,var(--a) 13%,transparent),transparent 65%),
+    radial-gradient(760px 500px at -12% 90%,color-mix(in srgb,var(--b) 12%,transparent),transparent 68%),
+    var(--bg)!important;
+}
+.app::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  opacity:.15;
+  background-image:
+    linear-gradient(30deg,transparent 48%,var(--line) 49%,var(--line) 51%,transparent 52%),
+    linear-gradient(150deg,transparent 48%,var(--line) 49%,var(--line) 51%,transparent 52%);
+  background-size:76px 132px;
+  mask-image:linear-gradient(to bottom,black,transparent 42%,transparent 72%,black);
+}
+
+.topbar{isolation:isolate}
+.topbar::after{
+  content:"";
+  position:absolute;
+  inset:auto 12% -1px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--a),var(--c),transparent);
+  opacity:.42;
+}
+.brand-ar{font-family:var(--display-ar);font-weight:700;letter-spacing:.04em}
+.brand-en{letter-spacing:.16em;text-transform:uppercase;color:var(--c);font-size:9px}
+
+.hero-main,.hero-side{isolation:isolate}
+.hero-main::before{
+  content:"";
+  position:absolute;
+  width:220px;
+  height:220px;
+  inset:18px 18px auto auto;
+  border:1px solid color-mix(in srgb,var(--a) 18%,transparent);
+  border-radius:50% 50% 46% 46%;
+  clip-path:polygon(50% 0,100% 47%,100% 100%,0 100%,0 47%);
+  opacity:.42;
+  transform:rotate(12deg);
+  pointer-events:none;
+}
+.hero-main > *,.hero-side > *{position:relative;z-index:1}
+.hero-main h1{
+  text-wrap:balance;
+  background:linear-gradient(120deg,var(--text) 8%,var(--text) 48%,color-mix(in srgb,var(--a) 72%,white) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero-accent{color:var(--c)!important}
+.kicker::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--a);box-shadow:0 0 14px var(--a)}
+
+.hero-actions .btn.primary{
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 12px 28px color-mix(in srgb,var(--c) 17%,transparent)!important;
+}
+.hero-actions .btn.primary::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.30) 49%,transparent 62%);
+  transform:translateX(-130%);
+  animation:mihrab-button-sheen 7s ease-in-out infinite;
+}
+@keyframes mihrab-button-sheen{0%,58%{transform:translateX(-130%)}75%,100%{transform:translateX(130%)}}
+
+.ring{isolation:isolate}
+.ring::after{
+  content:"";position:absolute;inset:-8px;border:1px solid color-mix(in srgb,var(--a) 30%,transparent);
+  border-radius:inherit;opacity:.55;animation:mihrab-ring-breathe 4.5s ease-in-out infinite;
+}
+@keyframes mihrab-ring-breathe{0%,100%{transform:scale(.96);opacity:.18}50%{transform:scale(1.045);opacity:.6}}
+
+.stat-card{position:relative;overflow:hidden}
+.stat-card::before{
+  content:"";position:absolute;inset:0 auto 0 0;width:2px;
+  background:linear-gradient(var(--a),var(--c));opacity:.75;
+}
+.stat-card strong{letter-spacing:-.045em}
+
+.section-title{position:relative;padding-inline-start:13px}
+.section-title::before{
+  content:"";position:absolute;inset:7px auto 5px 0;width:3px;border-radius:99px;
+  background:linear-gradient(var(--a),var(--c));box-shadow:0 0 12px var(--mihrab-glow);
+}
+.task-item{border-bottom-color:color-mix(in srgb,var(--line) 80%,transparent)!important}
+.task-item::before{
+  content:"";position:absolute;inset:5px auto 5px -5px;width:2px;border-radius:99px;
+  background:var(--a);transform:scaleY(0);transform-origin:center;transition:transform .28s var(--premium-ease);
+}
+.task-item:hover::before,.task-item:focus-within::before{transform:scaleY(1)}
+.task-item.done::before{background:var(--ok);transform:scaleY(.65)}
+.task-item input[type="checkbox"]:checked{animation:mihrab-check .34s var(--premium-ease)}
+@keyframes mihrab-check{50%{transform:scale(1.18)}}
+
+.quick-action{position:relative;overflow:hidden}
+.quick-action::after{
+  content:"";position:absolute;width:62px;height:62px;border-radius:50%;
+  inset:auto -18px -28px auto;background:var(--mihrab-gold-glow);filter:blur(8px);opacity:.65;
+}
+.quick-action b,.quick-action small{position:relative;z-index:1}
+.mode-pill.active{box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 20%,transparent),0 8px 20px color-mix(in srgb,var(--c) 8%,transparent)!important}
+
+@media(min-width:761px){
+  .app{padding-top:22px}
+  .topbar{position:sticky;top:14px;z-index:50}
+  .hero{margin-top:18px}
+  .hero-main{min-height:330px}
+  .hero-side{min-height:330px}
+  .nav-btn.active{background:color-mix(in srgb,var(--c) 8%,transparent)}
+}
+
+@media(max-width:760px){
+  .app::before{opacity:.10;background-size:58px 101px;mask-image:linear-gradient(to bottom,black,transparent 44%)}
+  body::before,body::after{filter:blur(62px)!important;opacity:.12!important}
+  .hero-main::before{width:150px;height:150px;inset:10px 10px auto auto;opacity:.28}
+  .hero-main h1{background:none;-webkit-background-clip:initial;background-clip:initial;color:var(--text)}
+  .section-title{padding-inline-start:10px}
+  .section-title::before{inset-block:5px 4px;width:2px}
+  .hero-actions .btn.primary::after{animation:none}
+  .ring::after{animation:none}
+  .task-item::before{display:none}
+  .quick-action::after{width:48px;height:48px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .hero-actions .btn.primary::after,.ring::after,.task-item input[type="checkbox"]{animation:none!important}
+}
+body[data-low-power="true"] .app::before{display:none}
+body[data-low-power="true"] .ring::after,body[data-low-power="true"] .hero-actions .btn.primary::after{animation:none!important;display:none}
+
+/* Logical-edge corrections keep the Arabic (RTL) layout visually anchored. */
+.stat-card::before{left:auto;right:0}
+.section-title::before{left:auto;right:0}
+.task-item::before{left:auto;right:-5px}
+body[data-lang="en"] .stat-card::before{right:auto;left:0}
+body[data-lang="en"] .section-title::before{right:auto;left:0}
+body[data-lang="en"] .task-item::before{right:auto;left:-5px}
