@@ -737,50 +737,19 @@ body::after{animation:mihrab-couture-south 53s var(--crown-ease) infinite!import
 body[data-low-power="true"]::before,body[data-low-power="true"]::after{animation:none!important}body[data-low-power="true"] .section-box::before,body[data-low-power="true"] .week-card::before,body[data-low-power="true"] .timeline-card::before,body[data-low-power="true"] .theme-card::before,body[data-low-power="true"] .review-choice::before,body[data-low-power="true"] .quote::before,body[data-low-power="true"] .awareness::before,body[data-low-power="true"] .day-compass::after,body[data-low-power="true"] .daily-spark::after,body[data-low-power="true"] .mihrab-modal::before{animation:none!important;opacity:.18!important}
 
 
-/* ============================================================================
-   MIHRAB FINISHING LAYER — Luxe micro-interactions + mobile performance
-   ============================================================================ */
-:root{--premium-ease:cubic-bezier(.16,1,.3,1)}
-body{background:radial-gradient(900px 620px at 92% -10%,color-mix(in srgb,var(--a) 11%,transparent),transparent 68%),radial-gradient(800px 560px at -10% 92%,color-mix(in srgb,var(--b) 9%,transparent),transparent 70%),var(--bg);}
-body::before{opacity:calc(.13 + (var(--today-progress-ratio,0) * .11))!important;filter:blur(calc(90px - (var(--today-progress-ratio,0) * 18px)))!important;transition:opacity .6s var(--premium-ease),filter .6s var(--premium-ease)}
-body::after{opacity:calc(.09 + (var(--today-progress-ratio,0) * .09))!important;transition:opacity .6s var(--premium-ease)}
-.hero-main h1{background:linear-gradient(135deg,var(--text) 38%,color-mix(in srgb,var(--a) 78%,var(--text)) 70%,color-mix(in srgb,var(--c) 78%,var(--text)) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;font-weight:800;letter-spacing:-.04em}
-.task-item{position:relative;overflow:hidden}
-.task-item::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent, color-mix(in srgb,var(--a) 17%,transparent),transparent);transform:translateX(-110%);pointer-events:none}
-.task-item.just-checked::after{animation:mihrab-flash .48s var(--premium-ease) forwards}
-@keyframes mihrab-flash{to{transform:translateX(110%)}}
-.task-item.just-pop{animation:mihrab-pop .3s var(--premium-ease)}
-@keyframes mihrab-pop{0%{transform:scale(1)}48%{transform:scale(.985)}100%{transform:scale(1)}}
-.task-item.done .task-text{text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,var(--a) 55%,var(--muted));}
-@media (hover:hover){
-  .section-box:hover,.card:hover,.timeline-card:hover,.theme-card:hover,.review-choice:hover{border-color:color-mix(in srgb,var(--c) 24%,var(--line))!important;box-shadow:0 24px 58px rgba(0,0,0,.26),0 0 24px color-mix(in srgb,var(--c) 8%,transparent)!important;transform:translateY(-2px)!important}
+/* MIHRAB FINAL — mobile touch reliability + clickable track details */
+.mobile-nav{z-index:99999!important;pointer-events:auto!important;touch-action:manipulation!important}
+.mobile-nav .nav-btn{pointer-events:auto!important;touch-action:manipulation!important;-webkit-user-select:none!important;user-select:none!important;-webkit-tap-highlight-color:transparent!important}
+.track-detail-trigger{cursor:pointer;transition:color .24s var(--premium-ease),opacity .24s var(--premium-ease)}
+.track-detail-trigger:hover{color:var(--c)!important}
+.track-detail-trigger:focus-visible{outline:2px solid color-mix(in srgb,var(--c) 48%,transparent);outline-offset:4px;border-radius:8px}
+.library-main.track-detail-trigger{width:100%;}
+.track-detail-hero{padding:2px 0 12px}.track-detail-hero h3{margin:11px 0 6px;font-size:22px}.track-detail-hero p{margin:0;color:var(--soft);font-size:13px;line-height:1.9}
+.detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:9px}.detail-grid>div{min-width:0;border:1px solid var(--line);background:var(--surface3);border-radius:12px;padding:10px 11px}.detail-grid small{display:block;color:var(--muted);font-size:10px;margin-bottom:4px}.detail-grid b{display:block;font-size:12px;line-height:1.45}
+@media(max-width:760px){
+  .mobile-nav{left:8px!important;right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important}
+  .mobile-nav .nav-btn{min-height:50px!important}
+  .detail-grid{grid-template-columns:1fr 1fr}
+  .track-detail-hero h3{font-size:19px}
 }
-.progress>i{position:relative;overflow:hidden;background:linear-gradient(90deg,var(--a),var(--mihrab-ok,var(--a)),var(--c),var(--a))!important;background-size:220% 100%!important;animation:mihrab-progress 4.5s linear infinite}
-@keyframes mihrab-progress{0%{background-position:0 0}100%{background-position:220% 0}}
-.ring{transition:background .5s var(--premium-ease),box-shadow .5s var(--premium-ease)}
-.ring b,.ring-content{font-variant-numeric:tabular-nums;text-shadow:0 0 14px color-mix(in srgb,var(--a) 38%,transparent)!important}
-.ring-celebrate-particle{position:absolute;width:5px;height:5px;border-radius:50%;pointer-events:none;z-index:12;animation:mihrab-particle .62s var(--premium-ease) forwards;box-shadow:0 0 9px currentColor}
-@keyframes mihrab-particle{0%{transform:translate(0,0)scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty))scale(0);opacity:0}}
-/* subtle planning-grid texture, never stronger than content */
-.app::after{background-image:radial-gradient(rgba(255,255,255,.022) 1px,transparent 1px),radial-gradient(rgba(255,255,255,.012) 1px,transparent 1px)!important;background-size:24px 24px,96px 96px!important}
-
-/* -------------------------- Mobile: native, fast, tidy -------------------------- */
-@media (max-width:760px){
-  .mobile-nav{display:flex!important;position:fixed!important;left:10px!important;right:10px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;z-index:9999!important;pointer-events:auto!important;touch-action:manipulation!important}
-  .mobile-nav .nav-btn{pointer-events:auto!important;touch-action:manipulation!important;min-height:50px!important;-webkit-user-select:none;user-select:none}
-  .mobile-nav .nav-btn:active{transform:scale(.97)!important}
-  .mobile-nav .nav-btn.active{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 14%,transparent),0 0 16px color-mix(in srgb,var(--c) 8%,transparent)!important}
-  /* keep the hero elegant, but remove expensive blur/filter stacks */
-  body::before,body::after{filter:blur(64px)!important;opacity:.10!important;animation-duration:44s!important}
-  .app::after{opacity:.13!important}
-  .topbar,.mobile-nav{backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;box-shadow:0 12px 26px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.035)!important}
-  .section-box,.week-card,.timeline-card,.theme-card,.stat-card,.awareness,.quote,.review-choice,.task-item,.day-chip,.iframe-wrap{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;}
-  .section-box::before,.week-card::before,.timeline-card::before,.theme-card::before,.review-choice::before,.quote::before,.awareness::before,.day-compass::after,.daily-spark::after,.hero-main::before,.hero-side::after,.ring::after{animation:none!important}
-  .view.active{animation:none!important;filter:none!important}
-  .progress>i{animation-duration:7s}
-  .hero-main h1{font-size:30px!important;line-height:1.12!important;background:none;-webkit-text-fill-color:var(--text);color:var(--text)}
-  .task-item{padding:12px 13px!important}
-  .mihrab-celebration{backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important}
-}
-@media (prefers-reduced-motion:reduce){.task-item.just-checked::after,.task-item.just-pop,.progress>i,.ring-celebrate-particle{animation:none!important}.hero-main h1{background:none!important;-webkit-text-fill-color:var(--text)!important;color:var(--text)!important}}
-@media(max-width:390px){.mobile-nav{left:6px!important;right:6px!important;bottom:calc(6px + env(safe-area-inset-bottom))!important}.mobile-nav .nav-btn{font-size:8px!important;height:48px!important}.mobile-nav .nav-btn .nav-icon{font-size:13px!important}.hero-main h1{font-size:27px!important}}
+@media(prefers-reduced-motion:reduce){.track-detail-trigger{transition:none!important}}

@@ -191,30 +191,20 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
     const n=items.filter(([id])=>!!state.today[id]).length;
     const total=items.length;
     const p=total?Math.round(n/total*100):0;
-    document.body.style.setProperty('--today-progress-ratio',String(p/100));
     const ring=document.querySelector('#view-home .ring');
     if(ring){
       ring.style.setProperty('--p',p+'%');
       const b=ring.querySelector('b'); const sp=ring.querySelector('span');
       if(b) b.textContent=p+'%'; if(sp) sp.textContent=`${n} / ${total}`;
-      if(p===100 && !window.__mihrabDayCelebrated){
-        window.__mihrabDayCelebrated=true;
-        for(let i=0;i<14;i++){
-          const dot=document.createElement('i'); dot.className='ring-celebrate-particle';
-          dot.style.left='50%'; dot.style.top='50%'; dot.style.background=i%2?'var(--c)':'var(--a)';
-          const ang=Math.random()*Math.PI*2, dist=46+Math.random()*74;
-          dot.style.setProperty('--tx',Math.cos(ang)*dist+'px'); dot.style.setProperty('--ty',Math.sin(ang)*dist+'px');
-          ring.appendChild(dot); dot.addEventListener('animationend',()=>dot.remove(),{once:true});
-        }
-      }
-      if(p<100) window.__mihrabDayCelebrated=false;
     }
     const stats=document.querySelectorAll('#view-home .stats-grid .stat-card strong');
     if(stats.length>=2){ stats[0].textContent=`${n}/${total}`; stats[1].textContent=Math.max(total-n,0); }
     const rem=document.querySelector('#view-home .hero-side .tiny.muted:last-child');
-    if(rem) rem.textContent=n===total?(state.lang==='en'?'You’re done for today':'خلصت يومك'):`${total-n} ${state.lang==='en'?'items left':'بنود باقية'}`;
+    if(rem) rem.textContent = n===total ? (state.lang==='en'?'You’re done for today':'خلصت يومك') : `${total-n} ${state.lang==='en'?'items left':'بنود باقية'}`;
     const heroBanner=document.querySelector('#view-home .focus-banner:last-of-type');
-    if(heroBanner && n===total) heroBanner.querySelector('b')?.replaceChildren(document.createTextNode(state.lang==='en'?'Enough for today.':'كفاية لحد هنا.'));
+    if(heroBanner && n===total){
+      heroBanner.querySelector('b')?.replaceChildren(document.createTextNode(state.lang==='en'?'Enough for today.':'كفاية لحد هنا.'));
+    }
   }
   function markRow(id,done){
     const row=document.querySelector(`#view-home .task-item[data-task-id="${CSS.escape(id)}"]`);
@@ -225,18 +215,8 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
   window.toggleToday=function(id){
     state.today[id]=!state.today[id];
     save();
-    const done=!!state.today[id];
-    markRow(id,done);
+    markRow(id,!!state.today[id]);
     updateRing();
-    if(done){
-      const row=document.querySelector(`#view-home .task-item[data-task-id="${CSS.escape(id)}"]`);
-      if(row){
-        row.classList.remove('just-checked','just-pop');
-        void row.offsetWidth;
-        row.classList.add('just-checked','just-pop');
-        row.addEventListener('animationend',()=>{row.classList.remove('just-checked','just-pop')},{once:false});
-      }
-    }
   };
   window.togglePlan=function(id){
     state.plan[id]=!state.plan[id];
@@ -600,20 +580,12 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
     const lang=document.getElementById('langLabel'); if(lang) lang.textContent=state.lang==='en'?'ع':'EN';
   };
 
-  function bindNavSurface(id){
-    const host=document.getElementById(id); if(!host || host.dataset.mihrabNavBound==='1') return;
-    host.dataset.mihrabNavBound='1';
-    host.addEventListener('pointerup',e=>{
-      const b=e.target.closest('.nav-btn'); if(!b || !host.contains(b)) return;
-      e.preventDefault(); e.stopPropagation(); window.navigate(b.dataset.view);
-    },{capture:true,passive:false});
-    host.addEventListener('click',e=>{
-      const b=e.target.closest('.nav-btn'); if(!b || !host.contains(b)) return;
-      e.preventDefault(); e.stopPropagation();
-    },{capture:true,passive:false});
-  }
-  bindNavSurface('nav');
-  bindNavSurface('mobileNav');
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('#nav .nav-btn, #mobileNav .nav-btn');
+    if(!b)return;
+    e.preventDefault();
+    window.navigate(b.dataset.view);
+  },{passive:false});
 
   function setVisibleView(id){
     document.querySelectorAll('.view').forEach(v=>{
@@ -829,11 +801,7 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
     document.body.appendChild(toast);setTimeout(()=>toast.classList.add('show'),10);setTimeout(()=>toast.classList.remove('show'),2200);setTimeout(()=>toast.remove(),2700);
   }
   const previousToggle=window.toggleToday;
-  window.toggleToday=function(id){const was=!!state.today[id];previousToggle(id);if(!was&&state.today[id]){
-    const row=document.querySelector(`#view-home .task-item[data-task-id="${CSS.escape(id)}"]`);
-    if(row){row.classList.remove('just-checked','just-pop');void row.offsetWidth;row.classList.add('just-checked','just-pop');setTimeout(()=>row.classList.remove('just-checked','just-pop'),700);}
-    celebrate();
-  }};
+  window.toggleToday=function(id){const was=!!state.today[id];previousToggle(id);if(!was&&state.today[id])celebrate()};
 
   window.setVisualMode=mode=>{state.settings.visualMode=mode==='calm'?'calm':'signature';save();applyVisualMode();renderAll()};
   window.enableSessionNudge=async()=>{
@@ -874,4 +842,109 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
   const action=new URLSearchParams(location.search).get('action');
   if(action==='focus'||action==='capture')setTimeout(()=>action==='focus'?window.startFocus?.():window.openQuickCapture?.(),180);
   applyVisualMode();renderAll();
+})();
+
+
+/* =====================================================================
+   MIHRAB FINAL POLISH — reliable mobile navigation + universal track details
+   This layer does not change the desktop visual system.
+   ===================================================================== */
+(function MihrabFinalPolish(){
+  'use strict';
+  const VIEWS=new Set(['home','marketing','shari','quran','courses','system']);
+  let lastNavAt=0;
+
+  function lang(){return state.lang==='en';}
+  function trackTitle(x){return lang()&&x.titleEn?x.titleEn:(x.title||'');}
+  function category(x){
+    try{return (categoryLabels?.[lang()?'en':'ar']?.[x.category])||x.category||(lang()?'Track':'مسار')}catch{return x.category||(lang()?'Track':'مسار')}
+  }
+  function weekdays(x){
+    const en=lang();
+    return (x.days||[]).map(d=>en?(weekdayMapEn?.[d]||d):d).join(' · ')||(en?'Unscheduled':'غير مجدول');
+  }
+  function statusText(x){
+    try{return statusLabels?.[lang()?'en':'ar']?.[x.status]||x.status||''}catch{return x.status||''}
+  }
+
+  function ensureTrack(id, seed){
+    state.library ||= [];
+    if(!state.library.some(x=>x.id===id)){state.library.push(seed);save();}
+  }
+  function ensureTracks(){
+    ensureTrack('lib_zad',{id:'lib_zad',title:'أكاديمية زاد',titleEn:'ZAD Academy',category:'islamic',group:'zad',days:['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'],duration:30,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true,detailsAr:'مسار شرعي أساسي ثابت خلال الأسبوع. راجع الجرعة المقررة لليوم دون تحويل الخطة إلى سباق.',detailsEn:'A fixed Islamic core track throughout the week. Follow the planned daily dose without turning the plan into a race.'});
+    ensureTrack('lib_ayman',{id:'lib_ayman',title:'مسار أيمن عبد الرحيم',titleEn:'Ayman Abdel Rahim track',category:'islamic',group:'ayman',days:['السبت','الاثنين','الأربعاء','الجمعة'],duration:30,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true,detailsAr:'مسار أساسي ثابت: السبت والاثنين والأربعاء، مع حصة أطول يوم الجمعة.',detailsEn:'A fixed core track on Saturday, Monday, and Wednesday, with a longer Friday session.'});
+    ensureTrack('lib_awareness',{id:'lib_awareness',title:'تأسيس وعي المسلم المعاصر',titleEn:'Building the Contemporary Muslim’s Awareness',category:'islamic',group:'awareness',days:['السبت','الاثنين','الأربعاء','الجمعة'],duration:30,core:true,status:'active',sessions:9,completedSessions:0,systemSeed:true,detailsAr:'إعادة أو تأسيس توجه ووعي صحيح، لا جمع أكبر قدر من المعلومات. ٩ محاضرات، والجرعة الأساسية السبت والاثنين والأربعاء مع حصة أطول الجمعة.',detailsEn:'Build or rebuild sound orientation and awareness rather than collect information. 9 lectures, with core execution Saturday, Monday, Wednesday and a longer Friday session.'});
+    ensureTrack('lib_aqeedah',{id:'lib_aqeedah',title:'بناء العقيدة للجيل الصاعد',titleEn:'Building Aqeedah for the Rising Generation',category:'islamic',group:'ahmed-sayed',days:['السبت','الاثنين','الأربعاء'],duration:30,core:true,status:'active',sessions:8,completedSessions:8,systemSeed:true,detailsAr:'المسار الذي بدأنا به مع أحمد السيد، ومكتمل حاليًا ٨ من ٨ محاضرات.',detailsEn:'The Ahmed Al-Sayed track you started with; currently complete at 8 of 8 lectures.'});
+    ensureTrack('lib_fiqh',{id:'lib_fiqh',title:'فقه النفس',titleEn:'Fiqh al-Nafs',category:'islamic',group:'fiqh-nafs',days:['الأحد','الثلاثاء','الخميس'],duration:30,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true,detailsAr:'مسار أساسي مع عبد الرحمن ذاكر في الأحد والثلاثاء والخميس.',detailsEn:'A core Abdelrahman Thaker track on Sunday, Tuesday, and Thursday.'});
+    ensureTrack('lib_sarjani',{id:'lib_sarjani',title:'الخلفاء الراشدين',titleEn:'The Rightly Guided Caliphs',category:'islamic',group:'sarjani',days:['الأحد','الثلاثاء','الخميس'],duration:30,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true,detailsAr:'مسار مع راغب السرجاني في الأحد والثلاثاء والخميس.',detailsEn:'A Ragheb Al-Sergany track on Sunday, Tuesday, and Thursday.'});
+    ensureTrack('lib_moneim',{id:'lib_moneim',title:'تدبر وتفسير — أحمد عبد المنعم',titleEn:'Reflection & Tafsir — Ahmed Abdel Moneim',category:'islamic',group:'tafseer',days:['الجمعة'],duration:45,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true,detailsAr:'جلسة الجمعة للتدبر والتفسير، بعد جرعة زاد يوم الجمعة.',detailsEn:'Friday-only reflection and tafsir, after the Friday ZAD dose.'});
+    ensureTrack('lib_home',{id:'lib_home',title:'البيت المسلم',titleEn:'The Muslim Home',category:'islamic',group:'optional-home',days:[],duration:20,core:false,status:'paused',sessions:0,completedSessions:0,systemSeed:true,detailsAr:'مسار اختياري يرجع إليه عند الحاجة، وليس مسارًا إلزاميًا موازيًا.',detailsEn:'An optional track to return to when needed; not a mandatory parallel path.'});
+  }
+
+  function openDetails(id){
+    const x=(state.library||[]).find(i=>i.id===id); if(!x)return;
+    const overlay=document.getElementById('mihrabOverlay'),modal=document.getElementById('mihrabModal'); if(!overlay||!modal)return;
+    const en=lang(), title=trackTitle(x), detail=en?(x.detailsEn||'A flexible track you can edit, pause, replace, or archive from the Content Library.'):(x.detailsAr||'مسار مرن تقدر تعدله أو توقفه أو تستبدله أو تؤرشفه من مكتبة المحتوى.');
+    const progress=x.sessions?`${x.completedSessions||0}/${x.sessions}`:(en?'Tracked as needed':'يُتتبّع حسب الحاجة');
+    modal.innerHTML=`<div class="mihrab-modal-head"><b>${esc(title)}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><div class="track-detail-hero"><span class="badge ${x.core?'core':''}">${x.core?(en?'Core':'أساسي'):x.important?(en?'Important':'مهم'):(en?'Optional':'اختياري')}</span><h3>${esc(title)}</h3><p>${esc(detail)}</p></div><div class="detail-grid"><div><small>${en?'Category':'القسم'}</small><b>${esc(category(x))}</b></div><div><small>${en?'Schedule':'الأيام'}</small><b>${esc(weekdays(x))}</b></div><div><small>${en?'Duration':'المدة'}</small><b>${x.duration||30} ${en?'min':'د'}</b></div><div><small>${en?'Progress':'التقدم'}</small><b>${esc(progress)}</b></div><div><small>${en?'Status':'الحالة'}</small><b>${esc(statusText(x))}</b></div><div><small>${en?'Role':'دوره في الخطة'}</small><b>${x.core?(en?'Protected core':'أساسي ومحمي'):x.important?(en?'Important':'مهم'):(en?'Optional':'اختياري')}</b></div></div>${x.note?`<div class="note" style="margin-top:12px"><b>${en?'Your note':'ملاحظتك'}</b><br>${esc(x.note)}</div>`:''}<div class="modal-actions"><button class="btn" onclick="closeMihrabModal();editContent('${esc(id)}')">${en?'Edit':'تعديل'}</button>${x.status==='active'?`<button class="btn" onclick="closeMihrabModal();archiveContent('${esc(id)}')">${en?'Archive':'أرشفة'}</button>`:`<button class="btn" onclick="closeMihrabModal();activateContent('${esc(id)}')">${en?'Activate':'تفعيل'}</button>`}<button class="btn primary" onclick="closeMihrabModal()">${en?'Close':'إغلاق'}</button></div></div>`;
+    overlay.classList.add('open');
+  }
+  window.openContentDetails=openDetails;
+
+  function refreshMobileNav(){
+    const mob=document.getElementById('mobileNav'); if(!mob)return;
+    mob.querySelectorAll('.nav-btn').forEach(btn=>{
+      if(btn.dataset.mihrabMobileBound==='1')return;
+      btn.dataset.mihrabMobileBound='1';
+      const activate=(e)=>{
+        const now=Date.now();
+        if(now-lastNavAt<350)return;
+        lastNavAt=now;
+        e.preventDefault();e.stopPropagation();
+        const v=btn.dataset.view;
+        if(VIEWS.has(v) && typeof window.navigate==='function') window.navigate(v);
+      };
+      // Direct handler is intentional: it survives touch browsers and does not rely on event delegation.
+      btn.addEventListener('touchend',activate,{passive:false});
+      btn.addEventListener('pointerup',activate,{passive:false});
+      btn.onclick=activate;
+      btn.style.webkitTapHighlightColor='transparent';
+    });
+  }
+
+  function decorateTrackDetails(){
+    ensureTracks();
+    const shari=document.getElementById('view-shari');
+    if(shari){
+      const map=[['أحمد السيد','lib_aqeedah'],['أيمن عبد الرحيم','lib_ayman'],['Ayman Abdel Rahim','lib_ayman'],['فقه النفس','lib_fiqh'],['الخلفاء الراشدين','lib_sarjani'],['أحمد عبد المنعم','lib_moneim'],['تأسيس وعي المسلم المعاصر','lib_awareness'],['البيت المسلم','lib_home']];
+      shari.querySelectorAll('p,h2').forEach(el=>{
+        if(el.dataset.detailBound==='1')return;
+        const hit=map.find(([needle])=>el.textContent?.includes(needle));
+        if(!hit)return;
+        el.dataset.detailBound='1';el.classList.add('track-detail-trigger');el.tabIndex=0;el.setAttribute('role','button');
+        const go=e=>{e.preventDefault();e.stopPropagation();openDetails(hit[1]);};
+        el.addEventListener('click',go);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){go(e)}});
+      });
+    }
+    const system=document.getElementById('view-system');
+    if(system){
+      const items=system.querySelectorAll('.library-item');
+      items.forEach((item,i)=>{
+        if(item.dataset.detailBound==='1')return;
+        const x=state.library?.[i];if(!x)return;
+        const title=item.querySelector('.library-main');if(!title)return;
+        item.dataset.detailBound='1';title.classList.add('track-detail-trigger');title.tabIndex=0;title.setAttribute('role','button');
+        const go=e=>{e.preventDefault();e.stopPropagation();openDetails(x.id)};
+        title.addEventListener('click',go);title.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){go(e)}});
+      });
+    }
+  }
+
+  const baseNav=window.nav;
+  window.nav=function(){baseNav?.();requestAnimationFrame(refreshMobileNav)};
+  const baseRenderAll=window.renderAll;
+  window.renderAll=function(){ensureTracks();const result=baseRenderAll?.();requestAnimationFrame(()=>{refreshMobileNav();decorateTrackDetails()});return result};
+  ensureTracks();
+  requestAnimationFrame(()=>{refreshMobileNav();decorateTrackDetails()});
 })();
