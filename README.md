@@ -71,3 +71,7 @@ On screens up to 760px, Mihrab switches to a native-feeling bottom navigation ba
 - Cards, action buttons, and completed tasks provide clear touch and keyboard feedback without relying on costly effects.
 - The design adapts its spacing, navigation, visual density, and effects below 760px so it feels native on a phone while retaining a spacious laptop layout.
 - All decorative effects are CSS-only. `prefers-reduced-motion` and Low Power Mode turn off the moving accents.
+
+
+## Stability / mobile
+The app is mobile-first. Navigation uses direct buttons and a fixed bottom bar on small screens. The current view is rendered on demand rather than rendering all six views on every action. Visual ambience is CSS-only; Low Power Mode disables animated ambience.
