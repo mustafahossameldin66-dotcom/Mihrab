@@ -74,3 +74,16 @@ On screens up to 760px, Mihrab switches to a native-feeling bottom navigation ba
 
 
 Mihrab V12 adds a single touch-first mobile navigation engine, two-accent theme discipline, daily momentum signals, completion micro-feedback, and mobile-specific performance safeguards.
+
+
+## V13 final polish
+- Single navigation router with capture-phase mobile touch handling.
+- Theme-aware two-accent palette with one shared interaction accent.
+- Dynamic greeting, task completion sweep, progress shimmer, 100% ring finale, and micro-dot pattern.
+- Mobile uses a dedicated bottom navigation shell; desktop navigation remains unchanged.
+
+
+## V14 notes
+- Mobile navigation uses native hash links with one router; no touch-event hijacking.
+- Track titles in Content Library open structured details.
+- Visual micro-interactions are theme-aware with a strict two-accent + shared interaction tone system.

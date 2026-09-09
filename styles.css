@@ -845,3 +845,245 @@ body::after{background:radial-gradient(circle,var(--c) 0%,transparent 68%)}
 }
 @media(prefers-reduced-motion:reduce){.task-item.just-checked,.task-item.just-checked::after,.progress>i::after{animation:none!important}.view.active{animation:none!important;filter:none!important}}
 @media(hover:hover){.section-box:hover,.card:hover,.timeline-card:hover,.theme-card:hover{transform:translateY(-2px)!important;border-color:color-mix(in srgb,var(--c) 28%,var(--line))!important;box-shadow:0 30px 70px rgba(0,0,0,.42),0 0 24px color-mix(in srgb,var(--a) 10%,transparent)!important}}
+
+/* ============================================================================
+   MIHRAB V13 — TWO / THREE ACCENT COUTURE SYSTEM + MOBILE STABILITY
+   ============================================================================ */
+:root{
+  --i:#67e8c7; /* single interaction accent shared across themes */
+}
+/* Keep each theme to two expressive colors, plus one shared interaction tone. */
+body[data-theme="aurora"]{--a:#67e8c7;--c:#d7b85a;--b:var(--a)}
+body[data-theme="midnight"]{--a:#9ea4ff;--c:#e1bf64;--b:var(--a)}
+body[data-theme="sunrise"]{--a:#e0a76e;--c:#efcc78;--b:var(--a)}
+body[data-theme="paper"]{--a:#3d8a73;--c:#b27d32;--b:var(--a)}
+body[data-theme="mono"]{--a:#d0d7e0;--c:#c5a059;--b:var(--a)}
+
+/* Micro-dot architecture — barely visible, always present. */
+body{
+  position:relative;
+  isolation:isolate;
+  background:radial-gradient(rgba(255,255,255,.015) 1px,transparent 1px),var(--bg)!important;
+  background-size:32px 32px,100% 100%;
+}
+
+/* Title treatment: platinum → theme interaction → muted gold. */
+.hero-main h1{
+  background:linear-gradient(135deg,#fff 20%,var(--i) 65%,var(--c) 100%)!important;
+  -webkit-background-clip:text!important;background-clip:text!important;
+  -webkit-text-fill-color:transparent!important;color:transparent!important;
+  font-weight:800!important;letter-spacing:-.04em!important;
+  filter:drop-shadow(0 4px 15px rgba(0,0,0,.28));
+  text-wrap:balance;
+}
+
+/* Daily progress quietly wakes the atmosphere as work gets done. */
+body::before{opacity:calc(.14 + (var(--today-progress-ratio,0) * .20))!important;transition:opacity .6s var(--premium-ease),filter .6s var(--premium-ease)!important}
+body::after{opacity:calc(.10 + (var(--today-progress-ratio,0) * .16))!important;transition:opacity .6s var(--premium-ease)!important}
+
+/* Exact completion sweep + pop. */
+.task-item{position:relative;overflow:hidden}
+.task-item::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--a) 12%,transparent),color-mix(in srgb,var(--c) 8%,transparent),transparent);transform:translateX(100%);pointer-events:none}
+.task-item.just-checked::after{animation:flashSweepRTL .5s var(--premium-ease) forwards}
+@keyframes flashSweepRTL{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+@keyframes popTask{0%{transform:scale(1)}50%{transform:scale(.985) translateY(.5px)}100%{transform:scale(1)}}
+.task-item.just-checked{animation:popTask .25s var(--premium-ease) forwards}
+
+/* Progress shimmer — subtle, not noisy. */
+.progress>i{position:relative;overflow:hidden;background:linear-gradient(90deg,var(--a),var(--c))!important;box-shadow:0 0 14px color-mix(in srgb,var(--a) 25%,transparent)!important}
+.progress>i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);background-size:200% 100%;animation:progressShimmer 3.5s linear infinite}
+@keyframes progressShimmer{0%{background-position:150% 0}100%{background-position:-150% 0}}
+
+/* 100% ring finale. */
+.ring-celebrate-particle{position:absolute;width:4px;height:4px;border-radius:50%;pointer-events:none;z-index:10;animation:particleScatter .55s var(--premium-ease) forwards}
+@keyframes particleScatter{0%{transform:translate(0,0) scale(1);opacity:.8}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+
+/* Desktop-only reactive teal/green border glow restored. */
+@media(hover:hover){
+  .section-box:hover,.card:hover,.timeline-card:hover,.theme-card:hover,.review-choice:hover{
+    border-color:color-mix(in srgb,var(--i) 35%,var(--line))!important;
+    box-shadow:0 30px 70px rgba(0,0,0,.50),0 0 24px color-mix(in srgb,var(--i) 12%,transparent)!important;
+    transform:translateY(-3px) scale(1.005)!important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mobile: dedicated execution shell. Desktop remains untouched above.
+   -------------------------------------------------------------------------- */
+@media(max-width:760px){
+  .top-nav{display:none!important}
+  #mobileNav{
+    display:flex!important;
+    position:fixed!important;
+    left:9px!important;right:9px!important;
+    bottom:calc(8px + env(safe-area-inset-bottom))!important;
+    z-index:2147483000!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+    padding:4px!important;
+    gap:2px!important;
+    border-radius:18px!important;
+    background:color-mix(in srgb,var(--surface) 96%,transparent)!important;
+    border:1px solid var(--line)!important;
+    box-shadow:0 16px 36px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.05)!important;
+    backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important;
+  }
+  #mobileNav .nav-btn{
+    flex:1!important;min-width:0!important;height:51px!important;
+    display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+    gap:3px!important;padding:5px 2px!important;
+    border-radius:12px!important;
+    color:var(--muted)!important;font-size:9px!important;line-height:1!important;
+    pointer-events:auto!important;touch-action:manipulation!important;cursor:pointer!important;
+  }
+  #mobileNav .nav-btn .nav-icon{font-size:15px!important}
+  #mobileNav .nav-btn.active{
+    color:var(--text)!important;
+    background:color-mix(in srgb,var(--i) 11%,transparent)!important;
+    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--i) 15%,transparent),0 0 18px color-mix(in srgb,var(--i) 7%,transparent)!important;
+  }
+  #mobileNav .nav-btn.active::after{left:28%!important;right:28%!important;bottom:3px!important;background:var(--i)!important;box-shadow:0 0 10px var(--i)!important}
+  .app{padding-bottom:calc(88px + env(safe-area-inset-bottom))!important}
+  .hero{grid-template-columns:1fr!important}
+  .stats-grid,.grid-2,.grid-3,.grid-4,.week-grid,.form-grid,.bento{grid-template-columns:1fr!important}
+  .theme-grid{grid-template-columns:1fr 1fr!important}
+  .lecture-grid,.review-grid{grid-template-columns:1fr 1fr!important}
+  .timeline{grid-template-columns:1fr!important;overflow:visible!important}
+  .week-card summary{padding:14px!important}
+  .week-body{padding:13px!important}
+  .card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.awareness,.quote,.review-choice,.iframe-wrap{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 8px 22px rgba(0,0,0,.15)!important}
+  .hero-main,.hero-side,.topbar{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  body::before,body::after{filter:blur(48px)!important;will-change:auto!important}
+  .live-aurora-layer,#mihrab-ambient-canvas{display:none!important}
+  .view.active{animation:none!important;filter:none!important}
+  .hero-main h1,body[data-lang="en"] .hero-main h1{font-size:28px!important;line-height:1.16!important}
+  .section-title h2{font-size:19px!important}
+  .task-item.just-checked{animation:none!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  body::before,body::after,.progress>i::after,.task-item.just-checked::after,.ring-celebrate-particle{animation:none!important}
+  .hero-main h1{filter:none!important}
+}
+
+
+/* ============================================================================
+   MIHRAB V14 — COLOR DISCIPLINE + THE REQUESTED MICRO-INTERACTIONS
+   ============================================================================ */
+:root{--i:#63ddd5;}
+body[data-theme="aurora"]{--a:#67e8c7;--c:#d7b85a;--b:var(--a)}
+body[data-theme="midnight"]{--a:#a99bff;--c:#e1bf64;--b:var(--a)}
+body[data-theme="sunrise"]{--a:#e6aa74;--c:#efcc78;--b:var(--a)}
+body[data-theme="paper"]{--a:#3d8a73;--c:#b27d32;--b:var(--a)}
+body[data-theme="mono"]{--a:#d0d7e0;--c:#c5a059;--b:var(--a)}
+
+/* Exact micro-dot pattern, kept barely visible. */
+body{position:relative;isolation:isolate;background:radial-gradient(rgba(255,255,255,.015) 1px,transparent 1px),var(--bg)!important;background-size:32px 32px,100% 100%}
+
+/* Exact cinematic title treatment. */
+.hero-main h1{background:linear-gradient(135deg,#fff 20%,var(--a) 65%,var(--c) 100%)!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;font-weight:800!important;letter-spacing:-.04em!important;filter:drop-shadow(0 4px 15px rgba(0,0,0,.28));text-wrap:balance}
+
+/* Completion sweep + pop — exact behavior, theme aware. */
+.task-item{position:relative;overflow:hidden}
+.task-item::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--a) 12%,transparent),color-mix(in srgb,var(--c) 8%,transparent),transparent);transform:translateX(100%);pointer-events:none}
+.task-item.just-checked::after{animation:flashSweepRTL .5s var(--premium-ease) forwards}
+@keyframes flashSweepRTL{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+@keyframes popTask{0%{transform:scale(1)}50%{transform:scale(.985) translateY(.5px)}100%{transform:scale(1)}}
+.task-item.just-checked{animation:popTask .25s var(--premium-ease) forwards}
+
+/* Progress shimmer. */
+.progress>i{position:relative;overflow:hidden;background:linear-gradient(90deg,var(--a),var(--c))!important;background-size:200% 100%!important;box-shadow:0 0 14px color-mix(in srgb,var(--a) 25%,transparent)!important}
+.progress>i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);background-size:200% 100%;animation:progressShimmerV14 3.5s linear infinite}
+@keyframes progressShimmerV14{0%{transform:translateX(110%)}100%{transform:translateX(-110%)}}
+
+/* Hover glow restored — the old blue/teal interaction light. Desktop only. */
+@media(hover:hover){
+  .section-box:hover,.card:hover,.timeline-card:hover,.theme-card:hover,.review-choice:hover{
+    transform:translateY(-3px) scale(1.005)!important;
+    border-color:color-mix(in srgb,var(--i) 42%,var(--line))!important;
+    box-shadow:0 30px 70px rgba(0,0,0,.50),0 0 28px color-mix(in srgb,var(--i) 16%,transparent),inset 0 1px 0 rgba(255,255,255,.08)!important;
+  }
+  .task-item:hover{background:linear-gradient(90deg,color-mix(in srgb,var(--i) 7%,transparent),transparent 74%)!important}
+}
+
+/* Clickable track titles. */
+.library-title-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:0;border:0;background:none;color:inherit;text-align:inherit;font:inherit;cursor:pointer}
+.library-title-btn span{opacity:.45;transition:opacity .25s ease,transform .25s ease;color:var(--i)}
+.library-title-btn:hover span{opacity:1;transform:translateX(-2px)}
+.track-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.track-detail-grid>div{padding:13px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface3)}
+.track-detail-grid span{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}.track-detail-grid b{display:block;color:var(--text);line-height:1.5}
+
+/* Mobile: the navigation is always a first-class fixed control surface. */
+@media(max-width:820px){
+  html,body{width:100%;min-width:0;overflow-x:hidden}
+  .app{width:100%;max-width:none;margin:0;padding:8px 10px calc(92px + env(safe-area-inset-bottom))!important}
+  #nav{display:none!important}
+  #mobileNav{
+    display:flex!important;position:fixed!important;left:10px!important;right:10px!important;
+    bottom:calc(8px + env(safe-area-inset-bottom))!important;z-index:2147483647!important;
+    width:auto!important;min-height:62px!important;padding:5px!important;gap:2px!important;
+    pointer-events:auto!important;touch-action:manipulation!important;isolation:isolate!important;
+    border:1px solid color-mix(in srgb,var(--i) 20%,var(--line))!important;border-radius:18px!important;
+    background:color-mix(in srgb,var(--surface) 96%,transparent)!important;
+    box-shadow:0 16px 38px rgba(0,0,0,.34),0 0 22px color-mix(in srgb,var(--i) 7%,transparent),inset 0 1px 0 rgba(255,255,255,.06)!important;
+    backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important;
+  }
+  #mobileNav .nav-btn{
+    display:flex!important;flex:1 1 0!important;min-width:0!important;height:52px!important;
+    align-items:center!important;justify-content:center!important;flex-direction:column!important;gap:3px!important;
+    padding:4px 2px!important;border:0!important;background:transparent!important;border-radius:12px!important;
+    color:var(--muted)!important;font-size:9px!important;line-height:1!important;text-decoration:none!important;
+    pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important;
+  }
+  #mobileNav .nav-btn .nav-icon{font-size:15px!important;line-height:1!important}
+  #mobileNav .nav-btn.active{color:var(--text)!important;background:color-mix(in srgb,var(--i) 12%,transparent)!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--i) 22%,transparent),0 0 16px color-mix(in srgb,var(--i) 9%,transparent)!important}
+  #mobileNav .nav-btn.active::after{content:"";position:absolute;left:30%;right:30%;bottom:4px;height:2px;border-radius:2px;background:var(--i);box-shadow:0 0 9px var(--i)!important}
+  .hero{grid-template-columns:1fr!important}.hero-main,.hero-side{min-width:0!important}.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .grid-2,.grid-3,.grid-4,.week-grid,.form-grid,.bento{grid-template-columns:1fr!important}.lecture-grid,.review-grid,.theme-grid{grid-template-columns:1fr 1fr!important}.timeline{grid-template-columns:1fr!important;overflow:visible!important}
+  .track-detail-grid{grid-template-columns:1fr!important}
+  .section-title{gap:10px}.section-title h2{font-size:19px!important}.hero-main h1,body[data-lang="en"] .hero-main h1{font-size:30px!important;line-height:1.12!important}
+  .card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.awareness,.quote,.review-choice,.iframe-wrap{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 8px 22px rgba(0,0,0,.14)!important}
+  .hero-main,.hero-side,.topbar,#mobileNav{backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important}
+  body::before,body::after{filter:blur(52px)!important;opacity:.10!important;animation:none!important}
+  .live-aurora-layer,#mihrab-ambient-canvas{display:none!important}
+  .view.active{animation:none!important;filter:none!important}
+  .progress>i::after{animation:none!important}
+}
+@media(prefers-reduced-motion:reduce){.task-item.just-checked,.task-item.just-checked::after,.progress>i::after,.ring-celebrate-particle{animation:none!important}.hero-main h1{filter:none!important}}
+
+
+
+/* ============================================================================
+   MIHRAB V15 — REQUESTED CINEMATIC POLISH
+   ============================================================================ */
+body{position:relative;isolation:isolate;background:radial-gradient(color-mix(in srgb,var(--line) 70%,transparent) 1px,transparent 1px),var(--bg)!important;background-size:32px 32px,100% 100%}
+.hero-main h1{background:linear-gradient(135deg,var(--text) 28%,var(--a) 70%,var(--c) 100%)!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;font-weight:800!important;letter-spacing:-.04em!important;filter:drop-shadow(0 4px 15px rgba(0,0,0,.25));text-wrap:balance}
+body::before{opacity:calc(.14 + (var(--today-progress-ratio,0) * .20))!important;transition:opacity .6s var(--premium-ease),filter .6s var(--premium-ease)!important}
+body::after{opacity:calc(.10 + (var(--today-progress-ratio,0) * .16))!important;transition:opacity .6s var(--premium-ease)!important}
+.task-item{position:relative;overflow:hidden}
+.task-item::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--a) 12%,transparent),color-mix(in srgb,var(--c) 8%,transparent),transparent);transform:translateX(100%);pointer-events:none}
+.task-item.just-checked::after{animation:flashSweepRTL .5s var(--premium-ease) forwards}
+@keyframes flashSweepRTL{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+@keyframes popTask{0%{transform:scale(1)}50%{transform:scale(.985) translateY(.5px)}100%{transform:scale(1)}}
+.task-item.just-checked{animation:popTask .25s var(--premium-ease) forwards}
+.progress>i{position:relative;overflow:hidden;background:linear-gradient(90deg,var(--a),var(--c))!important;box-shadow:0 0 14px color-mix(in srgb,var(--a) 25%,transparent)!important}
+.progress>i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);background-size:200% 100%;animation:progressShimmer 3.5s linear infinite}
+@keyframes progressShimmer{0%{background-position:150% 0}100%{background-position:-150% 0}}
+.ring-celebrate-particle{position:absolute;width:4px;height:4px;border-radius:50%;pointer-events:none;z-index:10;animation:particleScatter .55s var(--premium-ease) forwards}
+@keyframes particleScatter{0%{transform:translate(0,0) scale(1);opacity:.8}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+.ring{transition:--p .5s var(--crown-ease),background .5s var(--crown-ease)!important}
+.focus-timer{font-weight:700!important;background:linear-gradient(135deg,var(--text) 30%,var(--a) 75%,var(--c) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;filter:drop-shadow(0 0 25px color-mix(in srgb,var(--a) 20%,transparent))}
+@media (hover:hover){.section-box:hover,.card:hover,.timeline-card:hover,.theme-card:hover{border-color:color-mix(in srgb,var(--a) 35%,var(--line))!important;box-shadow:0 30px 70px rgba(0,0,0,.5),0 0 24px color-mix(in srgb,var(--a) 12%,transparent)!important;transform:translateY(-3px) scale(1.005)!important}}
+@media(max-width:760px){
+  #mobileNav{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));position:fixed!important;left:8px!important;right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;z-index:2147483647!important;padding:4px!important;gap:2px!important;border-radius:18px!important;pointer-events:auto!important;touch-action:manipulation!important}
+  #mobileNav .nav-btn{position:relative!important;min-width:0!important;width:100%!important;height:52px!important;padding:5px 1px!important;margin:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;border:0!important;border-radius:12px!important;background:transparent!important;color:var(--muted)!important;text-decoration:none!important;font-size:8.5px!important;line-height:1!important;pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important}
+  #mobileNav .nav-btn .nav-icon{font-size:15px!important;line-height:1!important}
+  #mobileNav .nav-btn.active{color:var(--text)!important;background:color-mix(in srgb,var(--i) 11%,transparent)!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--i) 15%,transparent),0 0 18px color-mix(in srgb,var(--i) 7%,transparent)!important)}
+  #mobileNav .nav-btn.active::after{content:"";position:absolute;left:30%;right:30%;bottom:3px;height:2px;border-radius:2px;background:var(--i)!important;box-shadow:0 0 9px var(--i)!important}
+  .app{padding-bottom:calc(90px + env(safe-area-inset-bottom))!important}
+  .hero-main h1{font-size:29px!important;line-height:1.14!important}
+  .hero-main,.hero-side,.topbar{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.awareness,.quote,.review-choice,.iframe-wrap{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+}
+@media(prefers-reduced-motion:reduce){.task-item.just-checked,.task-item.just-checked::after,.progress>i::after,.ring-celebrate-particle,.view.active{animation:none!important}.hero-main h1{filter:none!important}}

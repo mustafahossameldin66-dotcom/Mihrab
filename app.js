@@ -176,7 +176,7 @@ async function installPWA(){if(deferredInstallPrompt){deferredInstallPrompt.prom
 
 function renderView(v){const map={home:renderHome,marketing:renderMarketing,shari:renderShari,quran:renderQuran,courses:renderCourses,system:renderSystem};document.getElementById('view-'+v).innerHTML=map[v]()}
 function renderAll(){nav();applyTheme();Object.keys({home:1,marketing:1,shari:1,quran:1,courses:1,system:1}).forEach(renderView);document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+state.view));applyLanguage();nav()}
-load();renderAll();
+load();
 if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 
 
@@ -431,9 +431,21 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
   window.saveEditedContent=id=>{const x=state.library.find(i=>i.id===id);if(!x)return;x.title=document.getElementById('editTitle')?.value.trim()||x.title;x.titleEn=document.getElementById('editTitleEn')?.value.trim()||x.titleEn;x.duration=Math.max(1,Number(document.getElementById('editDur')?.value)||x.duration||30);x.status=document.getElementById('editStatus')?.value||x.status;save();closeMihrabModal();renderAll()};
   window.completeContentSession=id=>{const x=state.library.find(i=>i.id===id);if(!x)return;x.completedSessions=Math.min((x.sessions||0),(x.completedSessions||0)+1);if(x.sessions&&x.completedSessions>=x.sessions)x.status='done';save();renderAll()};
 
+  window.openTrackDetails=id=>{
+    const x=(state.library||[]).find(i=>i.id===id); if(!x)return;
+    const en=isEn();
+    const title=en&&x.titleEn?x.titleEn:x.title;
+    const category=categoryLabels[en?'en':'ar'][x.category]||x.category;
+    const days=(x.days||[]).map(d=>en?weekdayMapEn[d]:d).join(' · ') || (en?'Unscheduled':'غير مجدول');
+    const status=statusLabels[en?'en':'ar'][x.status]||x.status;
+    const priority=x.core?(en?'Core':'أساسي'):x.important?(en?'Important':'مهم'):(en?'Optional':'اختياري');
+    const sessions=x.sessions?`${x.completedSessions||0} / ${x.sessions}`:(en?'Not sessionized':'غير مقسّم لجلسات');
+    useModal(`<div class="mihrab-modal-head"><div><b>${esc(title)}</b><div class="tiny muted">${esc(category)} · ${esc(priority)}</div></div><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body track-detail-modal"><div class="track-detail-grid"><div><span>${en?'Status':'الحالة'}</span><b>${esc(status)}</b></div><div><span>${en?'Schedule':'الجدول'}</span><b>${esc(days)}</b></div><div><span>${en?'Duration':'المدة'}</span><b>${x.duration||30} ${en?'min':'دقيقة'}</b></div><div><span>${en?'Progress':'التقدم'}</span><b>${esc(sessions)}</b></div></div><div class="note" style="margin-top:12px">${en?'This track is editable from the Content Library. You can pause, archive, replace, or continue it without changing the plan structure.':'المسار ده قابل للتعديل من مكتبة المحتوى: تقدر توقفه أو تأرشفه أو تستبدله أو تكمل عليه من غير ما تغيّر هيكل الخطة.'}</div><div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${en?'Close':'إغلاق'}</button><button class="btn primary" onclick="closeMihrabModal();editContent('${x.id}')">${en?'Edit track':'تعديل المسار'}</button></div></div>`);
+  };
+
   function librarySection(){
     librarySeeds();const en=state.lang==='en';const list=state.library||[];
-    return `<section class="section-box" style="margin-top:12px"><div class="section-title" style="margin-bottom:8px"><div><h2 style="font-size:20px">${en?'Content Library':'مكتبة المحتوى'}</h2><p>${en?'Plans can evolve without touching the code. Archive finished tracks and add replacements anytime.':'الخطة ثابتة، لكن المحتوى نفسه قابل للتغيير من هنا من غير لمس الكود. خلصت سلسلة؟ أرشفها وأضف غيرها.'}</p></div><button class="btn primary" onclick="addContent()">＋ ${en?'Add track':'إضافة مسار'}</button></div><div class="library-list">${list.map(x=>{const st=statusLabels[en?'en':'ar'][x.status]||x.status;const d=x.days?.length?x.days.map(v=>en?weekdayMapEn[v]:v).join(' · '):(en?'Unscheduled':'غير مجدول');return `<div class="library-item"><div class="library-main"><b>${esc(en&&x.titleEn?x.titleEn:x.title)} ${x.core?'· '+(en?'Core':'أساسي'):''}</b><small>${categoryLabels[en?'en':'ar'][x.category]||x.category} · ${x.duration||30} min · ${d}</small></div><div class="library-meta"><span class="library-status ${x.status==='active'?'active':''}">${st}</span><button class="tiny-action" onclick="editContent('${x.id}')">${en?'Edit':'تعديل'}</button>${x.status==='done'||x.status==='paused'?`<button class="tiny-action" onclick="replaceContent('${x.id}')">${en?'Replace':'استبدال'}</button>`:''}${x.status==='active'?`<button class="tiny-action" onclick="archiveContent('${x.id}')">${en?'Archive':'أرشفة'}</button>`:`<button class="tiny-action" onclick="activateContent('${x.id}')">${en?'Activate':'تفعيل'}</button>`}${x.sessions?`<button class="tiny-action" onclick="completeContentSession('${x.id}')">${x.completedSessions||0}/${x.sessions}</button>`:''}</div></div>`}).join('')}</div></section>`;
+    return `<section class="section-box" style="margin-top:12px"><div class="section-title" style="margin-bottom:8px"><div><h2 style="font-size:20px">${en?'Content Library':'مكتبة المحتوى'}</h2><p>${en?'Plans can evolve without touching the code. Archive finished tracks and add replacements anytime.':'الخطة ثابتة، لكن المحتوى نفسه قابل للتغيير من هنا من غير لمس الكود. خلصت سلسلة؟ أرشفها وأضف غيرها.'}</p></div><button class="btn primary" onclick="addContent()">＋ ${en?'Add track':'إضافة مسار'}</button></div><div class="library-list">${list.map(x=>{const st=statusLabels[en?'en':'ar'][x.status]||x.status;const d=x.days?.length?x.days.map(v=>en?weekdayMapEn[v]:v).join(' · '):(en?'Unscheduled':'غير مجدول');return `<div class="library-item"><div class="library-main"><button type="button" class="library-title-btn" onclick="openTrackDetails('${x.id}')"><b>${esc(en&&x.titleEn?x.titleEn:x.title)} ${x.core?'· '+(en?'Core':'أساسي'):''}</b><span aria-hidden="true">↗</span></button><small>${categoryLabels[en?'en':'ar'][x.category]||x.category} · ${x.duration||30} min · ${d}</small></div><div class="library-meta"><span class="library-status ${x.status==='active'?'active':''}">${st}</span><button class="tiny-action" onclick="editContent('${x.id}')">${en?'Edit':'تعديل'}</button>${x.status==='done'||x.status==='paused'?`<button class="tiny-action" onclick="replaceContent('${x.id}')">${en?'Replace':'استبدال'}</button>`:''}${x.status==='active'?`<button class="tiny-action" onclick="archiveContent('${x.id}')">${en?'Archive':'أرشفة'}</button>`:`<button class="tiny-action" onclick="activateContent('${x.id}')">${en?'Activate':'تفعيل'}</button>`}${x.sessions?`<button class="tiny-action" onclick="completeContentSession('${x.id}')">${x.completedSessions||0}/${x.sessions}</button>`:''}</div></div>`}).join('')}</div></section>`;
   }
 
   const originalRenderSystem=window.renderSystem;
@@ -571,25 +583,31 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
 
   function greeting(){
     const hour=new Date().getHours(), en=isEn();
-    const key=`mihrab-signal-${keyDate()}-${state.lang}`;
-    const pool=en?[
-      hour<12?'Good morning. Al-Fairouz is waiting for its market leader.':hour<18?'Good afternoon. Protect one useful block today.':'Good evening. Close the day with intention.',
-      'Ready to add another brick to your portfolio?',
-      'Protect your quiet execution today.',
-      'One protected block can change the week.'
-    ]:[
-      hour<12?'صباح هادئ. صيدلية الفيروز مستنية قائد خطتها التسويقية.':hour<18?'مساء خير. احمِ جلسة مفيدة واحدة النهارده.':'مساء هادئ. اقفل اليوم بنية واضحة.',
-      'جاهز تضيف قطعة جديدة للبورتفوليو بتاعك؟',
-      'احمِ تنفيذك الهادئ النهارده.',
-      'جلسة محمية واحدة ممكن تغيّر شكل أسبوعك.'
+    const day=dayKey();
+    state.settings ||= {};
+    if(state.settings.greetingDate===day && state.settings.greetingTextAr && state.settings.greetingTextEn){
+      return en?state.settings.greetingTextEn:state.settings.greetingTextAr;
+    }
+    const welcomeEn=hour<12?'Good morning.':hour<18?'Good afternoon.':'Good evening.';
+    const welcomeAr=hour<12?'صباح هادئ.':hour<18?'مساء خير.':'مساء هادئ.';
+    const enSignals=[
+      `${welcomeEn} Al-Fairouz is waiting for its market leader.`,
+      `${welcomeEn} Ready to build your digital presence piece by piece?`,
+      `${welcomeEn} Protect your quiet execution today.`,
+      `${welcomeEn} One protected block changes everything.`
     ];
-    try{
-      const cached=localStorage.getItem(key);
-      if(cached) return cached;
-      const msg=pool[Math.floor(Math.random()*pool.length)];
-      localStorage.setItem(key,msg);
-      return msg;
-    }catch{return pool[0]}
+    const arSignals=[
+      `${welcomeAr} صيدلية الفيروز مستنية قائد خطتها التسويقية.`,
+      `${welcomeAr} جاهز تضيف قطعة جديدة للبورتفوليو بتاعك النهارده؟`,
+      `${welcomeAr} جلسة تركيز محمية واحدة بتغير شكل أسبوعك بالكامل.`,
+      `${welcomeAr} احمي الأساسيات وسيب الباقي ياخد مساحته براحته.`
+    ];
+    const r=Math.floor(Math.random()*4);
+    state.settings.greetingDate=day;
+    state.settings.greetingTextEn=enSignals[r];
+    state.settings.greetingTextAr=arSignals[r];
+    save();
+    return en?state.settings.greetingTextEn:state.settings.greetingTextAr;
   }
 
   function weeklySignal(){
@@ -877,146 +895,128 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
   function hardRender(){window.renderView(state.view||'home');setVisible();window.nav?.();applyTheme?.();}
   hardRender();
 })();
-
+/* ============================================================================
+   MIHRAB V13 — EXACT VISUAL/PERSONAL FEEDBACK LAYER
+   ============================================================================ */
+(function MihrabFinalInteractions(){
+  'use strict';
+  function cssEscape(v){return (window.CSS&&CSS.escape)?CSS.escape(String(v)):String(v).replace(/[^a-zA-Z0-9_-]/g,'\\$&')}
+  window.updateRing=function(){
+    const items=typeof dayTasks==='function'?dayTasks(todayName()):[];
+    const n=items.filter(([id])=>!!state.today[id]).length;
+    const total=items.length;
+    const p=total?Math.round(n/total*100):0;
+    document.body.style.setProperty('--today-progress-ratio',p/100);
+    const ring=document.querySelector('#view-home .ring');
+    if(ring){
+      ring.style.setProperty('--p',p+'%');
+      const b=ring.querySelector('b'); const sp=ring.querySelector('span');
+      if(b) b.textContent=p+'%'; if(sp) sp.textContent=`${n} / ${total}`;
+      if(p===100 && !window.__dayAlreadyCelebrated){
+        window.__dayAlreadyCelebrated=true;
+        for(let i=0;i<20;i++){
+          const pt=document.createElement('div');
+          pt.className='ring-celebrate-particle';
+          pt.style.backgroundColor=i%2===0?'var(--a)':'var(--c)';
+          pt.style.boxShadow=i%2===0?'0 0 8px var(--a)':'0 0 8px var(--c)';
+          pt.style.left='50%';pt.style.top='50%';
+          const angle=Math.random()*Math.PI*2,dist=45+Math.random()*65;
+          pt.style.setProperty('--tx',Math.cos(angle)*dist+'px');
+          pt.style.setProperty('--ty',Math.sin(angle)*dist+'px');
+          ring.appendChild(pt);
+          pt.addEventListener('animationend',()=>pt.remove(),{once:true});
+        }
+      } else if(p<100) window.__dayAlreadyCelebrated=false;
+    }
+    const stats=document.querySelectorAll('#view-home .stats-grid .stat-card strong');
+    if(stats.length>=2){stats[0].textContent=`${n}/${total}`;stats[1].textContent=Math.max(total-n,0)}
+    const rem=document.querySelector('#view-home .hero-side .tiny.muted:last-child');
+    if(rem) rem.textContent=n===total?(state.lang==='en'?'You’re done for today':'خلصت يومك'):`${total-n} ${state.lang==='en'?'items left':'بنود باقية'}`;
+    const heroBanner=document.querySelector('#view-home .focus-banner:last-of-type');
+    if(heroBanner && n===total){heroBanner.querySelector('b')?.replaceChildren(document.createTextNode(state.lang==='en'?'Enough for today.':'كفاية لحد هنا.'))}
+  };
+  window.toggleToday=function(id){
+    const was=!!state.today[id];
+    state.today[id]=!state.today[id];
+    save();
+    if(typeof markRow==='function') markRow(id,!!state.today[id]);
+    window.updateRing();
+    if(!was && state.today[id]){
+      if(typeof celebrate==='function') celebrate();
+      const row=document.querySelector(`#view-home .task-item[data-task-id="${cssEscape(id)}"]`);
+      if(row){
+        row.classList.add('just-checked');
+        row.addEventListener('animationend',()=>row.classList.remove('just-checked'),{once:true});
+      }
+    }
+  };
+  window.updateRing();
+})();
 
 
 
 /* ============================================================================
-   MIHRAB V12 — SINGLE, TOUCH-FIRST NAVIGATION + QUIET LUXURY POLISH
+   MIHRAB V15 — UNIFIED ROUTER
+   One routing engine for desktop + mobile. Mobile uses native hash links.
    ============================================================================ */
-(function MihrabV12Core(){
+(function MihrabUnifiedNavigation(){
   'use strict';
   const VIEWS=['home','marketing','shari','quran','courses','system'];
-  const navData=(typeof NAV!=='undefined'?NAV:[
-    ['home','⌂','مركز اليوم','Today'],
-    ['marketing','↗','التسويق','Marketing'],
-    ['shari','✦','العلم الشرعي','Islamic Studies'],
-    ['quran','◔','القرآن','Qur’an'],
-    ['courses','▣','الكورسات','Courses'],
-    ['system','⚙','النظام','System']
-  ]);
-  const valid=id=>VIEWS.includes(id);
-  const esc=v=>String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  const currentHash=()=>{const h=(location.hash||'').slice(1); return valid(h)?h:null};
-
-  function labelFor(item){return state.lang==='en'?item[3]:item[2]}
-  function markup(){
-    return navData.map(([id,ic,ar,en])=>`<button type="button" class="nav-btn ${state.view===id?'active':''}" data-view="${id}" aria-current="${state.view===id?'page':'false'}" onclick="window.navigate('${id}')"><span class="nav-icon" aria-hidden="true">${esc(ic)}</span><span class="nav-label" data-ar="${esc(ar)}" data-en="${esc(en)}">${esc(labelFor([id,ic,ar,en]))}</span></button>`).join('');
+  const valid=v=>VIEWS.includes(v);
+  const mobile=document.getElementById('mobileNav');
+  const top=document.getElementById('nav');
+  const currentHash=()=>{const v=(location.hash||'').replace(/^#/,'');return valid(v)?v:null};
+  const desktopMarkup=()=>NAV.map(([id,ic,ar,en])=>`<a class="nav-btn ${state.view===id?'active':''}" data-view="${id}" href="#${id}" aria-current="${state.view===id?'page':'false'}"><span class="nav-icon" aria-hidden="true">${ic}</span><span class="nav-label" data-ar="${esc(ar)}" data-en="${esc(en)}">${state.lang==='en'?en:ar}</span></a>`).join('');
+  const mobileMarkup=()=>NAV.map(([id,ic,ar,en])=>`<a class="nav-btn ${state.view===id?'active':''}" data-view="${id}" href="#${id}" onclick="window.navigate('${id}'); return false;" aria-current="${state.view===id?'page':'false'}"><span class="nav-icon" aria-hidden="true">${ic}</span><span class="nav-label" data-ar="${esc(ar)}" data-en="${esc(en)}">${state.lang==='en'?en:ar}</span></a>`).join('');
+  function syncMobileNav(activeId){
+    if(!mobile) return;
+    const en=state.lang==='en';
+    mobile.querySelectorAll('.nav-btn').forEach(a=>{
+      const id=a.dataset.view, active=id===activeId;
+      const label=a.querySelector('.nav-label');
+      if(label) label.textContent=en?(label.dataset.en||label.dataset.ar||''):(label.dataset.ar||label.dataset.en||'');
+      a.classList.toggle('active',active);
+      a.setAttribute('aria-current',active?'page':'false');
+    });
   }
-  function paintNav(){
-    const html=markup();
-    const top=document.getElementById('nav');
-    const mob=document.getElementById('mobileNav');
-    if(top) top.innerHTML=html;
-    if(mob) mob.innerHTML=html;
-    const ll=document.getElementById('langLabel');
-    if(ll) ll.textContent=state.lang==='en'?'ع':'EN';
+  function paint(){
+    if(top) top.innerHTML=desktopMarkup();
+    if(mobile) mobile.innerHTML=mobileMarkup();
+    const lab=document.getElementById('langLabel');
+    if(lab) lab.textContent=state.lang==='en'?'ع':'EN';
+    syncMobileNav(state.view||'home');
   }
-  function paintView(id){
+  function render(id){
+    id=valid(id)?id:'home';
+    state.view=id;
+    if(typeof window.renderView==='function') window.renderView(id);
     document.querySelectorAll('.view').forEach(v=>{
       const active=v.id===`view-${id}`;
       v.hidden=!active;
       v.classList.toggle('active',active);
     });
-  }
-  function route(id,{pushHistory=true,scroll=true}={}){
-    id=valid(id)?id:'home';
-    state.view=id;
-    save();
-    if(pushHistory && location.hash!==`#${id}`){
-      window.history.pushState({mihrab:id},'',`#${id}`);
-    }
-    try{window.renderView(id)}catch(e){console.error(e)}
-    paintView(id);
-    paintNav();
-    if(typeof applyTheme==='function')applyTheme();
-    if(typeof applyLanguage==='function')applyLanguage();
+    paint();
+    if(typeof applyTheme==='function') applyTheme();
+    if(typeof applyLanguage==='function') applyLanguage();
     document.body.dataset.online=navigator.onLine?'true':'false';
     document.body.dataset.lowPower=state.settings?.lowPower?'true':'false';
+  }
+  function route(id,scroll=true){
+    id=valid(id)?id:'home';
+    render(id); save();
     if(scroll) window.scrollTo({top:0,left:0,behavior:'auto'});
   }
-  window.navigate=id=>route(id,{pushHistory:true,scroll:true});
-  window.nav=paintNav;
-  window.renderAll=()=>route(state.view||'home',{pushHistory:false,scroll:false});
-
-  // One listener only; no preventDefault and no propagation hijacking.
-  document.addEventListener('click',e=>{
-    const b=e.target.closest?.('.nav-btn[data-view]');
-    if(!b)return;
-    const id=b.dataset.view;
-    if(!valid(id))return;
-    if(state.view===id){ e.preventDefault(); return; }
-    // onclick already routes; this only provides a safety fallback when inline handlers are blocked.
-    queueMicrotask(()=>{ if(state.view!==id) route(id,{pushHistory:true,scroll:true}); });
-  },{passive:false});
-
-  window.addEventListener('popstate',()=>route(currentHash()||'home',{pushHistory:false,scroll:true}));
-  window.addEventListener('hashchange',()=>{
-    const id=currentHash();
-    if(id && id!==state.view) route(id,{pushHistory:false,scroll:true});
-  },{passive:true});
-
-  // Direct touch fallback for browsers with broken click synthesis.
-  let lastTouch=0;
-  document.addEventListener('touchend',e=>{
-    const b=e.target.closest?.('#mobileNav .nav-btn[data-view]');
-    if(!b)return;
-    const now=Date.now();
-    if(now-lastTouch<280)return;
-    lastTouch=now;
-    const id=b.dataset.view;
-    if(valid(id) && state.view!==id) route(id,{pushHistory:true,scroll:true});
-  },{passive:true});
-
-  // Boot from URL, then paint one view only.
-  route(currentHash()||state.view||'home',{pushHistory:false,scroll:false});
-})();
-
-/* Daily progress ring + completion feedback: single source of truth. */
-(function MihrabV12Completion(){
-  'use strict';
-  const baseToggle=window.toggleToday;
-  function burst(ring){
-    if(!ring || window.__mihrabDayBurst) return;
-    window.__mihrabDayBurst=true;
-    for(let i=0;i<12;i++){
-      const pt=document.createElement('span');
-      pt.className='ring-celebrate-particle';
-      pt.style.background='var(--c)';
-      pt.style.left='50%'; pt.style.top='50%';
-      const a=Math.random()*Math.PI*2, d=28+Math.random()*55;
-      pt.style.setProperty('--tx',`${Math.cos(a)*d}px`);
-      pt.style.setProperty('--ty',`${Math.sin(a)*d}px`);
-      ring.appendChild(pt); pt.addEventListener('animationend',()=>pt.remove(),{once:true});
-    }
-  }
-  window.updateRing=function(){
-    const items=typeof dayTasks==='function'?dayTasks(todayName()):[];
-    const total=items.length||0;
-    const done=items.reduce((n,[id])=>n+(state.today?.[id]?1:0),0);
-    const p=total?Math.round(done/total*100):0;
-    document.body.style.setProperty('--today-progress-ratio',String(p/100));
-    const ring=document.querySelector('#view-home .ring');
-    if(ring){
-      ring.style.setProperty('--p',p+'%');
-      const b=ring.querySelector('b'), sp=ring.querySelector('span');
-      if(b)b.textContent=p+'%';
-      if(sp)sp.textContent=`${done} / ${total}`;
-      if(p===100)burst(ring); else window.__mihrabDayBurst=false;
-    }
-    const stats=document.querySelectorAll('#view-home .stats-grid .stat-card strong');
-    if(stats[0])stats[0].textContent=`${done}/${total}`;
-    if(stats[1])stats[1].textContent=Math.max(total-done,0);
+  window.navigate=function(id){
+    if(!valid(id)) return;
+    const target=`#${id}`;
+    if(location.hash!==target) window.history.pushState({view:id},'',target);
+    route(id,true);
   };
-  window.toggleToday=function(id){
-    const was=!!state.today?.[id];
-    baseToggle(id);
-    if(!was && state.today?.[id]){
-      if(typeof celebrate==='function')celebrate();
-      const row=document.querySelector(`#view-home .task-item[data-task-id="${(window.CSS&&CSS.escape)?CSS.escape(id):String(id).replace(/[^a-zA-Z0-9_-]/g,'\\$&')}"]`);
-      if(row){row.classList.remove('just-checked');void row.offsetWidth;row.classList.add('just-checked');row.addEventListener('animationend',()=>row.classList.remove('just-checked'),{once:true});}
-    }
-    window.updateRing();
-  };
-  window.updateRing();
+  window.nav=paint;
+  window.renderAll=()=>route(state.view||'home',false);
+  window.addEventListener('hashchange',()=>route(currentHash()||'home',true));
+  window.addEventListener('popstate',()=>route(currentHash()||'home',true));
+  const initial=currentHash()||state.view||'home';
+  if(location.hash!==`#${initial}`) window.history.replaceState({view:initial},'',`#${initial}`);
+  route(initial,false);
 })();
