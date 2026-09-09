@@ -198,3 +198,224 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
   observer.observe(appRoot(),{childList:true,subtree:true});
   initCanvas();bindReactive();highlightCurrentFocus();animateRings();
 })();
+
+/* =====================================================================
+   MIHRAB LIFELONG LAYER — plan-safe, editable content, focus, backup
+   ===================================================================== */
+(function MihrabLifelong(){
+  const ensure=()=>{
+    state.mode ||= 'normal';
+    state.inbox ||= [];
+    state.library ||= [];
+    state.backlog ||= [];
+    state.weekly ||= {marketingHours:0,mckinsey:false,dose:false,review:false,rating:''};
+    state.reviewLog ||= [];
+    state.metrics ||= {focusMinutes:0, sessions:0};
+    state.settings ||= {ambient:true,density:'comfortable',timeFormat:'24h',autoBackup:true};
+    if(!state.schemaVersion) state.schemaVersion=2;
+    save();
+  };
+  const dayTypeToMode={كلية:'normal','بدون كلية':'busy','ديب وورك':'normal',راحة:'rest'};
+  const modeLabels={
+    ar:{normal:'طبيعي',busy:'مشغول',exam:'امتحانات',survival:'نجاة',rest:'راحة'},
+    en:{normal:'Normal',busy:'Busy',exam:'Exam',survival:'Survival',rest:'Rest'}
+  };
+  const categoryLabels={ar:{islamic:'شرعي',career:'مهني',course:'كورس',reading:'قراءة',other:'أخرى'},en:{islamic:'Islamic',career:'Career',course:'Course',reading:'Reading',other:'Other'}};
+  const statusLabels={ar:{active:'نشط',paused:'متوقف',done:'مكتمل'},en:{active:'Active',paused:'Paused',done:'Completed'}};
+  const weekdayMapEn={'السبت':'Saturday','الأحد':'Sunday','الاثنين':'Monday','الثلاثاء':'Tuesday','الأربعاء':'Wednesday','الخميس':'Thursday','الجمعة':'Friday'};
+  const priorityRank={core:0,important:1,optional:2};
+  const durationFor={pr_f:5,pr_d:5,pr_a:5,pr_m:5,pr_i:5,azkar:10,bro:15,rafiq:10,quran:20,marketing:30,anki:20,easy:10,mouth:5,skin:5,hair:10,aw:30,zad:30,taj:20,azb:60,linkedin:30,review:15};
+  const coreIds=new Set(['pr_f','pr_d','pr_a','pr_m','pr_i','azkar','quran','rafiq','aw','zad']);
+  const priorityOf=id=>coreIds.has(id)?'core':(['marketing','anki','linkedin','azb'].includes(id)?'important':'optional');
+  const t=text=>state.lang==='en'?text.en:text.ar;
+  const safeParseJson=raw=>{try{return JSON.parse(raw)}catch(e){return null}};
+  const nowDate=()=>new Date().toISOString().slice(0,10);
+  const dayKey=()=>keyDate();
+
+  function migrate(){
+    ensure();
+    if(!state.weekly.marketingHours) state.weekly.marketingHours=0;
+    save();
+  }
+  function snapshot(){return JSON.parse(JSON.stringify(state));}
+  function autoBackup(){
+    try{
+      if(!state.settings.autoBackup) return;
+      const last=Number(localStorage.getItem('mihrab_last_auto_backup')||0);
+      if(Date.now()-last>7*86400000){
+        localStorage.setItem('mihrab_auto_backup',JSON.stringify({version:state.schemaVersion,createdAt:new Date().toISOString(),state:snapshot()}));
+        localStorage.setItem('mihrab_last_auto_backup',String(Date.now()));
+      }
+    }catch(e){}
+  }
+  function download(name,data,type='application/json'){
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},250);
+  }
+  window.exportMihrab=()=>{const payload={app:'Mihrab',schemaVersion:state.schemaVersion,exportedAt:new Date().toISOString(),state:snapshot()};download(`mihrab-backup-${keyDate()}.json`,JSON.stringify(payload,null,2));state.backupAt=new Date().toISOString();save();renderAll()};
+  window.openImport=()=>document.getElementById('mihrabImportInput')?.click();
+  window.importMihrab=(input)=>{
+    const file=input.files?.[0]; if(!file)return;
+    const reader=new FileReader();reader.onload=()=>{
+      const p=safeParseJson(reader.result); const next=p?.state||p;
+      if(!next || typeof next!=='object' || !next.schemaVersion){alert(state.lang==='en'?'This backup does not look like a valid Mihrab backup.':'النسخة دي مش Backup صالح لـ Mihrab.');return;}
+      if(!confirm(state.lang==='en'?'Import this backup? Current local data will be replaced.':'استيراد النسخة؟ البيانات الحالية المحلية هتتستبدل.'))return;
+      state={...state,...next}; state.schemaVersion=Math.max(Number(state.schemaVersion)||1,2); save(); renderAll(); alert(state.lang==='en'?'Backup restored.':'تم استرجاع النسخة الاحتياطية.');
+    };reader.readAsText(file);input.value='';
+  };
+
+  function ensureModals(){
+    if(!document.getElementById('mihrabOverlay')){
+      document.body.insertAdjacentHTML('beforeend',`
+      <div class="mihrab-overlay" id="mihrabOverlay" onclick="if(event.target.id==='mihrabOverlay')closeMihrabModal()"><div class="mihrab-modal" id="mihrabModal"></div></div>
+      <input id="mihrabImportInput" type="file" accept="application/json,.json" hidden onchange="importMihrab(this)">
+      <div class="focus-mode" id="focusMode"><div class="focus-shell" id="focusShell"></div></div>`);
+    }
+  }
+  window.closeMihrabModal=()=>{document.getElementById('mihrabOverlay')?.classList.remove('open')};
+  const openModal=(html)=>{ensureModals();document.getElementById('mihrabModal').innerHTML=html;document.getElementById('mihrabOverlay').classList.add('open');setTimeout(()=>document.querySelector('#mihrabOverlay input')?.focus(),30)};
+
+  const commands=()=>{
+    const en=state.lang==='en';
+    return [
+      ['go-home',en?'Today':'اليوم','home'],['go-marketing',en?'Marketing':'التسويق','marketing'],['go-shari',en?'Islamic Studies':'العلم الشرعي','shari'],['go-quran',en?'Qur’an + Rafiq':'القرآن + رفيق','quran'],['go-courses',en?'Courses':'الكورسات','courses'],['go-system',en?'System / Library':'النظام / المكتبة','system'],
+      ['focus',en?'Start Focus Mode':'ابدأ وضع التركيز','focus'],['capture',en?'Quick Capture':'إضافة سريعة','capture'],['15',en?'I have 15 minutes':'عندي 15 دقيقة','smart15'],['30',en?'I have 30 minutes':'عندي 30 دقيقة','smart30'],['energy',en?'No Energy':'مفيش طاقة','low'],['export',en?'Export backup':'تصدير نسخة احتياطية','export']
+    ];
+  };
+  window.openCommandPalette=()=>{
+    const en=state.lang==='en';
+    openModal(`<div class="mihrab-modal-head"><input id="commandInput" placeholder="${en?'Search or run a command…':'ابحث أو نفّذ أمرًا…'}" oninput="filterCommands(this.value)" autocomplete="off"><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="command-list" id="commandList"></div><div style="padding:8px 14px;border-top:1px solid var(--line);font-size:10px;color:var(--muted)">${en?'Enter to run · Esc to close · Ctrl+K':'Enter للتنفيذ · Esc للإغلاق · Ctrl+K'}</div>`);
+    renderCommands('');
+  };
+  window.renderCommands=(q='')=>{const list=document.getElementById('commandList');if(!list)return;const en=state.lang==='en';const arr=commands().filter(x=>(x[1]+' '+x[0]).toLowerCase().includes(q.toLowerCase()));list.innerHTML=arr.map(([id,label,action],i)=>`<button class="command-item" onclick="runCommand('${action}')"><span>${esc(label)}</span><small>${action==='focus'?'F':action==='capture'?'+':''}</small></button>`).join('')||`<div style="padding:20px;text-align:center;color:var(--muted)">${en?'No command found.':'مش لاقي الأمر ده.'}</div>`};
+  window.filterCommands=q=>renderCommands(q);
+  window.runCommand=(action)=>{closeMihrabModal();if(action==='focus')return startFocus();if(action==='capture')return openQuickCapture();if(action==='smart15')return smartTime(15);if(action==='smart30')return smartTime(30);if(action==='low')return setMode('busy');if(action==='export')return exportMihrab();if(action.startsWith('go-'))return navigate(action.slice(3));};
+
+  window.openQuickCapture=()=>{
+    const en=state.lang==='en';
+    openModal(`<div class="mihrab-modal-head"><b>${en?'Quick Capture':'إضافة سريعة'}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><div class="field-lite"><label>${en?'Capture':'الفكرة / المهمة'}</label><input id="captureText" placeholder="${en?'Write it and move on…':'اكتبها وخلاص…'}"></div><div class="form-grid" style="margin-top:10px"><div class="field-lite"><label>${en?'Category':'القسم'}</label><select id="captureCat"><option value="other">${en?'Other':'أخرى'}</option><option value="career">${en?'Career':'مهني'}</option><option value="islamic">${en?'Islamic':'شرعي'}</option><option value="course">${en?'Course':'كورس'}</option><option value="reading">${en?'Reading':'قراءة'}</option></select></div><div class="field-lite"><label>${en?'Minutes':'الدقائق'}</label><select id="captureDur"><option value="5">5</option><option value="15" selected>15</option><option value="30">30</option><option value="45">45</option><option value="60">60</option><option value="90">90</option></select></div></div><div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${en?'Cancel':'إلغاء'}</button><button class="btn primary" onclick="saveQuickCapture()">${en?'Capture':'احفظ'}</button></div></div>`);
+    setTimeout(()=>document.getElementById('captureText')?.focus(),30);
+  };
+  window.saveQuickCapture=()=>{const text=document.getElementById('captureText')?.value.trim();if(!text)return;const cat=document.getElementById('captureCat').value;const duration=Number(document.getElementById('captureDur').value)||15;state.inbox.unshift({id:'in_'+Date.now().toString(36),text,category:cat,duration,createdAt:new Date().toISOString(),status:'inbox'});save();closeMihrabModal();renderAll();};
+  window.completeInbox=id=>{const x=state.inbox.find(i=>i.id===id);if(!x)return;x.status='done';x.doneAt=new Date().toISOString();save();renderAll()};
+  window.deleteInbox=id=>{state.inbox=state.inbox.filter(i=>i.id!==id);save();renderAll()};
+
+  window.setMode=mode=>{state.mode=mode;save();renderAll()};
+  function activeMode(){return state.mode||dayTypeToMode[todayDayType()]||'normal'}
+  function modeAllows(id){const m=activeMode();const p=priorityOf(id);if(m==='rest')return false;if(m==='survival')return p==='core'||['quran','pr_f','pr_d','pr_a','pr_m','pr_i','azkar'].includes(id);if(m==='exam')return p==='core'||id==='marketing';if(m==='busy')return p!=='optional';return true}
+  function modeFiltered(items){return items.filter(([id])=>modeAllows(id))}
+
+  function taskObjects(){
+    const items=modeFiltered(dayTasks(todayName())).map(([id,text])=>({id,label:text,duration:durationFor[id]||15,priority:priorityOf(id),done:tChecked(id)}));
+    (state.library||[]).filter(x=>x.status==='active'&&Array.isArray(x.days)&&x.days.includes(todayName())).forEach(x=>items.push({id:x.id,label:state.lang==='en'&&x.titleEn?x.titleEn:x.title,duration:x.duration||15,priority:x.core?'core':(x.important?'important':'optional'),done:!!state.today[x.id],custom:true}));
+    return items;
+  }
+  function smartTime(min){
+    const candidates=taskObjects().filter(x=>!x.done&&x.duration<=min).sort((a,b)=>priorityRank[a.priority]-priorityRank[b.priority]||a.duration-b.duration);
+    const en=state.lang==='en';
+    if(!candidates.length){alert(en?`Nothing useful fits ${min} minutes.`:`مفيش حاجة مفيدة مناسبة لـ ${min} دقيقة.`);return;}
+    const lines=candidates.slice(0,6).map(x=>`• ${x.label} — ${x.duration}m`).join('\n');alert((en?'Good fits:\n':'مناسب ليك:\n')+lines);}
+  window.smartTime=smartTime;
+  window.setLowEnergy=()=>setMode('busy');
+
+  function nowNextLater(){
+    const all=taskObjects().filter(x=>!x.done).sort((a,b)=>priorityRank[a.priority]-priorityRank[b.priority]||a.duration-b.duration);
+    return {now:all[0]||null,next:all[1]||null,later:all[2]||null};
+  }
+  function coreDone(){const core=taskObjects().filter(x=>x.priority==='core');return core.length>0&&core.every(x=>x.done)}
+  function modeControls(en){return `<div class="mode-strip"><button class="mode-pill ${activeMode()==='normal'?'active':''}" onclick="setMode('normal')">${en?'Normal':'طبيعي'}</button><button class="mode-pill ${activeMode()==='busy'?'active':''}" onclick="setMode('busy')">${en?'Busy':'مشغول'}</button><button class="mode-pill ${activeMode()==='exam'?'active':''}" onclick="setMode('exam')">${en?'Exam':'امتحانات'}</button><button class="mode-pill ${activeMode()==='survival'?'active':''}" onclick="setMode('survival')">${en?'Survival':'نجاة'}</button><button class="mode-pill ${activeMode()==='rest'?'active':''}" onclick="setMode('rest')">${en?'Rest':'راحة'}</button></div>`}
+
+  const originalRenderHome=window.renderHome;
+  window.renderHome=function(){
+    const base=originalRenderHome();
+    const en=state.lang==='en', nn=nowNextLater();
+    const smart=`<section class="focus-banner"><b>${en?'Now':'دلوقتي'}: ${esc(nn.now?(nn.now.custom?nn.now.label:(en&&TASK_EN[nn.now.id]?TASK_EN[nn.now.id]:nn.now.label)):(en?'Core complete.':'الأساسيات خلصت.'))}</b><span>${nn.now?(nn.now.duration+' min · '+(nn.now.priority==='core'?(en?'Core':'أساسي'):nn.now.priority==='important'?(en?'Important':'مهم'):(en?'Optional':'اختياري'))):(en?'Everything else can wait.':'الباقي اختياري.')}</span></section><div class="quick-grid"><button class="quick-action" onclick="smartTime(15)"><b>15m</b><small>${en?'I have 15 minutes':'عندي 15 دقيقة'}</small></button><button class="quick-action" onclick="smartTime(30)"><b>30m</b><small>${en?'I have 30 minutes':'عندي 30 دقيقة'}</small></button><button class="quick-action" onclick="setMode('busy')"><b>${en?'Low energy':'مفيش طاقة'}</b><small>${en?'Show lighter useful work':'هات الأسهل المفيد'}</small></button><button class="quick-action" onclick="startFocus()"><b>${en?'Focus':'تركيز'}</b><small>${en?'One task only':'مهمة واحدة فقط'}</small></button></div>${modeControls(en)}${coreDone()?`<div class="focus-banner"><b>${en?'Enough for today.':'كفاية لحد هنا.'}</b><span>${en?'Core is complete. Everything else is optional.':'الأساسيات خلصت. الباقي اختياري.'}</span></div>`:''}`;
+    return base.replace('<div class="section-title" id="todayTasks">',smart+'<div class="section-title" id="todayTasks">');
+  };
+
+  window.startFocus=()=>{
+    const en=state.lang==='en',x=nowNextLater().now;
+    if(!x){alert(en?'Your core is complete.':'الأساسيات خلصت.');return;}
+    ensureModals();const fm=document.getElementById('focusMode');fm.classList.add('open');
+    const seconds=(x.duration||25)*60; let end=Date.now()+seconds*1000; let timer=null;
+    const shell=document.getElementById('focusShell');
+    const paint=()=>{const left=Math.max(0,Math.ceil((end-Date.now())/1000));const m=String(Math.floor(left/60)).padStart(2,'0'),s=String(left%60).padStart(2,'0');shell.querySelector('.focus-timer')&&(shell.querySelector('.focus-timer').textContent=`${m}:${s}`);if(left<=0){clearInterval(timer);state.metrics.focusMinutes+=(x.duration||25);state.metrics.sessions+=1;save();}};
+    shell.innerHTML=`<div class="focus-kicker">${en?'MIHRAB FOCUS':'تركيز مِحْرَاب'}</div><h2>${esc(en&&TASK_EN[x.id]?TASK_EN[x.id]:(x.label))}</h2><div class="focus-timer">${String(Math.floor(seconds/60)).padStart(2,'0')}:00</div><div class="focus-actions"><button class="btn primary" onclick="finishFocus('${esc(x.id)}');closeFocus()">${en?'Mark done':'تم'}</button><button class="btn" onclick="extendFocus(5)">+5m</button><button class="btn" onclick="closeFocus()">${en?'Exit':'خروج'}</button></div>`;
+    timer=setInterval(paint,250);paint();window.__focusTimer=timer;window.__focusEnd=()=>end;
+  };
+  window.extendFocus=min=>{if(window.__focusEnd){window.__focusTimer&&clearInterval(window.__focusTimer);let end=window.__focusEnd()+min*60000;window.__focusEnd=()=>end;window.__focusTimer=setInterval(()=>{},1000);startFocus()}};
+  window.closeFocus=()=>{document.getElementById('focusMode')?.classList.remove('open');if(window.__focusTimer)clearInterval(window.__focusTimer)};
+  window.finishFocus=id=>{state.today[id]=true;state.metrics.focusMinutes+=(durationFor[id]||25);state.metrics.sessions+=1;save();closeFocus();renderAll()};
+
+  function librarySeeds(){
+    if((state.library||[]).some(x=>x.systemSeed))return;
+    state.library=[
+      {id:'lib_zad',title:'أكاديمية زاد',titleEn:'ZAD Academy',category:'islamic',group:'zad',days:['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'],duration:30,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true},
+      {id:'lib_ayman',title:'مسار أيمن عبد الرحيم',titleEn:'Ayman Abdel Rahim track',category:'islamic',group:'ayman',days:['السبت','الاثنين','الأربعاء','الجمعة'],duration:30,core:true,status:'active',sessions:9,completedSessions:0,systemSeed:true},
+      {id:'lib_awareness',title:'تأسيس وعي المسلم المعاصر',titleEn:'Building the Contemporary Muslim’s Awareness',category:'islamic',group:'awareness',days:['السبت','الاثنين','الأربعاء','الجمعة'],duration:30,core:true,status:'active',sessions:9,completedSessions:0,systemSeed:true},
+      {id:'lib_aqeedah',title:'بناء العقيدة للجيل الصاعد',titleEn:'Building Aqeedah for the Rising Generation',category:'islamic',group:'ahmed-sayed',days:['السبت','الاثنين','الأربعاء'],duration:30,core:true,status:'active',sessions:8,completedSessions:8,systemSeed:true},
+      {id:'lib_easy',title:'EasyPeasy Way to Quit',titleEn:'EasyPeasy Way to Quit',category:'reading',group:'easypeasy',days:[],duration:10,core:false,status:'active',sessions:0,completedSessions:0,systemSeed:true},
+      {id:'lib_google',title:'Google / HubSpot certifications',titleEn:'Google / HubSpot certifications',category:'career',group:'cert',days:[],duration:25,important:true,status:'active',systemSeed:true}
+    ];
+    save();
+  }
+  window.addContent=()=>{
+    const en=state.lang==='en';
+    openModal(`<div class="mihrab-modal-head"><b>${en?'Add track / course':'إضافة مسار / كورس'}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><div class="form-grid"><div class="field-lite"><label>${en?'Title':'الاسم'}</label><input id="libTitle"></div><div class="field-lite"><label>${en?'English title':'الاسم بالإنجليزي'}</label><input id="libTitleEn"></div><div class="field-lite"><label>${en?'Category':'القسم'}</label><select id="libCat"><option value="islamic">${en?'Islamic':'شرعي'}</option><option value="career">${en?'Career':'مهني'}</option><option value="course">${en?'Course':'كورس'}</option><option value="reading">${en?'Reading':'قراءة'}</option><option value="other">${en?'Other':'أخرى'}</option></select></div><div class="field-lite"><label>${en?'Approx. minutes':'المدة التقريبية بالدقيقة'}</label><input id="libDur" type="number" min="1" value="30"></div><div class="field-lite full"><label>${en?'Days — hold Ctrl/Cmd for multiple':'الأيام — استخدم Ctrl/Cmd لاختيار أكثر من يوم'}</label><select id="libDays" multiple size="4">${DAYS.map(d=>`<option value="${d}">${en?weekdayMapEn[d]:d}</option>`).join('')}</select></div></div><div class="mode-strip"><label class="mode-pill"><input id="libCore" type="checkbox" style="margin-inline-end:6px">${en?'Core':'أساسي'}</label><label class="mode-pill"><input id="libImportant" type="checkbox" style="margin-inline-end:6px">${en?'Important':'مهم'}</label></div><div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${en?'Cancel':'إلغاء'}</button><button class="btn primary" onclick="saveContent()">${en?'Add':'إضافة'}</button></div></div>`);
+  };
+  window.saveContent=()=>{const title=document.getElementById('libTitle')?.value.trim();if(!title)return;const days=[...document.getElementById('libDays').selectedOptions].map(o=>o.value);state.library.unshift({id:'lib_'+Date.now().toString(36),title,titleEn:document.getElementById('libTitleEn').value.trim(),category:document.getElementById('libCat').value,duration:Number(document.getElementById('libDur').value)||30,days,core:document.getElementById('libCore').checked,important:document.getElementById('libImportant').checked,status:'active',sessions:0,completedSessions:0,createdAt:new Date().toISOString()});save();closeMihrabModal();renderAll()};
+  window.archiveContent=id=>{const x=state.library.find(i=>i.id===id);if(!x)return;x.status='paused';save();renderAll()};
+  window.activateContent=id=>{const x=state.library.find(i=>i.id===id);if(!x)return;x.status='active';save();renderAll()};
+  window.completeContentSession=id=>{const x=state.library.find(i=>i.id===id);if(!x)return;x.completedSessions=Math.min((x.sessions||0),(x.completedSessions||0)+1);if(x.sessions&&x.completedSessions>=x.sessions)x.status='done';save();renderAll()};
+
+  function librarySection(){
+    librarySeeds();const en=state.lang==='en';const list=state.library||[];
+    return `<section class="section-box" style="margin-top:12px"><div class="section-title" style="margin-bottom:8px"><div><h2 style="font-size:20px">${en?'Content Library':'مكتبة المحتوى'}</h2><p>${en?'Plans can evolve without touching the code. Archive finished tracks and add replacements anytime.':'الخطة ثابتة، لكن المحتوى نفسه قابل للتغيير من هنا من غير لمس الكود. خلصت سلسلة؟ أرشفها وأضف غيرها.'}</p></div><button class="btn primary" onclick="addContent()">＋ ${en?'Add track':'إضافة مسار'}</button></div><div class="library-list">${list.map(x=>{const st=statusLabels[en?'en':'ar'][x.status]||x.status;const d=x.days?.length?x.days.map(v=>en?weekdayMapEn[v]:v).join(' · '):(en?'Unscheduled':'غير مجدول');return `<div class="library-item"><div class="library-main"><b>${esc(en&&x.titleEn?x.titleEn:x.title)} ${x.core?'· '+(en?'Core':'أساسي'):''}</b><small>${categoryLabels[en?'en':'ar'][x.category]||x.category} · ${x.duration||30} min · ${d}</small></div><div class="library-meta"><span class="library-status ${x.status==='active'?'active':''}">${st}</span>${x.status==='active'?`<button class="tiny-action" onclick="archiveContent('${x.id}')">${en?'Archive':'أرشفة'}</button>`:`<button class="tiny-action" onclick="activateContent('${x.id}')">${en?'Activate':'تفعيل'}</button>`}${x.sessions?`<button class="tiny-action" onclick="completeContentSession('${x.id}')">${x.completedSessions||0}/${x.sessions}</button>`:''}</div></div>`}).join('')}</div></section>`;
+  }
+
+  const originalRenderSystem=window.renderSystem;
+  window.renderSystem=function(){
+    const base=originalRenderSystem();const en=state.lang==='en';
+    const inbox=(state.inbox||[]).filter(x=>x.status==='inbox');
+    const backupAt=state.backupAt?new Date(state.backupAt).toLocaleDateString():(en?'Not exported yet':'لم يتم التصدير بعد');
+    const lifecycle=`<section class="section-box" style="margin-top:12px"><div class="section-title" style="margin-bottom:8px"><div><h2 style="font-size:20px">${en?'Mihrab for the long run':'Mihrab على المدى الطويل'}</h2><p>${en?'The plan stays yours; the content can change without editing the app.':'الخطة ملكك، والمحتوى يتغير من غير ما تحتاج تعدّل التطبيق.'}</p></div></div>${librarySection()}<div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>${en?'Inbox':'صندوق الوارد'}</h3><p class="muted">${en?'Quick ideas and one-off tasks land here first.':'أي فكرة أو مهمة مؤقتة تدخل هنا الأول.'}</p><div class="library-list">${inbox.length?inbox.slice(0,8).map(x=>`<div class="inbox-item"><div class="grow"><b>${esc(x.text)}</b><small>${x.duration}m · ${categoryLabels.en[x.category]||x.category}</small></div><button class="tiny-action" onclick="completeInbox('${x.id}')">${en?'Done':'تم'}</button><button class="tiny-action" onclick="deleteInbox('${x.id}')">×</button></div>`).join(''):`<div class="note">${en?'Inbox is clear.':'صندوق الوارد فاضي.'}</div>`}</div><button class="btn" style="margin-top:10px" onclick="openQuickCapture()">＋ ${en?'Quick capture':'إضافة سريعة'}</button></section><section class="section-box"><h3>${en?'Backup & restore':'النسخ الاحتياطي'}</h3><p class="muted">${en?'Local data stays in your browser. Export a file before major changes or device moves.':'البيانات محلية. صدّر نسخة قبل أي تغيير كبير أو نقل الجهاز.'}</p><div class="tiny muted" style="margin-bottom:8px">${en?'Last export: ':'آخر تصدير: '}${backupAt}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="exportMihrab()">${en?'Export JSON':'تصدير JSON'}</button><button class="btn" onclick="openImport()">${en?'Import':'استيراد'}</button></div></section></div></section>`;
+    return base+lifecycle;
+  };
+
+  // Make full English mode robust for the new controls and avoid text-node translation hacks.
+  const oldNav=window.nav; window.nav=function(){
+    document.getElementById('nav').innerHTML=NAV.map(([id,ic,ar,en])=>`<button class="nav-btn ${state.view===id?'active':''}" data-view="${id}" onclick="navigate('${id}')">${ic}&nbsp; ${state.lang==='en'?en:ar}</button>`).join('');
+    const lab=document.getElementById('langLabel');if(lab)lab.textContent=state.lang==='en'?'ع':'EN';
+  };
+  // Keep the original view map, but decorate every render with new command affordances.
+  const oldRenderAll=window.renderAll;
+  window.renderAll=function(){ensure();librarySeeds();oldRenderAll();ensureModals();document.body.dataset.mode=activeMode();autoBackup();}
+
+  // Keyboard controls.
+  document.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCommandPalette();}
+    if(e.key==='Escape'){closeMihrabModal();closeFocus();}
+    if(e.key==='n'&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)){e.preventDefault();openQuickCapture();}
+  });
+  window.addEventListener('online',()=>{document.body.dataset.online='true';document.getElementById('mihrab-online-dot')?.setAttribute('title','Online')});
+  window.addEventListener('offline',()=>{document.body.dataset.online='false';document.getElementById('mihrab-online-dot')?.setAttribute('title','Offline')});
+
+  // First-run migration + re-render with the lifelong layer.
+  migrate();librarySeeds();
+  if(document.readyState!=='loading') {ensureModals();oldRenderAll();}
+})();
+
+(function MihrabReviews(){
+  state.reviews ||= {weeklyNote:'',monthlyNote:'',weekAction:'keep',monthAction:'keep'};
+  window.openReflection=(type)=>{
+    const en=state.lang==='en', isMonth=type==='month', r=state.reviews||{};
+    const title=isMonth?(en?'Monthly review':'المراجعة الشهرية'):(en?'Weekly review note':'ملاحظات المراجعة الأسبوعية');
+    openModal(`<div class="mihrab-modal-head"><b>${title}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><div class="field-lite"><label>${en?'What worked?':'إيه اللي اشتغل كويس؟'}</label><textarea id="reflectionWorked">${esc(isMonth?r.monthlyNote||'':r.weeklyNote||'')}</textarea></div><div class="field-lite" style="margin-top:10px"><label>${en?'Plan decision':'قرار الأسبوع/الشهر القادم'}</label><select id="reflectionAction"><option value="keep" ${(isMonth?r.monthAction:r.weekAction)==='keep'?'selected':''}>${en?'Keep plan':'كمّل زي ما أنت'}</option><option value="lighten" ${(isMonth?r.monthAction:r.weekAction)==='lighten'?'selected':''}>${en?'Lighten plan':'خفّف الخطة'}</option></select></div><div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${en?'Cancel':'إلغاء'}</button><button class="btn primary" onclick="saveReflection('${type}')">${en?'Save':'حفظ'}</button></div></div>`);
+  };
+  window.saveReflection=type=>{const text=document.getElementById('reflectionWorked')?.value||'',action=document.getElementById('reflectionAction')?.value||'keep';if(!state.reviews)state.reviews={};if(type==='month'){state.reviews.monthlyNote=text;state.reviews.monthAction=action}else{state.reviews.weeklyNote=text;state.reviews.weekAction=action}save();closeMihrabModal();renderAll()};
+  const oldSystem=window.renderSystem;
+  window.renderSystem=function(){
+    const base=oldSystem();const en=state.lang==='en';const weekRating=state.weekly?.rating;const planned=12;const actual=Number(state.weekly?.marketingHours||0);const diff=(actual-planned).toFixed(1);const focus=state.metrics?.focusMinutes||0;const sessions=state.metrics?.sessions||0;
+    const review=`<div class="grid grid-2" style="margin-top:12px"><section class="section-box"><div class="section-title" style="margin-bottom:6px"><div><h3>${en?'Weekly review':'مراجعة الأسبوع'}</h3><p>${en?'A five-minute reset, not a scorecard.':'خمس دقائق للفهم والتعديل، مش للمحاسبة.'}</p></div><span class="badge">${weekRating?(en?'Rated':'مقيّم'):(en?'Open':'مفتوح')}</span></div><button class="btn" onclick="openReflection('week')">${en?'Write weekly note':'اكتب ملاحظات الأسبوع'}</button><div class="week-mini">${DAYS.map(d=>{const done=Object.keys(state.today||{}).length&&d===todayName();return `<div class="daydot ${done?'done':''}">${en?weekdayMapEn[d]:d.slice(0,2)}</div>`}).join('')}</div></section><section class="section-box"><div class="section-title" style="margin-bottom:6px"><div><h3>${en?'Monthly review':'المراجعة الشهرية'}</h3><p>${en?'Keep the plan aligned with reality.':'خلّي الخطة متوافقة مع الواقع.'}</p></div></div><button class="btn" onclick="openReflection('month')">${en?'Review the month':'راجع الشهر'}</button><div class="note" style="margin-top:9px">${en?'Reality vs plan:':'الواقع مقابل الخطة: '}<b>${actual}${en?'h':'س'}</b> / <b>${planned}${en?'h':'س'}</b> ${actual===planned?'':`(${diff}${en?'h':'س'})`}</div></section></div><section class="section-box" style="margin-top:12px"><h3>${en?'Reality vs plan':'الواقع مقابل الخطة'}</h3><div class="grid grid-3"><div class="stat-card"><small>${en?'Marketing actual':'تسويق فعلي'}</small><strong>${actual}h</strong></div><div class="stat-card"><small>${en?'Focus time':'وقت تركيز'}</small><strong>${Math.round(focus)}m</strong></div><div class="stat-card"><small>${en?'Focus sessions':'جلسات تركيز'}</small><strong>${sessions}</strong></div></div><div class="note" style="margin-top:9px">${en?'Use these numbers to adjust the plan, not to judge yourself.':'الأرقام دي عشان نضبط الخطة، مش عشان نحكم عليك.'}</div></section>`;
+    return base+review;
+  };
+})();

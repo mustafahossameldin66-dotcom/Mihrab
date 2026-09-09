@@ -40,6 +40,9 @@
   </div>
   <nav class="top-nav" id="nav" aria-label="Primary navigation"></nav>
   <div class="top-actions">
+    <span class="online-dot" id="mihrab-online-dot" title="Online" aria-label="Connection status"></span>
+    <button class="icon-btn command-btn" onclick="openCommandPalette()" title="Command Palette">⌘K</button>
+    <button class="icon-btn quick-capture-top" onclick="openQuickCapture()" title="Quick Capture">＋</button>
     <button class="icon-btn lang-toggle" onclick="setLang(state.lang==='ar'?'en':'ar')" title="تغيير اللغة"><span id="langLabel">EN</span></button>
     <button class="icon-btn" onclick="cycleTheme()" title="تغيير الثيم">◌</button>
     <button class="icon-btn" onclick="navigate('system')" title="الإعدادات">⚙</button>
