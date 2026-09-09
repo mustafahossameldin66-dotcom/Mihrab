@@ -260,3 +260,20 @@ try{ if(!localStorage.getItem('focusos_state_v1')) { state.theme='midnight'; } }
   if(c){c.width=1;c.height=1;}
 })();
 ;
+
+// Mihrab V5: keep the Arabic brand mark and tagline consistent with the active language.
+(function syncBrandLanguage(){
+  const originalRenderAll = window.renderAll;
+  if (typeof originalRenderAll !== 'function' || window.__mihrabBrandV5Bound) return;
+  window.renderAll = function(){
+    originalRenderAll();
+    const lang = window.state?.lang || 'ar';
+    const tag = document.getElementById('brandTagline');
+    if (tag) tag.textContent = lang === 'en' ? 'Build yourself. Create impact. Earn independence.' : 'بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.';
+  };
+  window.__mihrabBrandV5Bound = true;
+})();
+(function patchBrandNow(){
+  const tag=document.getElementById('brandTagline');
+  if(tag) tag.textContent=(window.state?.lang==='en')?'Build yourself. Create impact. Earn independence.':'بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.';
+})();
