@@ -1073,7 +1073,7 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
 
 
 /* ============================================================================
-   MIHRAB V22 — POINTER FOG / LIVING BACKGROUND CONTROLLER
+   MIHRAB V23 — POINTER FOG / LIVING BACKGROUND CONTROLLER
    Passive pointer handling + one tiny easing loop. No scroll blocking.
    ============================================================================ */
 (function MihrabLivingPointer(){
