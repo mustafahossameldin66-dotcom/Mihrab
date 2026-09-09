@@ -56,7 +56,7 @@ Mihrab is a local-first PWA designed to stay useful for the long run: today-firs
 Architecture note: styles.css was consolidated into one token/theme layer and one responsive/interaction layer. Legacy stacked override blocks were removed.
 
 ### Mobile-first navigation
-On screens up to 760px, Mihrab switches to a native-feeling bottom navigation bar. The desktop navigation is hidden and the same navigation state is rendered into the mobile bar, so page switching works reliably on touch devices.
+On screens up to 840px, Mihrab switches to a native-feeling bottom navigation bar. The desktop navigation is hidden and the same navigation state is rendered into the mobile bar, so page switching works reliably on touch devices.
 
 
 ## Mobile-first performance
@@ -69,11 +69,11 @@ On screens up to 760px, Mihrab switches to a native-feeling bottom navigation ba
 ## Visual polish
 - The refreshed interface uses a subtle architectural background pattern, layered colour light, and a calmer animated pulse around key progress elements.
 - Cards, action buttons, and completed tasks provide clear touch and keyboard feedback without relying on costly effects.
-- The design adapts its spacing, navigation, visual density, and effects below 760px so it feels native on a phone while retaining a spacious laptop layout.
+- The design adapts its spacing, navigation, visual density, and effects below 840px so it feels native on a phone while retaining a spacious laptop layout.
 - All decorative effects are CSS-only. `prefers-reduced-motion` and Low Power Mode turn off the moving accents.
 
 
-Mihrab V12 adds a single touch-first mobile navigation engine, two-accent theme discipline, daily momentum signals, completion micro-feedback, and mobile-specific performance safeguards.
+Mihrab V26 adds a single touch-first mobile navigation engine, two-accent theme discipline, daily momentum signals, completion micro-feedback, and mobile-specific performance safeguards.
 
 
 ## V13 final polish
@@ -97,3 +97,21 @@ Mihrab V12 adds a single touch-first mobile navigation engine, two-accent theme 
 
 ## V17 interaction polish
 Theme-aware title gradient, subtle task completion sweep/pop, progress shimmer, 100% ring burst, micro-dot background, and reduced-motion/low-power guards.
+
+
+## V25 visual correction
+- Completed tasks now use a clearly darker surface while preserving the accent/check state.
+- Rafiq bridge has a living accent line and soft glow under the message.
+- Pointer ambient listener is single-source to avoid duplicate animation work.
+
+
+## V26 review fixes
+- Fixed the missing task/plan state accessors that caused four main views to fall into the render error state.
+- Fixed the Command Palette startup typo and added real Cmd/Ctrl+K behavior.
+- Added Escape and backdrop-click modal closing.
+- Replaced native alert/confirm flows with the existing Mihrab modal language.
+- Archived tracks remain visible as paused and can be reactivated.
+- Install control starts disabled and becomes available only after the browser exposes the install prompt.
+- Removed the dead legacy `load()` path; migration is single-source.
+- Directional visual effects use logical CSS properties.
+- Champagne is a true light theme.
