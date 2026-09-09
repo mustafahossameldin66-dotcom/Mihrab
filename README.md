@@ -73,4 +73,4 @@ On screens up to 760px, Mihrab switches to a native-feeling bottom navigation ba
 - All decorative effects are CSS-only. `prefers-reduced-motion` and Low Power Mode turn off the moving accents.
 
 
-V9: direct touch-safe mobile navigation and reusable details for every content track/series; desktop layout is unchanged.
+Mobile navigation uses native hash links (#home, #marketing, etc.) plus a JS state renderer. This keeps navigation reliable on touch devices while preserving the desktop nav.

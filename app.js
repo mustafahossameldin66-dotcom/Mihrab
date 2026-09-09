@@ -77,7 +77,8 @@ function translateText(t){let s=t;const exact=I18N[s.trim()];if(exact)return exa
  .replaceAll('اليوم','Today').replaceAll('الأسبوع','Week').replaceAll('المحاضرات','lectures').replaceAll('محاضرة','lecture')
  .replaceAll('جلسة','session').replaceAll('حوالي','About').replaceAll('دقيقة','min').replaceAll('ساعة','h').replaceAll('تقدم','Progress').replaceAll('مهمة','task').replaceAll('المحتوى','Content').replaceAll('ملاحظة','Note');}
 function translateRendered(){}
-function navigate(v){state.view=v;save();renderAll();window.scrollTo({top:0,behavior:'smooth'})}
+function navigate(v){state.view=v;save();renderAll();window.scrollTo({top:0,behavior:'auto'})}
+window.navigate=navigate;
 function applyTheme(){applyLanguage()}
 function setTheme(t){state.theme=t;save();applyTheme();renderAll()} function cycleTheme(){const arr=['aurora','midnight','sunrise','paper','mono'];setTheme(arr[(arr.indexOf(state.theme)+1)%arr.length])}
 function renderHome(){
@@ -577,15 +578,21 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
     const markup=makeNavMarkup();
     const top=document.getElementById('nav'); if(top) top.innerHTML=markup;
     const mob=document.getElementById('mobileNav'); if(mob) mob.innerHTML=markup;
+    [top,mob].forEach(container=>{
+      if(!container) return;
+      container.querySelectorAll('.nav-btn').forEach(btn=>{
+        let lastTap=0;
+        const go=e=>{
+          e.preventDefault();e.stopPropagation();
+          const now=Date.now(); if(now-lastTap<350) return; lastTap=now;
+          window.navigate(btn.dataset.view);
+        };
+        btn.addEventListener('pointerup',go,{passive:false});
+        btn.addEventListener('click',go,{passive:false});
+      });
+    });
     const lang=document.getElementById('langLabel'); if(lang) lang.textContent=state.lang==='en'?'ع':'EN';
   };
-
-  document.addEventListener('click',e=>{
-    const b=e.target.closest('#nav .nav-btn, #mobileNav .nav-btn');
-    if(!b)return;
-    e.preventDefault();
-    window.navigate(b.dataset.view);
-  },{passive:false});
 
   function setVisibleView(id){
     document.querySelectorAll('.view').forEach(v=>{
@@ -844,107 +851,287 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
   applyVisualMode();renderAll();
 })();
 
-
-/* =====================================================================
-   MIHRAB FINAL POLISH — reliable mobile navigation + universal track details
-   This layer does not change the desktop visual system.
-   ===================================================================== */
-(function MihrabFinalPolish(){
+/* ========================================================================
+   MIHRAB FINAL LANGUAGE HARDENING
+   Ensures every main view renders in the selected language at source.
+   ======================================================================== */
+(function MihrabLanguageHardening(){
   'use strict';
-  const VIEWS=new Set(['home','marketing','shari','quran','courses','system']);
-  let lastNavAt=0;
+  const isEn=()=>state.lang==='en';
+  const prev={
+    marketing:window.renderMarketing,
+    shari:window.renderShari,
+    quran:window.renderQuran,
+    courses:window.renderCourses,
+    system:window.renderSystem
+  };
 
-  function lang(){return state.lang==='en';}
-  function trackTitle(x){return lang()&&x.titleEn?x.titleEn:(x.title||'');}
-  function category(x){
-    try{return (categoryLabels?.[lang()?'en':'ar']?.[x.category])||x.category||(lang()?'Track':'مسار')}catch{return x.category||(lang()?'Track':'مسار')}
-  }
-  function weekdays(x){
-    const en=lang();
-    return (x.days||[]).map(d=>en?(weekdayMapEn?.[d]||d):d).join(' · ')||(en?'Unscheduled':'غير مجدول');
-  }
-  function statusText(x){
-    try{return statusLabels?.[lang()?'en':'ar']?.[x.status]||x.status||''}catch{return x.status||''}
+  const PHASE_EN={
+    'المرحلة الأولى: التأسيس، السيو، وفهم المريض':'Phase 1 · Foundations, SEO & Patient Understanding',
+    'المرحلة الثانية: صناعة المحتوى والتواجد الرقمي':'Phase 2 · Content & Digital Presence',
+    'المرحلة الثالثة: الإعلانات المدفوعة والاختبارات':'Phase 3 · Paid Ads & Testing',
+    'المرحلة الرابعة: الاستراتيجية والانطلاق لسوق العمل':'Phase 4 · Strategy & Career Launch'
+  };
+  const WEEK_EN={
+    'الأسبوع 1: أساسيات التسويق وأدوات 2026':'Week 1 · Marketing Foundations & 2026 Tools',
+    'الأسبوع 2: رحلة العميل (Funnels)':'Week 2 · Customer Journey & Funnels',
+    'الأسبوع 3: تحسين محركات البحث (SEO)':'Week 3 · Search Engine Optimization (SEO)',
+    'الأسبوع 4: تسويق المحتوى وكتابة الإعلانات':'Week 4 · Content Marketing & Copywriting',
+    'الأسبوع 5: منصات التواصل الاجتماعي':'Week 5 · Social Media Platforms',
+    'الأسبوع 6: إعلانات Meta و A/B Testing':'Week 6 · Meta Ads & A/B Testing',
+    'الأسبوع 7: إعلانات Google وتحسين التحويل (CRO)':'Week 7 · Google Ads & Conversion Optimization',
+    'الأسبوع 8: التحليلات وقراءة البيانات (Data Analytics)':'Week 8 · Analytics & Data Reading',
+    'الأسبوع 9: الاستراتيجية الشاملة والتسويق المتخصص':'Week 9 · Integrated Strategy & Medical Marketing',
+    'الأسبوع 10: دراسة الحالة النهائية والانطلاق لسوق العمل 🚀':'Week 10 · Final Case Study & Career Launch 🚀'
+  };
+  const WEEKDAY_EN={'السبت':'Saturday','الأحد':'Sunday','الاثنين':'Monday','الثلاثاء':'Tuesday','الأربعاء':'Wednesday','الخميس':'Thursday','الجمعة':'Friday'};
+
+  function marketingText(raw){
+    let [main,ref]=String(raw).split(' | '); ref=(ref||'').replace(/^🔍\s*/,'');
+    if(main.startsWith('المشروع الموحد')) return `Unified project — ${main.replace(/^المشروع الموحد\s*\([^)]*\):\s*/,'').replaceAll('ساعتين ونص','2.5 hours').replaceAll('ساعة','hour').replaceAll('نص ساعة','30 minutes').replaceAll('دقيقة','minutes')}${ref?' · Reference: '+ref:''}`;
+    if(main.startsWith('تحدي الأسبوع')) return `Weekly challenge — ${main.replace(/^تحدي الأسبوع\s*\([^)]*\):\s*/,'').replaceAll('ساعة','hour').replaceAll('نص ساعة','30 minutes')}${ref?' · Reference: '+ref:''}`;
+    if(main.startsWith('تحليل منافس')) return `Competitor analysis — ${main.replace(/^تحليل منافس\s*\([^)]*\):\s*/,'').replaceAll('نص ساعة','30 minutes')}${ref?' · Reference: '+ref:''}`;
+    if(main.startsWith('البورتفوليو')) return `Portfolio — ${main.replace(/^البورتفوليو\s*\([^)]*\):\s*/,'').replaceAll('نص ساعة','30 minutes')}${ref?' · Reference: '+ref:''}`;
+    if(main.startsWith('اختبار')) return `Test — ${main.replace(/^اختبار\s*\([^)]*\):\s*/,'').replaceAll('نص ساعة','30 minutes')}${ref?' · Reference: '+ref:''}`;
+    if(main==='اليوم 7: إجازة تامة!') return 'Day 7 · Full rest.';
+    const repl=[
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*مشاهدة فيديو عن /,(_,n,t)=>`Day ${n} · ${t}: Watch a video about `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*فهم /,(_,n,t)=>`Day ${n} · ${t}: Understand `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*قراءة عن /,(_,n,t)=>`Day ${n} · ${t}: Read about `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*فيديو تطبيقي /,(_,n,t)=>`Day ${n} · ${t}: Practical walkthrough — `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*تصفح /,(_,n,t)=>`Day ${n} · ${t}: Explore `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*جولة في /,(_,n,t)=>`Day ${n} · ${t}: Tour `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*صياغة /,(_,n,t)=>`Day ${n} · ${t}: Create `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*التدريب على /,(_,n,t)=>`Day ${n} · ${t}: Practice `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*دراسة /,(_,n,t)=>`Day ${n} · ${t}: Study `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*استخدام /,(_,n,t)=>`Day ${n} · ${t}: Use `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*رسم /,(_,n,t)=>`Day ${n} · ${t}: Map `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*حفظ /,(_,n,t)=>`Day ${n} · ${t}: Memorize `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*إنشاء /,(_,n,t)=>`Day ${n} · ${t}: Build `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*كتابة /,(_,n,t)=>`Day ${n} · ${t}: Write `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*ربط /,(_,n,t)=>`Day ${n} · ${t}: Connect `],
+      [/^اليوم\s*(\d+)\s*\(([^)]+)\):\s*استكشاف /,(_,n,t)=>`Day ${n} · ${t}: Explore `]
+    ];
+    for(const [rx,fn] of repl){if(rx.test(main)){main=main.replace(rx,fn);break;}}
+    main=main.replaceAll('الـ','').replaceAll('مشاهدة','Watch').replaceAll('فيديو','video').replaceAll('تطبيق','application').replaceAll('فهم','Understand').replaceAll('استخدام','Use').replaceAll('قراءة','Read').replaceAll('تحليل','Analyze').replaceAll('إنشاء','Build').replaceAll('إعداد','Create').replaceAll('رسم','Map').replaceAll('كتابة','Write').replaceAll('دراسة','Study').replaceAll('معرفة','Learn').replaceAll('استخراج','Extract').replaceAll('رفع','Upload').replaceAll('مقال','article').replaceAll('محتوى','content').replaceAll('منافس','competitor').replaceAll('صيدلية الفيروز','Al-Fairouz Pharmacy');
+    return ref && !main.includes(ref) ? `${main} · Reference: ${ref}` : main;
   }
 
-  function ensureTrack(id, seed){
-    state.library ||= [];
-    if(!state.library.some(x=>x.id===id)){state.library.push(seed);save();}
-  }
-  function ensureTracks(){
-    ensureTrack('lib_zad',{id:'lib_zad',title:'أكاديمية زاد',titleEn:'ZAD Academy',category:'islamic',group:'zad',days:['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'],duration:30,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true,detailsAr:'مسار شرعي أساسي ثابت خلال الأسبوع. راجع الجرعة المقررة لليوم دون تحويل الخطة إلى سباق.',detailsEn:'A fixed Islamic core track throughout the week. Follow the planned daily dose without turning the plan into a race.'});
-    ensureTrack('lib_ayman',{id:'lib_ayman',title:'مسار أيمن عبد الرحيم',titleEn:'Ayman Abdel Rahim track',category:'islamic',group:'ayman',days:['السبت','الاثنين','الأربعاء','الجمعة'],duration:30,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true,detailsAr:'مسار أساسي ثابت: السبت والاثنين والأربعاء، مع حصة أطول يوم الجمعة.',detailsEn:'A fixed core track on Saturday, Monday, and Wednesday, with a longer Friday session.'});
-    ensureTrack('lib_awareness',{id:'lib_awareness',title:'تأسيس وعي المسلم المعاصر',titleEn:'Building the Contemporary Muslim’s Awareness',category:'islamic',group:'awareness',days:['السبت','الاثنين','الأربعاء','الجمعة'],duration:30,core:true,status:'active',sessions:9,completedSessions:0,systemSeed:true,detailsAr:'إعادة أو تأسيس توجه ووعي صحيح، لا جمع أكبر قدر من المعلومات. ٩ محاضرات، والجرعة الأساسية السبت والاثنين والأربعاء مع حصة أطول الجمعة.',detailsEn:'Build or rebuild sound orientation and awareness rather than collect information. 9 lectures, with core execution Saturday, Monday, Wednesday and a longer Friday session.'});
-    ensureTrack('lib_aqeedah',{id:'lib_aqeedah',title:'بناء العقيدة للجيل الصاعد',titleEn:'Building Aqeedah for the Rising Generation',category:'islamic',group:'ahmed-sayed',days:['السبت','الاثنين','الأربعاء'],duration:30,core:true,status:'active',sessions:8,completedSessions:8,systemSeed:true,detailsAr:'المسار الذي بدأنا به مع أحمد السيد، ومكتمل حاليًا ٨ من ٨ محاضرات.',detailsEn:'The Ahmed Al-Sayed track you started with; currently complete at 8 of 8 lectures.'});
-    ensureTrack('lib_fiqh',{id:'lib_fiqh',title:'فقه النفس',titleEn:'Fiqh al-Nafs',category:'islamic',group:'fiqh-nafs',days:['الأحد','الثلاثاء','الخميس'],duration:30,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true,detailsAr:'مسار أساسي مع عبد الرحمن ذاكر في الأحد والثلاثاء والخميس.',detailsEn:'A core Abdelrahman Thaker track on Sunday, Tuesday, and Thursday.'});
-    ensureTrack('lib_sarjani',{id:'lib_sarjani',title:'الخلفاء الراشدين',titleEn:'The Rightly Guided Caliphs',category:'islamic',group:'sarjani',days:['الأحد','الثلاثاء','الخميس'],duration:30,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true,detailsAr:'مسار مع راغب السرجاني في الأحد والثلاثاء والخميس.',detailsEn:'A Ragheb Al-Sergany track on Sunday, Tuesday, and Thursday.'});
-    ensureTrack('lib_moneim',{id:'lib_moneim',title:'تدبر وتفسير — أحمد عبد المنعم',titleEn:'Reflection & Tafsir — Ahmed Abdel Moneim',category:'islamic',group:'tafseer',days:['الجمعة'],duration:45,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true,detailsAr:'جلسة الجمعة للتدبر والتفسير، بعد جرعة زاد يوم الجمعة.',detailsEn:'Friday-only reflection and tafsir, after the Friday ZAD dose.'});
-    ensureTrack('lib_home',{id:'lib_home',title:'البيت المسلم',titleEn:'The Muslim Home',category:'islamic',group:'optional-home',days:[],duration:20,core:false,status:'paused',sessions:0,completedSessions:0,systemSeed:true,detailsAr:'مسار اختياري يرجع إليه عند الحاجة، وليس مسارًا إلزاميًا موازيًا.',detailsEn:'An optional track to return to when needed; not a mandatory parallel path.'});
-  }
+  window.renderMarketing=function(){
+    if(!isEn()) return prev.marketing();
+    let out=`<div class="section-title"><div><h2>💻 Digital Medical Marketing Bootcamp</h2><p>10 weeks · 12 hours/week · each week adds one piece to a unified case study.</p></div><span class="badge core">Professional priority</span></div><section class="awareness" style="margin-bottom:14px"><div class="kicker">THE UNIFIED CASE STUDY</div><h2 style="margin:8px 0">Al-Fairouz Clinical Pharmacy</h2><p class="muted" style="line-height:1.9;margin:0">A virtual clinical pharmacy in Al-Fairouz District, Luxor, offering online medication consultations and patient follow-up.</p></section><div class="grid grid-2"><section class="section-box"><h3>🧠 Daily method</h3><p>🎥 1h visual/video learning → 🤖 15m AI brainstorming → ✍️ 15m personal synthesis → 🧠 30m Anki.</p><div class="note">Fixed application question: “How does today’s topic apply specifically to Al-Fairouz Pharmacy?”</div></section><section class="section-box"><h3>🛡️ Buffer rule</h3><p>Missed a day? Do not catch up the next day. Shift the plan. Under pressure, new production shrinks before essentials.</p></section></div>`;
+    MARKETING.forEach(([phase,weeks])=>{out+=`<div class="section-title"><div><h2>${esc(PHASE_EN[phase]||phase)}</h2></div></div>`;weeks.forEach(([title,days,deep])=>{const ids=days.concat(deep).map(x=>idFor(title,x));const pr=pct(ids,state.plan);out+=`<details class="week-card"><summary><span><b>${esc(WEEK_EN[title]||title)}</b></span><span class="badge">${pr.p}% · ${pr.n}/${pr.total}</span></summary><div class="week-body"><div class="progress-head"><span>Week progress</span><b>${pr.p}%</b></div><div class="progress"><i style="width:${pr.p}%"></i></div><div class="week-grid" style="margin-top:12px"><div class="week-block"><h4>📚 Learning days</h4>${days.map(x=>{const id=idFor(title,x),d=pChecked(id);return `<label class="mtask ${d?'done':''}"><input type="checkbox" ${d?'checked':''} onchange="togglePlan('${id}')"><span>${esc(marketingText(x))}</span></label>`}).join('')}</div><div class="week-block"><h4>🔻 Deep application</h4>${deep.map(x=>{const id=idFor(title,x),d=pChecked(id);return `<label class="mtask ${d?'done':''}"><input type="checkbox" ${d?'checked':''} onchange="togglePlan('${id}')"><span>${esc(marketingText(x))}</span></label>`}).join('')}</div></div></div></details>`})});
+    out+=`<div class="section-title"><div><h2>🧠 Anki system inside the bootcamp</h2><p>Not every fact needs to become a card.</p></div></div><div class="grid grid-3"><div class="section-box"><p style="line-height:1.85">Must memorize: 4Ps, STP, SWOT, AIDA, TOFU/MOFU/BOFU, Buyer Persona, USP, CTA, SEO, CAC, LTV, CTR, CPC, CPM, ROAS, Conversion Rate, UTM, SMART, KPIs.</p></div><div class="section-box"><p style="line-height:1.85">Understand and apply: AMA definition, marketing history, Marketing 1.0/2.0/3.0/5.0, evolution stories, and company examples.</p></div><div class="section-box"><p style="line-height:1.85">Reference only: statistics, studies, and long examples.</p></div></div><div class="grid grid-2" style="margin-top:12px"><div class="section-box"><h3>✅ Card creation gate</h3><p>Will I need it after 3 months? Will I use it in real work? Would I have to search it every time? Yes to one or more → make a card.</p></div><div class="section-box"><h3>🎯 Project success</h3><p>Clear problem → understandable solution → documented portfolio result.</p></div></div>`;
+    return out;
+  };
 
-  function openDetails(id){
-    const x=(state.library||[]).find(i=>i.id===id); if(!x)return;
-    const overlay=document.getElementById('mihrabOverlay'),modal=document.getElementById('mihrabModal'); if(!overlay||!modal)return;
-    const en=lang(), title=trackTitle(x), detail=en?(x.detailsEn||'A flexible track you can edit, pause, replace, or archive from the Content Library.'):(x.detailsAr||'مسار مرن تقدر تعدله أو توقفه أو تستبدله أو تؤرشفه من مكتبة المحتوى.');
-    const progress=x.sessions?`${x.completedSessions||0}/${x.sessions}`:(en?'Tracked as needed':'يُتتبّع حسب الحاجة');
-    modal.innerHTML=`<div class="mihrab-modal-head"><b>${esc(title)}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><div class="track-detail-hero"><span class="badge ${x.core?'core':''}">${x.core?(en?'Core':'أساسي'):x.important?(en?'Important':'مهم'):(en?'Optional':'اختياري')}</span><h3>${esc(title)}</h3><p>${esc(detail)}</p></div><div class="detail-grid"><div><small>${en?'Category':'القسم'}</small><b>${esc(category(x))}</b></div><div><small>${en?'Schedule':'الأيام'}</small><b>${esc(weekdays(x))}</b></div><div><small>${en?'Duration':'المدة'}</small><b>${x.duration||30} ${en?'min':'د'}</b></div><div><small>${en?'Progress':'التقدم'}</small><b>${esc(progress)}</b></div><div><small>${en?'Status':'الحالة'}</small><b>${esc(statusText(x))}</b></div><div><small>${en?'Role':'دوره في الخطة'}</small><b>${x.core?(en?'Protected core':'أساسي ومحمي'):x.important?(en?'Important':'مهم'):(en?'Optional':'اختياري')}</b></div></div>${x.note?`<div class="note" style="margin-top:12px"><b>${en?'Your note':'ملاحظتك'}</b><br>${esc(x.note)}</div>`:''}<div class="modal-actions"><button class="btn" onclick="closeMihrabModal();editContent('${esc(id)}')">${en?'Edit':'تعديل'}</button>${x.status==='active'?`<button class="btn" onclick="closeMihrabModal();archiveContent('${esc(id)}')">${en?'Archive':'أرشفة'}</button>`:`<button class="btn" onclick="closeMihrabModal();activateContent('${esc(id)}')">${en?'Activate':'تفعيل'}</button>`}<button class="btn primary" onclick="closeMihrabModal()">${en?'Close':'إغلاق'}</button></div></div>`;
-    overlay.classList.add('open');
-  }
-  window.openContentDetails=openDetails;
+  window.renderShari=function(){
+    if(!isEn()) return prev.shari();
+    const day=todayName();
+    const map={'السبت':'ZAD (notes) + Ahmed Al-Sayed + Ayman Abdel Rahim','الأحد':'ZAD (notes) + Fiqh al-Nafs + Al-Sarjani','الاثنين':'ZAD (notes) + Ahmed Al-Sayed + Ayman Abdel Rahim','الثلاثاء':'ZAD (notes) + Fiqh al-Nafs + Al-Sarjani','الأربعاء':'ZAD (notes) + Ahmed Al-Sayed + Ayman Abdel Rahim','الخميس':'ZAD (notes) + Fiqh al-Nafs + Al-Sarjani','الجمعة':'ZAD (3 lectures) + reflection (Ahmed Abdel Moneim)'};
+    const rows=DAYS.map(d=>`<div class="timeline-card ${d===day?'today':''}"><div class="day">${WEEKDAY_EN[d]}${d===day?' · Today':''}</div><ul><li>${esc(map[d])}</li><li>${d==='الجمعة'?'Longer session + reflection':'About 70–85 minutes'}</li></ul></div>`).join('');
+    return `<div class="section-title"><div><h2>🕌 Islamic Studies</h2><p>Independent and fixed. It does not compete with marketing.</p></div><span class="badge core">Core</span></div><div class="timeline">${rows}</div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>📚 Core sources</h3><p>Ahmed Al-Sayed — start with “Building Aqeedah for the Rising Generation.”</p><p><b style="color:var(--a)">Ayman Abdel Rahim — fixed core track.</b></p><p>Fiqh al-Nafs — Abdelrahman Thaker.</p><p>The Rightly Guided Caliphs — Ragheb Al-Sergany.</p><p>Friday — Ahmed Abdel Moneim: reflection and tafsir.</p></section><section class="section-box"><h3>🧭 Track structure</h3><p>“Building the Contemporary Muslim’s Awareness” is a real Ayman track, not a placeholder.</p><p>“The Muslim Home” stays optional, not mandatory.</p></section></div><div class="section-title"><div><h2>🧭 Building the Contemporary Muslim’s Awareness</h2><p>Ayman Abdel Rahim · 9 lectures · focus on orientation and action, not collecting information.</p></div><span class="badge core">Core</span></div><div class="awareness"><div class="grid grid-2"><div><h3 style="margin-top:0">🎯 Course goal</h3><p>Build or rebuild sound orientation and awareness, and understand how ideas influence behavior.</p><p class="muted">Language, religiosity, and culture shape the world of ideas that shows up in behavior; the final lectures focus on what to do with new ideas after learning.</p></div><div><h3 style="margin-top:0">🧭 Place in the plan</h3><p>Fixed core track on Saturday, Monday, Wednesday, with a longer Friday session.</p></div></div><div class="grid grid-3" style="margin-top:13px"><div class="note"><b>01</b><br>Orientation before information volume</div><div class="note"><b>02</b><br>History explaining ideas and behavior</div><div class="note"><b>03</b><br>From idea to action</div></div><div class="lecture-grid">${AWARENESS.map(n=>`<label class="lecture"><input type="checkbox" ${pChecked('aware_'+n)?'checked':''} onchange="togglePlan('aware_${n}')"><span>Lecture ${n} of 9</span></label>`).join('')}</div></div><div class="section-title"><div><h2>✅ Today’s Islamic execution</h2><p>${WEEKDAY_EN[day]} — check items as you finish them.</p></div></div><section class="section-box">${taskHTML(shariItems(day))}</section>`;
+  };
 
-  function refreshMobileNav(){
-    const mob=document.getElementById('mobileNav'); if(!mob)return;
-    mob.querySelectorAll('.nav-btn').forEach(btn=>{
-      if(btn.dataset.mihrabMobileBound==='1')return;
-      btn.dataset.mihrabMobileBound='1';
-      const activate=(e)=>{
-        const now=Date.now();
-        if(now-lastNavAt<350)return;
-        lastNavAt=now;
-        e.preventDefault();e.stopPropagation();
-        const v=btn.dataset.view;
-        if(VIEWS.has(v) && typeof window.navigate==='function') window.navigate(v);
-      };
-      // Direct handler is intentional: it survives touch browsers and does not rely on event delegation.
-      btn.addEventListener('touchend',activate,{passive:false});
-      btn.addEventListener('pointerup',activate,{passive:false});
-      btn.onclick=activate;
-      btn.style.webkitTapHighlightColor='transparent';
+  window.renderQuran=function(){
+    if(!isEn()) return prev.quran();
+    const open=!!state.quranFrameOpen;
+    return `<div class="section-title"><div><h2>📖 Qur’an</h2><p>Review during university; Rafiq remains a separate tool you open when needed.</p></div><span class="badge core">Review only</span></div><div class="grid grid-2"><section class="section-box"><h3>Today’s review</h3><div class="task-item ${tChecked('quran')?'done':''}" data-task-id="quran"><input type="checkbox" id="quranToday" ${tChecked('quran')?'checked':''} onchange="toggleToday('quran')"><label class="task-text" for="quranToday">Reviewed memorized Qur’an today — Juz ‘Amma / Tabarak / older memorized portions / pre-university memorization</label><span class="mihrab-badge badge-spirit">Core</span></div><div class="note" style="margin-top:10px">Best location: prayer room between lectures, then transit. If focus drops and similar passages start to mix, stop and rest.</div></section><section class="section-box quran-bridge"><div class="bridge-icon">✦</div><div><h3 style="margin-bottom:5px">Rafiq Qur’an</h3><p class="muted" style="margin:0">Your Cloudflare version. Open the app/site directly or load it inside Mihrab.</p></div><div class="bridge-actions"><a class="btn primary" href="${RAFIQ_URL}" target="_blank" rel="noopener">Open Rafiq ↗</a><button class="btn ${open?'active':''}" onclick="toggleRafiqFrame()">${open?'Hide embedded':'Show embedded'}</button></div></section></div>${open?`<div class="section-title"><div><h2>✦ Rafiq Qur’an</h2><p>Loaded only when requested so the dashboard stays fast.</p></div><span class="badge">Cloudflare</span></div><div class="iframe-wrap"><div class="iframe-head"><b>Rafiq Qur’an</b><button class="icon-btn" onclick="toggleRafiqFrame()" aria-label="Close">×</button></div><iframe id="rafiqFrame" title="Rafiq Qur’an inside Mihrab" src="${RAFIQ_URL}" loading="lazy" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe></div>`:''}`;
+  };
+
+  window.renderCourses=function(){
+    if(!isEn()) return prev.courses();
+    return `<div class="section-title"><div><h2>📚 Courses & supporting systems</h2><p>Support work never outranks essentials.</p></div></div><div class="grid grid-3"><section class="section-box"><h3>🧠 Anki</h3><p>Due reviews first. New cards stay within budget. Best moments: transit, prayer room, and gaps.</p><div class="task-item"><label class="task-text">Today’s review count</label><input class="mini-input" type="number" min="0" value="${state.ankiToday||0}" onchange="state.ankiToday=Math.max(0,Number(this.value)||0);save()"></div></section><section class="section-box"><h3>🚀 McKinsey Forward</h3><p>About two hours/week. One of the first things to shrink under study pressure.</p><label class="task ${state.weekly.mckinsey?'done':''}"><input type="checkbox" ${state.weekly.mckinsey?'checked':''} onchange="state.weekly.mckinsey=this.checked;save();renderAll()"><span>Weekly share done</span></label></section><section class="section-box"><h3>💊 The Pharmacist's Guide to Dose Calculations</h3><p>2h 41m total · short 10–15m sessions. Also one of the first items to defer under pressure.</p><label class="task ${state.weekly.dose?'done':''}"><input type="checkbox" ${state.weekly.dose?'checked':''} onchange="state.weekly.dose=this.checked;save();renderAll()"><span>Weekly share done</span></label></section></div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🎓 HubSpot / Google</h3><p>20–30 minutes in spare time, in parallel with the bootcamp, without repeating the core curriculum.</p><label class="task ${state.weekly.cert?'done':''}"><input type="checkbox" ${state.weekly.cert?'checked':''} onchange="state.weekly.cert=this.checked;save();renderAll()"><span>Certificate share done</span></label></section><section class="section-box"><h3>📗 EasyPeasy</h3><p>Light reading inside the day, without bloating the main plan.</p></section></div><div class="section-box" style="margin-top:12px"><h3>⏸️ Drug Commercialization</h3><p>Starts after the marketing bootcamp.</p></div>`;
+  };
+
+  /* Use window-dispatch in renderView so language overrides are never bypassed. */
+  window.renderView=function(v){
+    const map={home:window.renderHome,marketing:window.renderMarketing,shari:window.renderShari,quran:window.renderQuran,courses:window.renderCourses,system:window.renderSystem};
+    const host=document.getElementById('view-'+v);
+    if(!host||typeof map[v]!=='function')return;
+    try{host.innerHTML=map[v]();}catch(err){console.error('Mihrab view render error',v,err);host.innerHTML=`<section class="section-box"><h2>${isEn()?'Something went wrong':'حصل خطأ صغير'}</h2><p class="muted">${isEn()?'This view could not be rendered. Try switching language or reloading.':'الصفحة دي ما اتعرضتش بشكل صحيح. جرّب تبديل اللغة أو إعادة التحميل.'}</p></section>`;}
+  };
+
+  /* Language switch always renders the current page through the hardened dispatcher. */
+  window.setLang=function(v){state.lang=v==='en'?'en':'ar';save();applyLanguage?.();window.renderView(state.view||'home');setVisible?.();window.nav?.();window.scrollTo({top:0,behavior:'auto'});};
+  function setVisible(){document.querySelectorAll('.view').forEach(x=>{const on=x.id==='view-'+(state.view||'home');x.classList.toggle('active',on);x.hidden=!on;});}
+  function hardRender(){window.renderView(state.view||'home');setVisible();window.nav?.();applyTheme?.();}
+  hardRender();
+})();
+
+
+/* ========================================================================
+   MIHRAB MOBILE NAV — FINAL HARDENED CONTROLLER
+   Desktop navigation remains unchanged. Mobile navigation is static in
+   index.html and uses delegated pointer/click handling that survives every
+   view render, language switch, and state update.
+   ======================================================================== */
+(function MihrabMobileNavFinal(){
+  'use strict';
+  const VIEWS=['home','marketing','shari','quran','courses','system'];
+  const mobile=document.getElementById('mobileNav');
+  if(!mobile) return;
+
+  function syncMobileNav(){
+    const en=state.lang==='en';
+    mobile.querySelectorAll('.nav-btn').forEach(btn=>{
+      const id=btn.dataset.view;
+      const active=(state.view||'home')===id;
+      const label=btn.querySelector('.nav-label');
+      if(label) label.textContent=en?(label.dataset.en||label.dataset.ar||''):(label.dataset.ar||label.dataset.en||'');
+      btn.classList.toggle('active',active);
+      btn.setAttribute('aria-current',active?'page':'false');
     });
   }
 
-  function decorateTrackDetails(){
-    ensureTracks();
-    const shari=document.getElementById('view-shari');
-    if(shari){
-      const map=[['أحمد السيد','lib_aqeedah'],['أيمن عبد الرحيم','lib_ayman'],['Ayman Abdel Rahim','lib_ayman'],['فقه النفس','lib_fiqh'],['الخلفاء الراشدين','lib_sarjani'],['أحمد عبد المنعم','lib_moneim'],['تأسيس وعي المسلم المعاصر','lib_awareness'],['البيت المسلم','lib_home']];
-      shari.querySelectorAll('p,h2').forEach(el=>{
-        if(el.dataset.detailBound==='1')return;
-        const hit=map.find(([needle])=>el.textContent?.includes(needle));
-        if(!hit)return;
-        el.dataset.detailBound='1';el.classList.add('track-detail-trigger');el.tabIndex=0;el.setAttribute('role','button');
-        const go=e=>{e.preventDefault();e.stopPropagation();openDetails(hit[1]);};
-        el.addEventListener('click',go);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){go(e)}});
-      });
+  window.nav=function(){
+    const top=document.getElementById('nav');
+    if(top){
+      const markup=(typeof NAV!=='undefined'?NAV:[]).map(([id,ic,ar,en])=>
+        `<button type="button" class="nav-btn ${state.view===id?'active':''}" data-view="${id}" onclick="navigate('${id}')"><span class="nav-icon" aria-hidden="true">${ic}</span><span>${state.lang==='en'?en:ar}</span></button>`
+      ).join('');
+      top.innerHTML=markup;
     }
-    const system=document.getElementById('view-system');
-    if(system){
-      const items=system.querySelectorAll('.library-item');
-      items.forEach((item,i)=>{
-        if(item.dataset.detailBound==='1')return;
-        const x=state.library?.[i];if(!x)return;
-        const title=item.querySelector('.library-main');if(!title)return;
-        item.dataset.detailBound='1';title.classList.add('track-detail-trigger');title.tabIndex=0;title.setAttribute('role','button');
-        const go=e=>{e.preventDefault();e.stopPropagation();openDetails(x.id)};
-        title.addEventListener('click',go);title.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){go(e)}});
-      });
-    }
+    syncMobileNav();
+    const lab=document.getElementById('langLabel');
+    if(lab) lab.textContent=state.lang==='en'?'ع':'EN';
+  };
+
+  function showView(id){
+    document.querySelectorAll('.view').forEach(v=>{
+      const on=v.id==='view-'+id;
+      v.classList.toggle('active',on);
+      v.hidden=!on;
+    });
   }
 
-  const baseNav=window.nav;
-  window.nav=function(){baseNav?.();requestAnimationFrame(refreshMobileNav)};
-  const baseRenderAll=window.renderAll;
-  window.renderAll=function(){ensureTracks();const result=baseRenderAll?.();requestAnimationFrame(()=>{refreshMobileNav();decorateTrackDetails()});return result};
-  ensureTracks();
-  requestAnimationFrame(()=>{refreshMobileNav();decorateTrackDetails()});
+  window.navigate=function(id){
+    if(!VIEWS.includes(id)) return;
+    if(state.view===id){ showView(id); syncMobileNav(); window.scrollTo(0,0); return; }
+    state.view=id;
+    save();
+    if(typeof window.renderView==='function') window.renderView(id);
+    showView(id);
+    syncMobileNav();
+    if(typeof applyTheme==='function') applyTheme();
+    document.body.dataset.mode=state.mode||'normal';
+    document.body.dataset.online=navigator.onLine?'true':'false';
+    document.body.dataset.lowPower=state.settings?.lowPower?'true':'false';
+    window.scrollTo(0,0);
+  };
+
+  let lastActivation=0;
+  const activate=(e)=>{
+    const btn=e.target.closest?.('.mobile-nav .nav-btn');
+    if(!btn || !mobile.contains(btn)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const now=Date.now();
+    if(now-lastActivation<240) return;
+    lastActivation=now;
+    window.navigate(btn.dataset.view);
+  };
+  mobile.addEventListener('pointerup',activate,{passive:false});
+  mobile.addEventListener('click',activate,{passive:false});
+
+  syncMobileNav();
+  window.addEventListener('resize',syncMobileNav,{passive:true});
+})();
+
+
+/* ========================================================================
+   MIHRAB MOBILE NAV — DEFINITIVE HASH FALLBACK
+   Native <a href="#view"> navigation is used on phones so navigation still
+   works even if a touch/pointer listener is interrupted. Desktop keeps its
+   existing button navigation.
+   ======================================================================== */
+(function MihrabMobileNavigationDefinitive(){
+  'use strict';
+  const VIEWS=['home','marketing','shari','quran','courses','system'];
+  const mobile=document.getElementById('mobileNav');
+  const valid=v=>VIEWS.includes(v);
+
+  function showView(id){
+    document.querySelectorAll('.view').forEach(v=>{
+      const on=v.id==='view-'+id;
+      v.hidden=!on;
+      v.classList.toggle('active',on);
+    });
+  }
+
+  function sync(){
+    const en=state.lang==='en';
+    mobile?.querySelectorAll('.nav-btn').forEach(a=>{
+      const id=a.dataset.view, active=(state.view||'home')===id;
+      const label=a.querySelector('.nav-label');
+      if(label) label.textContent=en?(label.dataset.en||label.dataset.ar||''):(label.dataset.ar||label.dataset.en||'');
+      a.classList.toggle('active',active);
+      a.setAttribute('aria-current',active?'page':'false');
+    });
+    const lab=document.getElementById('langLabel');
+    if(lab) lab.textContent=state.lang==='en'?'ع':'EN';
+  }
+
+  const baseRenderView=window.renderView;
+  const renderOne=(id)=>{
+    if(!valid(id)) return false;
+    if(typeof window.renderView==='function') window.renderView(id);
+    showView(id);
+    sync();
+    if(typeof applyTheme==='function') applyTheme();
+    document.body.dataset.mode=state.mode||'normal';
+    document.body.dataset.online=navigator.onLine?'true':'false';
+    document.body.dataset.lowPower=state.settings?.lowPower?'true':'false';
+    window.scrollTo(0,0);
+    return true;
+  };
+
+  window.navigate=function(id){
+    if(!valid(id)) return;
+    if(location.hash.slice(1)!==id) history.pushState({mihrabView:id},'',`#${id}`);
+    state.view=id;
+    save();
+    renderOne(id);
+  };
+
+  window.nav=function(){
+    const top=document.getElementById('nav');
+    if(top && typeof NAV!=='undefined'){
+      top.innerHTML=NAV.map(([id,ic,ar,en])=>
+        `<button type="button" class="nav-btn ${state.view===id?'active':''}" data-view="${id}" onclick="navigate('${id}')"><span class="nav-icon" aria-hidden="true">${ic}</span><span>${state.lang==='en'?en:ar}</span></button>`
+      ).join('');
+    }
+    sync();
+  };
+
+  mobile?.addEventListener('click',e=>{
+    const a=e.target.closest?.('a.nav-btn[data-view]');
+    if(!a || !mobile.contains(a)) return;
+    /* Let the browser perform the native hash navigation. The hashchange
+       listener below is the authoritative mobile navigation path. */
+    const id=a.dataset.view;
+    if(valid(id) && location.hash.slice(1)===id){
+      e.preventDefault();
+      window.navigate(id);
+    }
+  },{passive:false});
+
+  window.addEventListener('hashchange',()=>{
+    const id=location.hash.replace(/^#/,'');
+    if(valid(id) && id!==(state.view||'home')){
+      state.view=id; save(); renderOne(id);
+    }
+  });
+
+  window.addEventListener('popstate',()=>{
+    const id=location.hash.replace(/^#/,'');
+    if(valid(id)){
+      state.view=id; save(); renderOne(id);
+    }
+  });
+
+  const initial=location.hash.replace(/^#/,'');
+  if(valid(initial)) state.view=initial;
+  if(mobile) sync();
+  renderOne(state.view||'home');
 })();
