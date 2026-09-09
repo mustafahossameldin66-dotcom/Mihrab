@@ -38,13 +38,13 @@ function dayTasks(day){
 function shariItems(day){if(day==='الجمعة')return [['sz1','زاد — محاضرة 1'],['sz2','زاد — محاضرة 2'],['sz3','زاد — محاضرة 3'],['st','تدبر — أحمد عبد المنعم']];const raw=SHARI_MAP[day]||'';const arr=raw.replace(/^زاد \(تفريغ\) \+ /,'').split(' + ');return [['z','زاد — محاضرة اليوم'],['s2',arr[0]||'المصدر الثاني'],['s3',arr[1]||'المصدر الثالث']]}
 function nav(){document.getElementById('nav').innerHTML=NAV.map(([id,ic,ar,en])=>`<button class="nav-btn ${state.view===id?'active':''}" data-view="${id}" onclick="navigate('${id}')">${ic}&nbsp; ${state.lang==='en'?en:ar}</button>`).join('');const lab=document.getElementById('langLabel');if(lab)lab.textContent=state.lang==='en'?'ع':'EN'}
 function setLang(v){state.lang=v==='en'?'en':'ar';save();applyLanguage();renderAll();}
-function applyLanguage(){document.documentElement.lang=state.lang;document.documentElement.dir=state.lang==='en'?'ltr':'rtl';document.body.dataset.lang=state.lang;document.body.dataset.theme=state.theme;document.documentElement.style.colorScheme=state.theme==='paper'?'light':'dark';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=getComputedStyle(document.body).getPropertyValue('--bg').trim()||'#0b0f12';}
+function applyLanguage(){document.documentElement.lang=state.lang;document.documentElement.dir=state.lang==='en'?'ltr':'rtl';document.body.dataset.lang=state.lang;document.body.dataset.theme=state.theme;document.documentElement.style.colorScheme=state.theme==='paper'?'light':'dark';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=getComputedStyle(document.body).getPropertyValue('--bg').trim()||'#0b0f12';const tag=document.getElementById('brandTagline');if(tag)tag.textContent=state.lang==='en'?'Build yourself. Create impact. Earn independence.':'بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.';}
 const I18N={
 'Mihrab':'Mihrab',
 'بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.':'Build yourself. Create impact. Earn independence.',
 
 'لوحة واحدة':'One dashboard','Mihrab':'Mihrab','مركز اليوم':'Today','التسويق':'Marketing','العلم الشرعي':'Islamic Studies','القرآن':'Qur’an','الكورسات':'Courses','النظام':'System',
-'رتّب يومك.':'Shape your day.','وابنِ مستقبلك بهدوء.':'Build your future calmly.','مركز واحد لكل ما تحتاجه اليوم: الأساسيات الدينية والقرآن، ثم التسويق كأولوية مهنية، والكورسات المساندة بدون ما تتحول اللوحة نفسها إلى عبء.':'One place for today: faith, Qur’an, professional marketing, and supporting courses — without turning the board into another burden.',
+'رتّب يومك.':'Shape your day.','وابنِ مستقبلك بهدوء.':'Build your future calmly.','وخليه بسيط.':'Keep it simple.','باقي':'Remaining','بنود باقية':'items left','خلصت يومك':'You are done for today','الأساسيات أولًا.':'Essentials first.','بعدها':'Next','قاعدة اليوم':'Today’s rule','مهمة التسويق':'Marketing task','محتوى الشرعي':'Islamic content','بدّل بين العربية والإنجليزية في أي وقت.':'Switch between Arabic and English at any time.','جميل':'Beautiful','مركز واحد لكل ما تحتاجه اليوم: الأساسيات الدينية والقرآن، ثم التسويق كأولوية مهنية، والكورسات المساندة بدون ما تتحول اللوحة نفسها إلى عبء.':'One place for today: faith, Qur’an, professional marketing, and supporting courses — without turning the board into another burden.',
 'إنجاز اليوم':'Today’s progress','جرعة التسويق اليوم':'Today’s marketing dose','ابدأ تنفيذ اليوم ↓':'Start today ↓','الخطة المهنية ↗':'Career plan ↗','الشرعي ↗':'Islamic plan ↗','أسبوعك في لقطة':'Your week at a glance','اختار نوع كل يوم مرة واحدة من النظام، واللوحة تستخدمه تلقائيًا.':'Set each day type once in System, and the board uses it automatically.','تنفيذ اليوم':'Today’s execution','لا تعويض اندفاعي.':'No catch-up sprint.','الأساسيات أولًا':'Essentials first','قائمة اليوم':'Today’s list','ماذا بعد؟':'What’s next?','افتح مهمة التسويق التفصيلية':'Open detailed marketing task','افتح محتوى اليوم الشرعي':'Open today’s Islamic content','افتح مراجعة القرآن + رفيق':'Open Qur’an review + Rafiq','ثلاث قواعد':'Three rules','المراجعات قبل الجديد':'Reviews before new cards','الشرعي والقرآن لا يُقصّان':'Islamic studies + Qur’an stay protected','McKinsey + Dose أول ما يتقلص':'McKinsey + Dose shrink first',
 'التسويق هذا الأسبوع':'Marketing this week','هدف الأسبوع':'Weekly target','الشرعي':'Islamic studies','مراجعة':'Review','مساندة لا تسبق الأساسيات.':'Support work never outranks essentials.','الأساسيات الدينية والقرآن، ثم التسويق كأولوية مهنية، والكورسات المساندة':'faith and Qur’an first, then professional marketing and supporting courses','كل يوم مرة واحدة':'once for each day','المراجعة المستحقة أولًا':'Due reviews first','الجديد حسب الميزانية':'New cards within budget','في وقتها':'On time','أذكار الصباح والمساء + الدعاء للأهل والأموات':'Morning/evening adhkar + supplication for family and the deceased','ورد أخي — قرآن / قيام / أذكار':'Brother’s wird — Qur’an / night prayer / adhkar','مراجعة القرآن':'Qur’an review','المصلى بين المحاضرات/السكاشن أو المواصلات':'prayer room between lectures/sections or during transit','قراءة اليوم':'Today’s reading','روتين الفم — صباحًا ومساءً':'Oral-care routine — morning & evening','روتين البشرة — صباحًا ومساءً':'Skincare routine — morning & evening','روتين الشعر — حسب روتينك':'Hair routine — according to your routine',
 'معسكر التسويق الطبي الرقمي':'Digital Medical Marketing Bootcamp','أولوية مهنية':'Professional priority','طريقة اليوم':'Daily method','Buffer Rule':'Buffer Rule','التقدم الكلي':'Overall progress','تقدم الأسبوع':'Weekly progress','أيام التعلم':'Learning days','التطبيق العميق':'Deep application','نظام Anki داخل المعسكر':'Anki system in the bootcamp','بوابة إنشاء البطاقة':'Card creation gate','معيار نجاح المشروع':'Project success criterion','بعد الأسبوع 10':'After week 10','مؤجل إلى ما بعد معسكر التسويق.':'Deferred until after the marketing bootcamp.',
@@ -70,38 +70,41 @@ function renderHome(){
  const day=todayName(), items=dayTasks(day), pr=pct(items.map(x=>x[0]),state.today);
  const done=pr.n, total=pr.total, remaining=Math.max(total-done,0);
  const modes=['كلية','بدون كلية','ديب وورك'];
+ const en=state.lang==='en';
+ const T=en?{start:'Start today ↓',marketing:'Marketing ↗',shari:'Islamic studies ↗',quran:'Qur’an ↗',today:'Today',remaining:'Remaining',hours:'h',target:'Target',execute:'Today’s execution',list:'Today’s list',next:'Next',rule:'Today’s rule',r1:'Reviews before new cards',r2:'Islamic studies + Qur’an stay fixed',r3:'Courses shrink first',ess:'Essentials first',done:'You’re done for today',left:'items left',focus:'Focus only on what matters today. Protect the essentials, and let the rest wait for space.'}
+ :{start:'ابدأ ↓',marketing:'التسويق ↗',shari:'الشرعي ↗',quran:'القرآن ↗',today:'اليوم',remaining:'باقي',hours:'س',target:'الهدف',execute:'⚡ تنفيذ اليوم',list:'قائمة اليوم',next:'بعدها',rule:'قاعدة اليوم',r1:'المراجعات قبل الجديد',r2:'الشرعي والقرآن ثابتان',r3:'الكورسات تتقلص أولًا',ess:'الأساسيات أولًا',done:'خلصت يومك',left:'بنود باقية',focus:'ركز على اللي مطلوب النهارده فقط. الأساسيات أولًا، والباقي ياخد مساحته لما تفضى.'};
  return `<div class="hero">
    <section class="hero-main">
-     <div class="kicker">● ${esc(day)} · ${esc(todayDayType())}</div>
-     <h1>رتّب يومك.<br><span style="color:var(--a)">وخلّيه بسيط.</span></h1>
-     <p>ركز على اللي مطلوب النهارده فقط. الأساسيات أولًا، والباقي ياخد مساحته لما تفضى.</p>
+     <div class="kicker">● ${esc(en?translateText(day):day)} · ${esc(en?translateText(todayDayType()):todayDayType())}</div>
+     <h1>${en?'Shape your day.<br><span class="hero-accent">Keep it simple.</span>':'رتّب يومك.<br><span class="hero-accent">وخلّيه بسيط.</span>'}</h1>
+     <p>${T.focus}</p>
      <div class="hero-actions">
-       <button class="btn primary" onclick="document.getElementById('todayTasks').scrollIntoView({behavior:'smooth'})">ابدأ ↓</button>
-       <button class="btn" onclick="navigate('marketing')">التسويق ↗</button>
-       <button class="btn" onclick="navigate('shari')">الشرعي ↗</button>
-       <button class="btn" onclick="navigate('quran')">القرآن ↗</button>
+       <button class="btn primary" onclick="document.getElementById('todayTasks').scrollIntoView({behavior:'smooth'})">${T.start}</button>
+       <button class="btn" onclick="navigate('marketing')">${T.marketing}</button>
+       <button class="btn" onclick="navigate('shari')">${T.shari}</button>
+       <button class="btn" onclick="navigate('quran')">${T.quran}</button>
      </div>
    </section>
    <aside class="hero-side">
-     <div><div class="kicker">إنجاز اليوم</div><div class="ring" style="--p:${pr.p}%"><div><b>${pr.p}%</b><span>${done} / ${total}</span></div></div></div>
-     <div><div class="muted tiny" style="margin-bottom:6px">جرعة التسويق</div><div class="mode-row">${modes.map(t=>`<button class="mode ${todayDayType()===t?'active':''}" onclick="setDayType('${t}')">${state.lang==='en'?translateText(t):t}</button>`).join('')}</div><div class="tiny muted" style="margin-top:8px">${remaining?remaining+' بنود باقية':'خلصت يومك'}</div></div>
+     <div><div class="kicker">${en?'Today’s progress':'إنجاز اليوم'}</div><div class="ring" style="--p:${pr.p}%"><div><b>${pr.p}%</b><span>${done} / ${total}</span></div></div></div>
+     <div><div class="muted tiny" style="margin-bottom:6px">${en?'Today’s marketing dose':'جرعة التسويق'}</div><div class="mode-row">${modes.map(t=>`<button class="mode ${todayDayType()===t?'active':''}" onclick="setDayType('${t}')">${en?translateText(t):t}</button>`).join('')}</div><div class="tiny muted" style="margin-top:8px">${remaining?remaining+' '+T.left:T.done}</div></div>
    </aside>
  </div>
  <div class="stats-grid">
-   <div class="stat-card"><small>اليوم</small><strong>${done}/${total}</strong></div>
-   <div class="stat-card"><small>باقي</small><strong>${remaining}</strong></div>
-   <div class="stat-card"><small>التسويق</small><strong>${state.weekly.marketingHours||0}س</strong></div>
-   <div class="stat-card"><small>الهدف</small><strong>12س</strong></div>
+   <div class="stat-card"><small>${T.today}</small><strong>${done}/${total}</strong></div>
+   <div class="stat-card"><small>${T.remaining}</small><strong>${remaining}</strong></div>
+   <div class="stat-card"><small>${en?'Marketing':'التسويق'}</small><strong>${state.weekly.marketingHours||0}${T.hours}</strong></div>
+   <div class="stat-card"><small>${T.target}</small><strong>12${T.hours}</strong></div>
  </div>
- <div class="section-title" id="todayTasks"><div><h2>⚡ تنفيذ اليوم</h2><p>${esc(day)} · الأساسيات أولًا.</p></div></div>
+ <div class="section-title" id="todayTasks"><div><h2>${T.execute}</h2><p>${esc(en?translateText(day):day)} · ${T.ess}.</p></div></div>
  <div class="bento">
-   <section class="card tall"><h3>قائمة اليوم</h3>${taskHTML(items)}</section>
-   <section class="card"><h3>بعدها</h3><div class="tasks">
-     <label class="task" onclick="navigate('marketing')"><span>💻 مهمة التسويق</span><span>↗</span></label>
-     <label class="task" onclick="navigate('shari')"><span>🕌 محتوى الشرعي</span><span>↗</span></label>
-     <label class="task" onclick="navigate('quran')"><span>📖 مراجعة القرآن</span><span>↗</span></label>
+   <section class="card tall"><h3>${T.list}</h3>${taskHTML(items)}</section>
+   <section class="card"><h3>${T.next}</h3><div class="tasks">
+     <label class="task" onclick="navigate('marketing')"><span>💻 ${en?'Marketing task':'مهمة التسويق'}</span><span>↗</span></label>
+     <label class="task" onclick="navigate('shari')"><span>🕌 ${en?'Islamic content':'محتوى الشرعي'}</span><span>↗</span></label>
+     <label class="task" onclick="navigate('quran')"><span>📖 ${en?'Qur’an review':'مراجعة القرآن'}</span><span>↗</span></label>
    </div></section>
-   <section class="card"><h3>قاعدة اليوم</h3><div class="mini-stat"><span>المراجعات قبل الجديد</span><b>1</b></div><div class="mini-stat" style="margin-top:7px"><span>الشرعي والقرآن ثابتان</span><b>2</b></div><div class="mini-stat" style="margin-top:7px"><span>الكورسات تتقلص أولًا</span><b>3</b></div></section>
+   <section class="card"><h3>${T.rule}</h3><div class="mini-stat"><span>${T.r1}</span><b>1</b></div><div class="mini-stat" style="margin-top:7px"><span>${T.r2}</span><b>2</b></div><div class="mini-stat" style="margin-top:7px"><span>${T.r3}</span><b>3</b></div></section>
  </div>`
 }
 
