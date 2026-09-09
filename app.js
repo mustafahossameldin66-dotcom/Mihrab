@@ -1070,3 +1070,53 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
   layer.setAttribute('aria-hidden','true');
   document.body.prepend(layer);
 })();
+
+
+/* ============================================================================
+   MIHRAB V22 — POINTER FOG / LIVING BACKGROUND CONTROLLER
+   Passive pointer handling + one tiny easing loop. No scroll blocking.
+   ============================================================================ */
+(function MihrabLivingPointer(){
+  'use strict';
+  const root=document.documentElement;
+  const body=document.body;
+  if(!body) return;
+
+  let layer=document.getElementById('mihrab-pointer-light');
+  if(!layer){
+    layer=document.createElement('div');
+    layer.id='mihrab-pointer-light';
+    layer.setAttribute('aria-hidden','true');
+    body.prepend(layer);
+  }
+
+  const homeX=window.innerWidth*.62, homeY=window.innerHeight*.34;
+  let tx=homeX, ty=homeY;
+  let sx=homeX, sy=homeY;
+  let raf=0;
+
+  function paint(){
+    raf=0;
+    const dx=tx-sx, dy=ty-sy;
+    sx += dx*.115;
+    sy += dy*.115;
+    root.style.setProperty('--pointer-x',tx+'px');
+    root.style.setProperty('--pointer-y',ty+'px');
+    root.style.setProperty('--pointer-soft-x',sx+'px');
+    root.style.setProperty('--pointer-soft-y',sy+'px');
+    if(Math.abs(dx)+Math.abs(dy)>.35) raf=requestAnimationFrame(paint);
+  }
+
+  function move(x,y){
+    tx=Math.max(0,Math.min(window.innerWidth,x));
+    ty=Math.max(0,Math.min(window.innerHeight,y));
+    if(!raf) raf=requestAnimationFrame(paint);
+  }
+
+  window.addEventListener('pointermove',e=>move(e.clientX,e.clientY),{passive:true});
+  window.addEventListener('pointerleave',()=>move(homeX,homeY),{passive:true});
+  window.addEventListener('pointercancel',()=>move(homeX,homeY),{passive:true});
+  window.addEventListener('resize',()=>move(Math.min(tx,window.innerWidth),Math.min(ty,window.innerHeight)),{passive:true});
+
+  paint();
+})();
