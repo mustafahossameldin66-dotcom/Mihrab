@@ -13,3 +13,6 @@ The project also works as a GitHub Pages project site. Keep the repository root 
 
 ## Local use
 Open `index.html` for a basic local preview. PWA installation/service worker require HTTPS (Cloudflare Pages or GitHub Pages) or localhost.
+
+
+Live Luxury v5: cinematic glass surfaces, slow CSS aurora background, and responsive premium micro-interactions.
