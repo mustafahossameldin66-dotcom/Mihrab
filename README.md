@@ -33,6 +33,9 @@ Mihrab is a local-first PWA designed to stay useful for the long run: today-firs
 - Day modes are per-day overrides; they do not rewrite the base plan.
 - Missed daily work is not carried forward as debt.
 - Content tracks are separate from the schedule so you can swap finished content without changing the code.
+- Close Today records the day without moving unfinished work forward. It is a gentle end-of-day ritual, not a reset penalty.
+- Daily notes and track notes keep small insights close to the relevant day or content path without becoming a second task manager.
+- The Year Journey turns the marketing curriculum into four visible stages so small daily work stays connected to a long-term direction.
 
 
 

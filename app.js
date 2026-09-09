@@ -639,3 +639,104 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
   // First paint: only render the current view, not all six views.
   renderCurrentView(true);
 })();
+
+/* =====================================================================
+   MIHRAB YEAR ONE — a calm daily loop and a visible long-term journey
+   ===================================================================== */
+(function MihrabYearOne(){
+  const dayKey=()=>keyDate();
+  const isEn=()=>state.lang==='en';
+  const completedToday=()=>Object.values(state.today||{}).filter(Boolean).length;
+  const activeTracks=()=>((state.library||[]).filter(x=>x.status==='active'));
+
+  function useModal(html){
+    if(!document.getElementById('mihrabOverlay')) window.openQuickCapture();
+    const modal=document.getElementById('mihrabModal');
+    const overlay=document.getElementById('mihrabOverlay');
+    if(!modal||!overlay)return;
+    modal.innerHTML=html;
+    overlay.classList.add('open');
+  }
+
+  function greeting(){
+    const hour=new Date().getHours(), en=isEn();
+    if(en) return hour<12?'Good morning.':hour<18?'Good afternoon.':'Good evening.';
+    return hour<12?'صباح هادئ.':hour<18?'مساء خير.':'مساء هادئ.';
+  }
+
+  function weeklySignal(){
+    const en=isEn(), hours=Number(state.weekly?.marketingHours||0), focus=Number(state.metrics?.focusMinutes||0);
+    if(hours>=12)return en?'Marketing target is covered. Keep the rest light.':'هدف التسويق متغطّي. خلّي الباقي خفيف.';
+    if(focus>=120)return en?'Your focus is building—one calm marketing session is enough.':'تركيزك بيتبني—جلسة تسويق هادية واحدة كفاية.';
+    return en?'Start small: one protected session changes the week.':'ابدأ صغير: جلسة محمية واحدة تغيّر الأسبوع.';
+  }
+
+  function compassMarkup(){
+    const en=isEn(), inbox=(state.inbox||[]).filter(x=>x.status==='inbox').length;
+    const closed=state.dayClosures?.[dayKey()];
+    const note=state.dailyNotes?.[dayKey()];
+    return `<section class="day-compass ${closed?'day-closed':''}">
+      <div class="compass-copy"><span class="compass-kicker">${en?'YOUR DAY, IN ONE GLANCE':'يومك، في لقطة واحدة'}</span><strong>${greeting()}</strong><p>${closed?(en?'Today is closed. Nothing rolls over as debt.':'اليوم اتقفل. ولا شيء يتحول إلى دين بكرة.'):(en?weeklySignal():weeklySignal())}</p></div>
+      <div class="compass-metrics"><span><b>${completedToday()}</b>${en?' done':' منجز'}</span><span><b>${inbox}</b>${en?' inbox':' وارد'}</span><span><b>${activeTracks().length}</b>${en?' tracks':' مسارات'}</span></div>
+      <div class="compass-actions"><button class="compass-btn" onclick="openDailyNote()">${note?'✦ '+(en?'Edit note':'ملاحظة اليوم'):'＋ '+(en?'Daily note':'ملاحظة اليوم')}</button><button class="compass-btn" onclick="openJourney()">${en?'Year journey':'رحلة السنة'} ↗</button><button class="compass-btn compass-close" onclick="closeToday()">${closed?(en?'Day saved':'اليوم محفوظ'):(en?'Close today':'اقفل اليوم')}</button></div>
+    </section>`;
+  }
+
+  window.openDailyNote=()=>{
+    const en=isEn(), value=state.dailyNotes?.[dayKey()]||'';
+    useModal(`<div class="mihrab-modal-head"><b>${en?'A note for today':'ملاحظة اليوم'}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><p class="muted">${en?'A thought, a lesson, or a small win. It stays with today—not on your task list.':'فكرة، درس، أو مكسب صغير. ستبقى مع اليوم وليس في قائمة مهامك.'}</p><div class="field-lite"><textarea id="dailyNote" placeholder="${en?'Write freely…':'اكتب براحتك…'}">${esc(value)}</textarea></div><div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${en?'Cancel':'إلغاء'}</button><button class="btn primary" onclick="saveDailyNote()">${en?'Save note':'حفظ الملاحظة'}</button></div></div>`);
+  };
+  window.saveDailyNote=()=>{
+    const value=document.getElementById('dailyNote')?.value.trim()||'';
+    state.dailyNotes ||= {}; state.dailyNotes[dayKey()]=value; save(); closeMihrabModal(); renderAll();
+  };
+
+  window.closeToday=()=>{
+    const en=isEn();
+    if(state.dayClosures?.[dayKey()])return;
+    useModal(`<div class="mihrab-modal-head"><b>${en?'Close today gently':'اقفل اليوم بهدوء'}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><div class="day-close-mark">✓</div><h3>${en?'Enough for today.':'كفاية لحد هنا.'}</h3><p class="muted">${en?'This records the day as it was. Unfinished work will not become tomorrow’s debt.':'ده يسجل اليوم كما كان. أي شيء لم يكتمل لن يتحول إلى دين بكرة.'}</p><div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${en?'Keep it open':'خليه مفتوح'}</button><button class="btn primary" onclick="confirmCloseToday()">${en?'Close & keep moving':'اقفل وكمل'}</button></div></div>`);
+  };
+  window.confirmCloseToday=()=>{
+    state.dayClosures ||= {};
+    state.dayClosures[dayKey()]={completed:completedToday(),closedAt:new Date().toISOString()};
+    state.achievementLog ||= [];
+    state.achievementLog.unshift({type:'day',date:dayKey(),count:completedToday()});
+    state.achievementLog=state.achievementLog.slice(0,120);
+    save(); closeMihrabModal(); renderAll();
+  };
+
+  window.openTrackNote=id=>{
+    const track=(state.library||[]).find(x=>x.id===id); if(!track)return;
+    const en=isEn(), title=en&&track.titleEn?track.titleEn:track.title, value=track.note||'';
+    useModal(`<div class="mihrab-modal-head"><b>${esc(title)}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><div class="field-lite"><label>${en?'Track note':'ملاحظة المسار'}</label><textarea id="trackNote" placeholder="${en?'Links, ideas, or your next step…':'روابط، أفكار، أو خطوتك التالية…'}">${esc(value)}</textarea></div><div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${en?'Cancel':'إلغاء'}</button><button class="btn primary" onclick="saveTrackNote('${esc(id)}')">${en?'Save':'حفظ'}</button></div></div>`);
+  };
+  window.saveTrackNote=id=>{
+    const track=(state.library||[]).find(x=>x.id===id); if(!track)return;
+    track.note=document.getElementById('trackNote')?.value.trim()||''; save(); closeMihrabModal(); renderAll();
+  };
+
+  function journeyMarkup(modal=false){
+    const en=isEn(), progress=Math.min(100,Math.round(Object.values(state.plan||{}).filter(Boolean).length/80*100));
+    const stages=en?
+      [['01','Foundation','Weeks 1–3 · learn the language of marketing'],['02','Presence','Weeks 4–5 · make the work visible'],['03','Testing','Weeks 6–8 · ads, measurement, iteration'],['04','Launch','Weeks 9–10 · case study and career move']]:
+      [['٠١','تأسيس','الأسابيع ١–٣ · تعلّم لغة التسويق'],['٠٢','حضور','الأسابيع ٤–٥ · خلّي الشغل ظاهر'],['٠٣','اختبار','الأسابيع ٦–٨ · إعلانات، قياس، وتحسين'],['٠٤','انطلاق','الأسابيع ٩–١٠ · دراسة حالة وخطوة مهنية']];
+    return `<div class="journey-head"><div><span class="compass-kicker">${en?'LONG-TERM VIEW':'نظرة المدى الطويل'}</span><h2>${en?'Your year has a direction.':'سنتك لها اتجاه.'}</h2><p>${en?'What matters today is one small piece of this whole arc.':'المهم اليوم هو قطعة صغيرة من الرحلة الكبيرة.'}</p></div><div class="journey-percent"><b>${progress}%</b><span>${en?'marketing path':'مسار التسويق'}</span></div></div><div class="journey-line"><i style="width:${progress}%"></i></div><div class="journey-stages">${stages.map(([n,title,desc],i)=>`<article class="journey-stage ${progress>i*25?'reached':''}"><span>${n}</span><b>${title}</b><small>${desc}</small></article>`).join('')}</div>`;
+  }
+  window.openJourney=()=>{
+    const en=isEn();
+    useModal(`<div class="mihrab-modal-head"><b>${en?'Year journey':'رحلة السنة'}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body journey-modal">${journeyMarkup(true)}<div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${en?'Close':'إغلاق'}</button><button class="btn primary" onclick="closeMihrabModal();navigate('marketing')">${en?'Open marketing path':'افتح مسار التسويق'}</button></div></div>`);
+  };
+
+  const priorHome=window.renderHome;
+  window.renderHome=function(){return compassMarkup()+priorHome();};
+
+  const priorSystem=window.renderSystem;
+  window.renderSystem=function(){
+    const en=isEn(), sessions=Number(state.metrics?.sessions||0), focus=Math.round(Number(state.metrics?.focusMinutes||0));
+    const notes=activeTracks().slice(0,6);
+    const extra=`<section class="year-panel section-box"><div class="section-title" style="margin:0 0 10px"><div><h2>${en?'Your year, in motion':'سنتك وهي بتتحرك'}</h2><p>${en?'A long view that keeps today in perspective.':'نظرة طويلة تخلّي يومك له معنى في الصورة الكبيرة.'}</p></div><button class="btn" onclick="openJourney()">${en?'Open journey':'افتح الرحلة'} ↗</button></div>${journeyMarkup()}</section><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>${en?'Milestones, not pressure':'محطات، مش ضغط'}</h3><div class="milestone-grid"><div><b>${sessions}</b><small>${en?'focus sessions':'جلسات تركيز'}</small></div><div><b>${focus}</b><small>${en?'focus minutes':'دقائق تركيز'}</small></div><div><b>${Object.keys(state.dayClosures||{}).length}</b><small>${en?'closed days':'أيام مكتملة'}</small></div></div><p class="note">${en?'What you preserve becomes your real progress.':'اللي بتثبته هو تقدمك الحقيقي.'}</p></section><section class="section-box"><h3>${en?'Track notes':'ملاحظات المسارات'}</h3><p class="muted">${en?'Keep only the next useful thought beside each path.':'خلي بجانب كل مسار الفكرة المفيدة التالية فقط.'}</p><div class="track-note-list">${notes.length?notes.map(x=>`<button class="track-note" onclick="openTrackNote('${esc(x.id)}')"><span><b>${esc(en&&x.titleEn?x.titleEn:x.title)}</b><small>${esc(x.note|| (en?'Add your next step':'أضف خطوتك التالية'))}</small></span><i>↗</i></button>`).join(''):`<div class="note">${en?'Add a track from the Content Library first.':'أضف مسارًا من مكتبة المحتوى أولًا.'}</div>`}</div></section></div>`;
+    return priorSystem()+extra;
+  };
+
+  renderAll();
+})();
