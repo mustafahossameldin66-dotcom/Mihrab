@@ -87,3 +87,13 @@ Mihrab V12 adds a single touch-first mobile navigation engine, two-accent theme 
 - Mobile navigation uses native hash links with one router; no touch-event hijacking.
 - Track titles in Content Library open structured details.
 - Visual micro-interactions are theme-aware with a strict two-accent + shared interaction tone system.
+
+
+## V16 notes
+- Mobile navigation uses native hash links with a single router path; no competing click/pointer listeners.
+- Theme accents are intentionally limited to the primary `--a` and gold `--c`.
+- Mobile-only effects are reduced to keep interaction responsive.
+
+
+## V17 interaction polish
+Theme-aware title gradient, subtle task completion sweep/pop, progress shimmer, 100% ring burst, micro-dot background, and reduced-motion/low-power guards.

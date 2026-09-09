@@ -13,7 +13,7 @@
   --soft:#8ba2c1;
   --line:rgba(255,255,255,.04);
   --a:#5eead4;
-  --b:#818cf8;
+  --b:#67e8c7;
   --c:#fbbf24;
   --danger:#f87171;
   --ok:#34d399;
@@ -28,11 +28,11 @@
 }
 
 /* Theme tokens */
-body[data-theme="aurora"]{--bg:#020d0c;--bg2:#041715;--surface:rgba(8,28,27,.68);--surface2:rgba(12,39,37,.58);--a:#67e8c7;--b:#7897ff;--c:#d7b85a;--text:#f5fbf9;--muted:#718a87;--soft:#aac0bb;--line:rgba(180,235,224,.055)}
-body[data-theme="midnight"]{--bg:#05060d;--bg2:#0b0d19;--surface:rgba(12,14,27,.70);--surface2:rgba(22,24,48,.58);--a:#a99bff;--b:#68c8ff;--c:#e1bf64;--text:#f8f7ff;--muted:#7f879d;--soft:#afb7ca;--line:rgba(214,208,255,.055)}
-body[data-theme="sunrise"]{--bg:#0d0808;--bg2:#180d10;--surface:rgba(26,13,14,.70);--surface2:rgba(49,23,25,.55);--a:#ffc07a;--b:#cf7088;--c:#f1cf77;--text:#fbf7f2;--muted:#95817c;--soft:#c9b7b0;--line:rgba(255,213,183,.055)}
-body[data-theme="paper"]{--bg:#ece5d9;--bg2:#f4eee4;--surface:rgba(255,252,246,.76);--surface2:rgba(255,247,235,.64);--surface3:rgba(60,47,31,.045);--a:#2f866f;--b:#66739f;--c:#a9782b;--text:#24211d;--muted:#6d6459;--soft:#51493f;--line:rgba(60,47,31,.11);--shadow:0 35px 80px rgba(76,56,28,.12)}
-body[data-theme="mono"]{--bg:#07090c;--bg2:#0e1116;--surface:rgba(14,17,22,.72);--surface2:rgba(23,28,35,.60);--a:#cdd6e1;--b:#879bb9;--c:#c5a059;--text:#f2f3f5;--muted:#7f8996;--soft:#adb5c0;--line:rgba(229,236,245,.05)}
+body[data-theme="aurora"]{--bg:#020d0c;--bg2:#041715;--surface:rgba(8,28,27,.68);--surface2:rgba(12,39,37,.58);--a:#67e8c7;--b:#67e8c7;--c:#d7b85a;--text:#f5fbf9;--muted:#718a87;--soft:#aac0bb;--line:rgba(180,235,224,.055)}
+body[data-theme="midnight"]{--bg:#05060d;--bg2:#0b0d19;--surface:rgba(12,14,27,.70);--surface2:rgba(22,24,48,.58);--a:#a99bff;--b:#a99bff;--c:#e1bf64;--text:#f8f7ff;--muted:#7f879d;--soft:#afb7ca;--line:rgba(214,208,255,.055)}
+body[data-theme="sunrise"]{--bg:#0d0808;--bg2:#180d10;--surface:rgba(26,13,14,.70);--surface2:rgba(49,23,25,.55);--a:#ffc07a;--b:#ffc07a;--c:#f1cf77;--text:#fbf7f2;--muted:#95817c;--soft:#c9b7b0;--line:rgba(255,213,183,.055)}
+body[data-theme="paper"]{--bg:#ece5d9;--bg2:#f4eee4;--surface:rgba(255,252,246,.76);--surface2:rgba(255,247,235,.64);--surface3:rgba(60,47,31,.045);--a:#2f866f;--b:#2f866f;--c:#a9782b;--text:#24211d;--muted:#6d6459;--soft:#51493f;--line:rgba(60,47,31,.11);--shadow:0 35px 80px rgba(76,56,28,.12)}
+body[data-theme="mono"]{--bg:#07090c;--bg2:#0e1116;--surface:rgba(14,17,22,.72);--surface2:rgba(23,28,35,.60);--a:#cdd6e1;--b:#cdd6e1;--c:#c5a059;--text:#f2f3f5;--muted:#7f8996;--soft:#adb5c0;--line:rgba(229,236,245,.05)}
 
 html,body{font-family:var(--ui-font);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"kern" 1;}
 body[data-lang="en"],body[data-lang="en"] *{font-family:var(--latin-font);letter-spacing:-.004em}
@@ -1087,3 +1087,398 @@ body::after{opacity:calc(.10 + (var(--today-progress-ratio,0) * .16))!important;
   .card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.awareness,.quote,.review-choice,.iframe-wrap{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 }
 @media(prefers-reduced-motion:reduce){.task-item.just-checked,.task-item.just-checked::after,.progress>i::after,.ring-celebrate-particle,.view.active{animation:none!important}.hero-main h1{filter:none!important}}
+
+
+/* MIHRAB V16 — clean theme-aware interaction layer */
+.task-item{position:relative;overflow:hidden;border-radius:12px;transition:background .35s ease,box-shadow .35s ease,transform .35s var(--premium-ease),padding .35s ease;border:1px solid transparent;border-bottom:1px solid rgba(255,255,255,.018)}
+@media (hover:hover){
+  .task-item:hover,.task-item:focus-within{background:linear-gradient(90deg,color-mix(in srgb,var(--a) 8%,transparent),transparent 82%);box-shadow:inset 3px 0 0 color-mix(in srgb,var(--a) 78%,transparent),0 8px 24px color-mix(in srgb,var(--a) 12%,transparent);border-color:color-mix(in srgb,var(--a) 15%,transparent);transform:translateX(-4px) scale(1.004);padding-inline:12px;z-index:2}
+  .task-item.done:hover{background:var(--surface3);box-shadow:inset 3px 0 0 var(--muted);border-color:transparent;transform:translateX(-2px)}
+}
+.task-item input[type="checkbox"]:hover{border-color:color-mix(in srgb,var(--a) 80%,transparent);box-shadow:0 0 12px color-mix(in srgb,var(--a) 24%,transparent)}
+.hero-main h1{background:linear-gradient(135deg,var(--text) 30%,var(--a) 68%,var(--c) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;font-weight:800;letter-spacing:-.04em;filter:drop-shadow(0 4px 15px rgba(0,0,0,.22));text-wrap:balance}
+body{background:radial-gradient(color-mix(in srgb,var(--line) 72%,transparent) 1px,transparent 1px),var(--bg);background-size:32px 32px,100% 100%}
+body::before{opacity:calc(.14 + (var(--today-progress-ratio,0) * .20));transition:opacity .6s var(--premium-ease),filter .6s var(--premium-ease)}
+body::after{opacity:calc(.10 + (var(--today-progress-ratio,0) * .16));transition:opacity .6s var(--premium-ease)}
+.task-item::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--a) 12%,transparent),color-mix(in srgb,var(--c) 8%,transparent),transparent);transform:translateX(100%);pointer-events:none}.task-item.just-checked::after{animation:flashSweepRTL .5s var(--premium-ease) forwards}@keyframes flashSweepRTL{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+@keyframes popTask{0%{transform:scale(1)}50%{transform:scale(.985) translateY(.5px)}100%{transform:scale(1)}}.task-item.just-checked{animation:popTask .25s var(--premium-ease) forwards}
+.progress>i{position:relative;overflow:hidden;background:linear-gradient(90deg,var(--a),var(--c));box-shadow:0 0 14px color-mix(in srgb,var(--a) 22%,transparent)}.progress>i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);background-size:200% 100%;animation:progressShimmer 3.5s linear infinite}@keyframes progressShimmer{0%{background-position:150% 0}100%{background-position:-150% 0}}
+.ring{transition:--p .5s var(--premium-ease),background .5s var(--premium-ease)}.ring-celebrate-particle{position:absolute;width:4px;height:4px;border-radius:50%;pointer-events:none;z-index:10;animation:particleScatter .55s var(--premium-ease) forwards}@keyframes particleScatter{0%{transform:translate(0,0) scale(1);opacity:.8}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+.focus-timer{font-weight:700;background:linear-gradient(135deg,var(--text) 30%,var(--a) 75%,var(--c) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;filter:drop-shadow(0 0 25px color-mix(in srgb,var(--a) 20%,transparent))}
+@media(prefers-reduced-motion:reduce){.task-item.just-checked,.task-item.just-checked::after,.progress>i::after,.ring-celebrate-particle,.view.active{animation:none!important}.hero-main h1,.focus-timer{filter:none}}
+@media(max-width:760px){
+  .top-nav{display:none!important}
+  .app{padding-bottom:96px}
+  .hero-main h1{font-size:29px;line-height:1.14}
+  .hero-main,.hero-side{min-width:0}
+  #mobileNav{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));position:fixed;left:9px;right:9px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:2147483647;min-height:62px;padding:4px;gap:2px;border:1px solid color-mix(in srgb,var(--c) 20%,var(--line));border-radius:18px;background:color-mix(in srgb,var(--surface) 96%,transparent);box-shadow:0 16px 38px rgba(0,0,0,.30),0 0 22px color-mix(in srgb,var(--c) 7%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:auto;touch-action:manipulation;}
+  #mobileNav .nav-btn{position:relative;min-width:0;width:100%;height:52px;padding:4px 1px;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;border-radius:12px;background:transparent;color:var(--muted);text-decoration:none;font-size:8.5px;line-height:1;pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  #mobileNav .nav-icon{font-size:15px;line-height:1}.nav-btn.active{color:var(--text)}
+  #mobileNav .nav-btn.active{background:color-mix(in srgb,var(--c) 9%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 16%,transparent),0 0 16px color-mix(in srgb,var(--c) 7%,transparent))}
+  #mobileNav .nav-btn.active::after{content:"";position:absolute;left:30%;right:30%;bottom:3px;height:2px;border-radius:2px;background:var(--c);box-shadow:0 0 8px var(--c)}
+  .mobile-only{display:block!important}
+}
+
+
+/* MIHRAB V17 — theme-aware cinematic interaction layer */
+.hero-main h1{
+  background:linear-gradient(135deg,var(--text) 22%,var(--a) 66%,var(--c) 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+  font-weight:800;letter-spacing:-.04em;text-wrap:balance;
+  filter:drop-shadow(0 4px 15px color-mix(in srgb,var(--text) 12%,transparent));
+}
+body{position:relative;isolation:isolate;background:radial-gradient(color-mix(in srgb,var(--line) 72%,transparent) 1px,transparent 1px),var(--bg);background-size:32px 32px,100% 100%;}
+body::before{opacity:calc(.12 + (var(--today-progress-ratio,0) * .22));transition:opacity .6s var(--premium-ease),filter .6s var(--premium-ease);}
+body::after{opacity:calc(.10 + (var(--today-progress-ratio,0) * .18));transition:opacity .6s var(--premium-ease);}
+.task-item{position:relative;overflow:hidden;border-radius:12px;}
+@media (hover:hover){
+ .task-item:hover,.task-item:focus-within{background:linear-gradient(90deg,color-mix(in srgb,var(--a) 8%,transparent),transparent 82%);box-shadow:inset 3px 0 0 color-mix(in srgb,var(--a) 78%,transparent),0 8px 24px color-mix(in srgb,var(--a) 12%,transparent);border-color:color-mix(in srgb,var(--a) 15%,transparent);transform:translateX(-3px) scale(1.003);padding-inline:10px;z-index:2}
+ .task-item.done:hover{background:var(--surface3);box-shadow:inset 3px 0 0 color-mix(in srgb,var(--muted) 75%,transparent);border-color:transparent;transform:translateX(-2px)}
+ .task-item input[type="checkbox"]:hover{border-color:color-mix(in srgb,var(--a) 82%,transparent);box-shadow:0 0 12px color-mix(in srgb,var(--a) 28%,transparent)}
+ .section-box:hover,.card:hover,.timeline-card:hover,.theme-card:hover{border-color:color-mix(in srgb,var(--a) 30%,var(--line));box-shadow:0 30px 70px rgba(0,0,0,.42),0 0 24px color-mix(in srgb,var(--a) 9%,transparent);transform:translateY(-2px) scale(1.002)}
+}
+.task-item::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--a) 12%,transparent),color-mix(in srgb,var(--c) 8%,transparent),transparent);transform:translateX(100%);pointer-events:none}
+.task-item.just-checked::after{animation:mihrabFlashRTL .5s var(--premium-ease) forwards}
+@keyframes mihrabFlashRTL{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+@keyframes mihrabPopTask{0%{transform:scale(1)}50%{transform:scale(.985) translateY(.5px)}100%{transform:scale(1)}}
+.task-item.just-checked{animation:mihrabPopTask .25s var(--premium-ease) forwards}
+.task-item.done .task-text{text-decoration:line-through;color:var(--muted)}
+.progress>i{position:relative;overflow:hidden;background:linear-gradient(90deg,var(--a),var(--c));box-shadow:0 0 14px color-mix(in srgb,var(--a) 22%,transparent)}
+.progress>i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--text) 14%,transparent),transparent);background-size:200% 100%;animation:mihrabProgressShimmer 3.5s linear infinite}
+@keyframes mihrabProgressShimmer{0%{background-position:150% 0}100%{background-position:-150% 0}}
+.ring{transition:--p .5s var(--premium-ease),background .5s var(--premium-ease)}
+.ring-content{font-variant-numeric:tabular-nums}
+.ring-celebrate-particle{position:absolute;width:4px;height:4px;border-radius:50%;pointer-events:none;z-index:10;animation:mihrabRingBurst .55s var(--premium-ease) forwards}
+@keyframes mihrabRingBurst{0%{transform:translate(0,0) scale(1);opacity:.8}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+.focus-mode{background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--bg2) 92%,#000),#020408 90%);}
+.focus-timer{font-weight:700;background:linear-gradient(135deg,var(--text) 30%,var(--a) 75%,var(--c) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;filter:drop-shadow(0 0 22px color-mix(in srgb,var(--a) 18%,transparent))}
+/* V17: minimize expensive effects when Low Power is enabled */
+body[data-low-power="true"]::before,body[data-low-power="true"]::after{animation:none!important;filter:blur(44px)!important;opacity:.08!important;will-change:auto!important}
+body[data-low-power="true"] .progress>i::after,body[data-low-power="true"] .task-item.just-checked::after,body[data-low-power="true"] .ring-celebrate-particle{animation:none!important}
+@media(prefers-reduced-motion:reduce){.task-item.just-checked,.task-item.just-checked::after,.progress>i::after,.ring-celebrate-particle,.view.active{animation:none!important}.hero-main h1,.focus-timer{filter:none!important}}
+@media(max-width:760px){
+ .top-nav{display:none!important}
+ .app{padding-bottom:96px}
+ .hero-main h1{font-size:29px;line-height:1.14}
+ .hero-main,.hero-side{min-width:0}
+ #mobileNav{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));position:fixed;left:9px;right:9px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:2147483647;min-height:62px;padding:4px;gap:2px;border:1px solid color-mix(in srgb,var(--c) 20%,var(--line));border-radius:18px;background:color-mix(in srgb,var(--surface) 96%,transparent);box-shadow:0 16px 38px rgba(0,0,0,.30),0 0 22px color-mix(in srgb,var(--c) 7%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:auto;touch-action:manipulation}
+ #mobileNav .nav-btn{position:relative;min-width:0;width:100%;height:52px;padding:4px 1px;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;border-radius:12px;background:transparent;color:var(--muted);text-decoration:none;font-size:8.5px;line-height:1;pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+ #mobileNav .nav-btn .nav-icon{font-size:15px;line-height:1}
+ #mobileNav .nav-btn.active{color:var(--text);background:color-mix(in srgb,var(--c) 9%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 16%,transparent),0 0 16px color-mix(in srgb,var(--c) 7%,transparent)}
+ #mobileNav .nav-btn.active::after{content:"";position:absolute;left:30%;right:30%;bottom:3px;height:2px;border-radius:2px;background:var(--c);box-shadow:0 0 8px var(--c)}
+ .hero-main,.hero-side,.topbar,.card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,.awareness,.quote,.review-choice,.iframe-wrap{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+}
+
+/* ============================================================================
+   MIHRAB V18 — FINAL MOBILE NAV / PERFORMANCE SAFETY OVERRIDE
+   ============================================================================ */
+#mihrab-ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:.55;contain:paint}
+#mihrab-ambient::before,#mihrab-ambient::after{content:"";position:absolute;width:42vw;height:42vw;border-radius:50%;filter:blur(70px);opacity:.10;will-change:transform}
+#mihrab-ambient::before{inset:-15vw auto auto -10vw;background:var(--a);animation:mihrabAmbientA 34s ease-in-out infinite}
+#mihrab-ambient::after{inset:auto -12vw -18vw auto;background:var(--c);animation:mihrabAmbientB 41s ease-in-out infinite}
+@keyframes mihrabAmbientA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(7vw,4vh,0)}}
+@keyframes mihrabAmbientB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-6vw,-5vh,0)}}
+.topbar,.mobile-nav,main,footer{position:relative;z-index:1}
+#mobileNav .nav-btn{pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important}
+@media(max-width:760px){
+  body{padding-bottom:0!important}
+  .app{padding-bottom:92px!important}
+  .mobile-nav{z-index:2147483646!important}
+  #mihrab-ambient{opacity:.42}
+}
+@media(prefers-reduced-motion:reduce){
+  #mihrab-ambient::before,#mihrab-ambient::after{animation:none!important}
+}
+
+/* ============================================================================
+   MIHRAB V19 — SOFT MODERN SURFACES
+   Softer corners, quieter borders, Notion-like hierarchy, living but restrained.
+   ============================================================================ */
+:root{
+  --r:26px;
+  --surface:rgba(8,18,24,.70);
+  --surface2:rgba(12,28,36,.64);
+  --surface3:rgba(255,255,255,.028);
+  --line:rgba(210,236,230,.065);
+  --soft:#a1b7b2;
+  --muted:#718680;
+}
+
+/* Large surfaces */
+.topbar,
+.hero-main,
+.hero-side,
+.card,
+.section-box,
+.week-card,
+.timeline-card,
+.theme-card,
+.stat-card,
+.awareness,
+.quote,
+.review-choice,
+.iframe-wrap,
+.day-compass,
+.daily-spark{
+  border-radius:26px !important;
+  border:1px solid color-mix(in srgb,var(--line) 92%,transparent) !important;
+  box-shadow:0 18px 45px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.025) !important;
+}
+
+.topbar{
+  background:color-mix(in srgb,var(--surface) 88%,transparent) !important;
+  min-height:76px !important;
+  padding:10px 12px !important;
+  box-shadow:0 14px 38px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.03) !important;
+}
+
+.hero{gap:18px !important}
+.hero-main,.hero-side{min-height:320px !important}
+.hero-main{padding:34px !important;background:linear-gradient(145deg,color-mix(in srgb,var(--surface2) 94%,transparent),color-mix(in srgb,var(--surface) 88%,transparent)) !important}
+.hero-side{padding:26px !important;background:linear-gradient(145deg,color-mix(in srgb,var(--surface2) 82%,transparent),color-mix(in srgb,var(--surface) 92%,transparent)) !important}
+
+/* Kill the old 'machined edge' effect: the surfaces breathe instead of drawing outlines. */
+.section-box::before,
+.week-card::before,
+.timeline-card::before,
+.theme-card::before,
+.review-choice::before,
+.quote::before,
+.awareness::before,
+.day-compass::after,
+.daily-spark::after,
+.hero-main::before,
+.hero-side::after,
+.topbar::after{
+  opacity:.0 !important;
+  box-shadow:none !important;
+}
+
+/* Keep the atmosphere alive, but as soft light rather than visible borders. */
+body::before{opacity:.16 !important;filter:blur(120px) !important}
+body::after{opacity:.11 !important;filter:blur(120px) !important}
+.app::before{opacity:.055 !important}
+
+/* Softer interactions: movement is tiny, surface changes carry the feedback. */
+@media (hover:hover){
+  .hero-main:hover,
+  .hero-side:hover,
+  .card:hover,
+  .section-box:hover,
+  .week-card:hover,
+  .timeline-card:hover,
+  .theme-card:hover,
+  .stat-card:hover,
+  .awareness:hover,
+  .quote:hover,
+  .review-choice:hover{
+    transform:translateY(-2px) !important;
+    border-color:color-mix(in srgb,var(--a) 13%,var(--line)) !important;
+    box-shadow:0 22px 55px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.035) !important;
+  }
+}
+
+/* Stats become soft pills/cards instead of boxes with hard rails. */
+.stats-grid{gap:10px !important}
+.stat-card{
+  padding:20px !important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--surface2) 84%,transparent),color-mix(in srgb,var(--surface) 95%,transparent)) !important;
+}
+.stat-card::before{display:none !important}
+.stat-card::after{opacity:.18 !important;filter:blur(18px) !important}
+.stat-card strong{font-size:30px !important}
+
+/* Progress: rounded, tactile, no square ends. */
+.progress{height:5px !important;border-radius:999px !important;background:rgba(255,255,255,.055) !important}
+.progress>i{border-radius:999px !important}
+.journey-line{height:5px !important}
+
+/* Task rows: calm, slightly rounded, clearly tappable. */
+.task-item,
+.task,
+.day-chip,
+.mini-stat,
+.week-block,
+.lecture,
+.mode,
+.field input,
+.field select,
+.field textarea,
+.review-choice,
+.preference-choice,
+.preference-switch,
+.quick-action,
+.nudge-row{
+  border-radius:18px !important;
+}
+.task-item{
+  border:1px solid transparent !important;
+  background:rgba(255,255,255,.018) !important;
+}
+.task-item:hover,.task-item:focus-within{
+  transform:none !important;
+  padding-inline:12px !important;
+  border-color:color-mix(in srgb,var(--a) 10%,transparent) !important;
+  box-shadow:inset 2px 0 0 color-mix(in srgb,var(--a) 60%,transparent),0 8px 24px rgba(0,0,0,.12) !important;
+}
+.task-item::before{display:none !important}
+
+/* Replace the section-title rail with a small living marker. */
+.section-title{padding-inline-start:0 !important}
+.section-title::before{display:none !important}
+.section-title h2::before{
+  content:"";
+  display:inline-block;
+  width:7px;height:7px;margin-inline-end:9px;
+  border-radius:50%;
+  vertical-align:middle;
+  background:var(--a);
+  box-shadow:0 0 14px color-mix(in srgb,var(--a) 50%,transparent);
+}
+
+/* Hero typography: cinematic without looking like a giant poster. */
+.hero-main h1{
+  font-weight:760 !important;
+  letter-spacing:-.045em !important;
+  filter:drop-shadow(0 6px 22px rgba(0,0,0,.12)) !important;
+}
+
+/* Navigation: floating, soft, app-like. */
+.top-nav{
+  border-radius:20px !important;
+  background:rgba(255,255,255,.014) !important;
+  border:1px solid rgba(255,255,255,.035) !important;
+  padding:4px !important;
+}
+.nav-btn{border-radius:15px !important}
+.nav-btn.active{
+  background:color-mix(in srgb,var(--c) 7%,transparent) !important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 10%,transparent) !important;
+}
+.nav-btn.active::after{opacity:.75 !important}
+
+/* Mobile dock: clearly floating, not a sharp rectangle. */
+@media(max-width:760px){
+  .app{padding-inline:14px !important;padding-top:12px !important}
+  .topbar{border-radius:24px !important}
+  .hero{gap:12px !important}
+  .hero-main,.hero-side{min-height:0 !important;padding:23px !important;border-radius:24px !important}
+  .hero-main h1,body[data-lang="en"] .hero-main h1{font-size:29px !important;line-height:1.16 !important}
+  .stats-grid{gap:8px !important}
+  .stat-card{padding:15px !important;border-radius:19px !important}
+  .stat-card strong{font-size:24px !important}
+  #mobileNav{
+    left:12px !important;right:12px !important;bottom:calc(10px + env(safe-area-inset-bottom)) !important;
+    min-height:66px !important;padding:5px !important;gap:3px !important;
+    border:1px solid rgba(210,236,230,.07) !important;
+    border-radius:22px !important;
+    background:color-mix(in srgb,var(--surface) 94%,transparent) !important;
+    box-shadow:0 18px 48px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.035) !important;
+  }
+  #mobileNav .nav-btn{height:54px !important;border-radius:16px !important;font-size:8.5px !important}
+  #mobileNav .nav-btn.active{box-shadow:none !important;background:color-mix(in srgb,var(--a) 7%,transparent) !important}
+  #mobileNav .nav-btn.active::after{bottom:4px !important;height:2px !important;opacity:.7 !important}
+  .card,.section-box,.week-card,.timeline-card,.theme-card,.awareness,.quote,.review-choice,.iframe-wrap,.day-compass,.daily-spark{border-radius:22px !important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .hero-main:hover,.hero-side:hover,.card:hover,.section-box:hover,.week-card:hover,.timeline-card:hover,.theme-card:hover,.stat-card:hover,.awareness:hover,.quote:hover,.review-choice:hover{transform:none !important}
+}
+
+/* ============================================================================
+   MIHRAB V20 — TWO-TONE PALETTE DISCIPLINE
+   Every theme has exactly two expressive colors: --a (primary) + --c (accent).
+   Neutrals are structural only; no third saturated theme color is introduced.
+   ============================================================================ */
+:root{
+  --a:#5eead4;
+  --c:#d7b85a;
+  --b:var(--a);
+  --i:var(--a);
+  --danger:var(--c);
+  --ok:var(--a);
+  --mihrab-ok:var(--a);
+}
+
+body[data-theme="aurora"]{
+  --a:#67e8c7; /* Emerald */
+  --c:#d7b85a; /* Gold */
+  --b:var(--a); --i:var(--a); --danger:var(--c); --ok:var(--a); --mihrab-ok:var(--a);
+}
+body[data-theme="midnight"]{
+  --a:#9ea4ff; /* Indigo */
+  --c:#e1bf64; /* Gold */
+  --b:var(--a); --i:var(--a); --danger:var(--c); --ok:var(--a); --mihrab-ok:var(--a);
+}
+body[data-theme="sunrise"]{
+  --a:#e0a76e; /* Amber */
+  --c:#b86b62; /* Rose */
+  --b:var(--a); --i:var(--a); --danger:var(--c); --ok:var(--a); --mihrab-ok:var(--a);
+}
+body[data-theme="paper"]{
+  --a:#3d8a73; /* Olive / jade */
+  --c:#b27d32; /* Gold */
+  --b:var(--a); --i:var(--a); --danger:var(--c); --ok:var(--a); --mihrab-ok:var(--a);
+}
+body[data-theme="mono"]{
+  --a:#d0d7e0; /* Platinum */
+  --c:#c5a059; /* Gold */
+  --b:var(--a); --i:var(--a); --danger:var(--c); --ok:var(--a); --mihrab-ok:var(--a);
+}
+
+/* Remove legacy multicolor atmosphere: both live layers now derive only from the two theme colors. */
+.live-aurora-layer .aurora-gold,
+.live-aurora-layer .aurora-royal,
+.live-aurora-layer .aurora-silver{
+  background:radial-gradient(circle,color-mix(in srgb,var(--c) 26%,transparent),transparent 68%) !important;
+}
+.live-aurora-layer .aurora-royal{background:radial-gradient(circle,color-mix(in srgb,var(--a) 22%,transparent),transparent 68%) !important}
+.live-aurora-layer .aurora-silver{background:radial-gradient(circle,color-mix(in srgb,var(--c) 11%,transparent),transparent 70%) !important}
+
+/* Two-tone surfaces: the interface is carried by neutrals, with --a/--c reserved for identity. */
+.hero-main h1,
+.focus-timer{
+  background:linear-gradient(135deg,var(--a) 18%,var(--c) 82%) !important;
+  -webkit-background-clip:text !important;
+  background-clip:text !important;
+  -webkit-text-fill-color:transparent !important;
+  color:transparent !important;
+}
+.progress>i{background:linear-gradient(90deg,var(--a),var(--c)) !important}
+.task-item::after{background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--a) 13%,transparent),color-mix(in srgb,var(--c) 11%,transparent),transparent) !important}
+
+/* No extra vivid status colors: semantic success/danger states stay inside the theme pair. */
+.badge.pause,
+.danger,
+.text-danger{color:var(--c) !important}
+.online-dot,
+.ok,
+.text-ok{color:var(--a) !important}
+.online-dot{background:var(--a) !important;box-shadow:0 0 9px color-mix(in srgb,var(--a) 30%,transparent) !important}
+
+/* Keep the modern rounded language intact; strengthen softness instead of adding colors. */
+.topbar,.hero-main,.hero-side,.card,.section-box,.week-card,.timeline-card,.theme-card,.stat-card,
+.awareness,.quote,.review-choice,.task-item,.day-chip,.iframe-wrap,.mobile-nav,.daily-spark,.mihrab-modal{
+  border-radius:22px !important;
+}
+.task,.mini-stat,.week-block,.lecture,.review-choice,.badge,.mode,.nav-btn,.icon-btn,.btn{border-radius:14px !important}
+.progress,.progress>i{border-radius:999px !important}
+
+/* Theme swatches show the exact pair, not hidden legacy colors. */
+.swatch{background:linear-gradient(135deg,var(--a) 0 52%,var(--c) 52% 100%) !important;border:0 !important}
+.swatch::after{background:linear-gradient(145deg,transparent 30%,rgba(255,255,255,.10),transparent 70%) !important}
+.swatch-aurora{background:linear-gradient(135deg,#67e8c7 0 52%,#d7b85a 52% 100%) !important}
+.swatch-midnight{background:linear-gradient(135deg,#9ea4ff 0 52%,#e1bf64 52% 100%) !important}
+.swatch-sunrise{background:linear-gradient(135deg,#e0a76e 0 52%,#b86b62 52% 100%) !important}
+.swatch-paper{background:linear-gradient(135deg,#3d8a73 0 52%,#b27d32 52% 100%) !important}
+.swatch-mono{background:linear-gradient(135deg,#d0d7e0 0 52%,#c5a059 52% 100%) !important}
+
+/* Strip accidental hard-coded vivid colors from the live decorative arc/glow system. */
+.hero-main::before,
+.hero-side::after,
+.day-compass::before{border-color:color-mix(in srgb,var(--c) 24%,transparent) !important;color:var(--c) !important;text-shadow:0 0 20px color-mix(in srgb,var(--c) 55%,transparent) !important}
+.hero-main::after{background:radial-gradient(circle,color-mix(in srgb,var(--a) 22%,transparent),transparent 66%) !important}
+
+@media(prefers-reduced-motion:reduce){
+  .live-aurora-layer,.app::before{display:none !important}
+}

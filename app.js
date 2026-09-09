@@ -147,8 +147,8 @@ function renderQuran(){
 function renderCourses(){return `<div class="section-title"><div><h2>📚 الكورسات والأنظمة المساندة</h2><p>مساندة لا تسبق الأساسيات.</p></div></div><div class="grid grid-3"><section class="section-box"><h3>🧠 Anki</h3><p>المراجعة المستحقة أولًا. الجديد بميزانية ثابتة. أماكنه المفضلة: المواصلات، المصلى، والفواصل.</p></section><section class="section-box"><h3>🚀 McKinsey Forward</h3><p>حوالي ساعتين أسبوعيًا. أول ما ينكمش عند ضغط الدراسة.</p><label class="task ${state.weekly.mckinsey?'done':''}"><input type="checkbox" ${state.weekly.mckinsey?'checked':''} onchange="state.weekly.mckinsey=this.checked;save();renderAll()"><span>أنجزت نصيب الأسبوع</span></label></section><section class="section-box"><h3>💊 The Pharmacist's Guide to Dose Calculations</h3><p>2:41 ساعة إجماليًا · جلسات قصيرة 10–15 دقيقة تقريبًا. أيضًا من أول الأشياء التي يمكن تأجيلها عند الضغط.</p><label class="task ${state.weekly.dose?'done':''}"><input type="checkbox" ${state.weekly.dose?'checked':''} onchange="state.weekly.dose=this.checked;save();renderAll()"><span>أنجزت نصيب الأسبوع</span></label></section></div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🎓 HubSpot / Google</h3><p>20–30 دقيقة وقت الفراغ، بالتوازي مع المعسكر، بدون إعادة شرح ما تدرسه بالفعل.</p><label class="task ${state.weekly.cert?'done':''}"><input type="checkbox" ${state.weekly.cert?'checked':''} onchange="state.weekly.cert=this.checked;save();renderAll()"><span>أنجزت نصيب الشهادة الموازية</span></label></section><section class="section-box"><h3>📗 EasyPeasy</h3><p>يظل موجودًا كقراءة خفيفة داخل اليوم، ولا يضخم الخطة الرئيسية.</p></section></div><div class="section-box" style="margin-top:12px;border-color:color-mix(in srgb,var(--c) 28%,var(--line))"><h3>⏸️ Drug Commercialization</h3><p>مؤجل إلى ما بعد معسكر التسويق.</p></div>`}
 function renderSystem(){
  const themes = state.lang==='en'
-  ? [['aurora','Aurora','Deep emerald — soft light'],['midnight','Midnight','Royal navy — deep violet'],['sunrise','Velvet','Velvet — amber & burgundy'],['paper','Champagne','Warm ivory — quiet gold'],['mono','Obsidian','Charcoal black — polished gold']]
-  : [['aurora','Aurora','زمرد ليلي — ضوء ناعم'],['midnight','Midnight','كحلي ملكي — بنفسجي عميق'],['sunrise','Velvet','مخملي — عنبر وبرغندي'],['paper','Champagne','عاجي دافئ — ذهب هادئ'],['mono','Obsidian','أسود فحمي — ذهب مصقول']];
+  ? [['aurora','Aurora','Emerald + Gold'],['midnight','Midnight','Indigo + Gold'],['sunrise','Velvet','Amber + Rose'],['paper','Champagne','Jade + Gold'],['mono','Obsidian','Platinum + Gold']]
+  : [['aurora','Aurora','زمرد + ذهب'],['midnight','Midnight','نيلي + ذهب'],['sunrise','Velvet','عنبر + وردي'],['paper','Champagne','جايد + ذهب'],['mono','Obsidian','بلاتيني + ذهب']];
  const rating=state.weekly.rating||'';
  const reviewChoices=state.lang==='en'
   ? [['excellent','🌟','Excellent','80–90%+ and steady progress'],['good','👍','Very good','Going well with some friction'],['unstable','⚖️','Unstable','Something needs adjustment'],['emergency','🚨','Emergency week','Essentials had priority']]
@@ -956,67 +956,117 @@ if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.se
 
 
 /* ============================================================================
-   MIHRAB V15 — UNIFIED ROUTER
-   One routing engine for desktop + mobile. Mobile uses native hash links.
+   MIHRAB V19 — SINGLE ROUTER / MOBILE-FIRST NAVIGATION
+   One route function, one render path, delegated events, no hash dependency.
    ============================================================================ */
-(function MihrabUnifiedNavigation(){
+(function MihrabRouter(){
   'use strict';
-  const VIEWS=['home','marketing','shari','quran','courses','system'];
-  const valid=v=>VIEWS.includes(v);
-  const mobile=document.getElementById('mobileNav');
+  const VIEWS=Object.freeze(['home','marketing','shari','quran','courses','system']);
+  const isValid=v=>VIEWS.includes(v);
   const top=document.getElementById('nav');
-  const currentHash=()=>{const v=(location.hash||'').replace(/^#/,'');return valid(v)?v:null};
-  const desktopMarkup=()=>NAV.map(([id,ic,ar,en])=>`<a class="nav-btn ${state.view===id?'active':''}" data-view="${id}" href="#${id}" aria-current="${state.view===id?'page':'false'}"><span class="nav-icon" aria-hidden="true">${ic}</span><span class="nav-label" data-ar="${esc(ar)}" data-en="${esc(en)}">${state.lang==='en'?en:ar}</span></a>`).join('');
-  const mobileMarkup=()=>NAV.map(([id,ic,ar,en])=>`<a class="nav-btn ${state.view===id?'active':''}" data-view="${id}" href="#${id}" onclick="window.navigate('${id}'); return false;" aria-current="${state.view===id?'page':'false'}"><span class="nav-icon" aria-hidden="true">${ic}</span><span class="nav-label" data-ar="${esc(ar)}" data-en="${esc(en)}">${state.lang==='en'?en:ar}</span></a>`).join('');
-  function syncMobileNav(activeId){
-    if(!mobile) return;
+  const mobile=document.getElementById('mobileNav');
+  const appViews=[...document.querySelectorAll('.view')];
+  let rendering=false;
+
+  function labels(){
     const en=state.lang==='en';
-    mobile.querySelectorAll('.nav-btn').forEach(a=>{
-      const id=a.dataset.view, active=id===activeId;
-      const label=a.querySelector('.nav-label');
-      if(label) label.textContent=en?(label.dataset.en||label.dataset.ar||''):(label.dataset.ar||label.dataset.en||'');
-      a.classList.toggle('active',active);
-      a.setAttribute('aria-current',active?'page':'false');
+    return NAV.map(([id,ic,ar,english])=>({id,ic,label:en?english:ar}));
+  }
+  function paintNav(){
+    const items=labels();
+    const make=(item,compact=false)=>`<a class="nav-btn ${state.view===item.id?'active':''}" data-view="${item.id}" href="#${item.id}" aria-current="${state.view===item.id?'page':'false'}"><span class="nav-icon" aria-hidden="true">${item.ic}</span><span class="nav-label">${esc(item.label)}</span></a>`;
+    if(top) top.innerHTML=items.map(x=>make(x)).join('');
+    if(mobile) mobile.innerHTML=items.map(x=>make(x,true)).join('');
+    const langLabel=document.getElementById('langLabel');
+    if(langLabel) langLabel.textContent=state.lang==='en'?'ع':'EN';
+  }
+
+  function setVisible(id){
+    appViews.forEach(view=>{
+      const active=view.id===`view-${id}`;
+      view.hidden=!active;
+      view.classList.toggle('active',active);
     });
   }
-  function paint(){
-    if(top) top.innerHTML=desktopMarkup();
-    if(mobile) mobile.innerHTML=mobileMarkup();
-    const lab=document.getElementById('langLabel');
-    if(lab) lab.textContent=state.lang==='en'?'ع':'EN';
-    syncMobileNav(state.view||'home');
+
+  function renderCurrent(id){
+    const renderer={home:window.renderHome,marketing:window.renderMarketing,shari:window.renderShari,quran:window.renderQuran,courses:window.renderCourses,system:window.renderSystem}[id];
+    const host=document.getElementById(`view-${id}`);
+    if(!host||typeof renderer!=='function') return;
+    try{ host.innerHTML=renderer(); }
+    catch(err){
+      console.error('[Mihrab] render failed:',id,err);
+      host.innerHTML=`<section class="section-box"><h2>${state.lang==='en'?'Something went wrong':'حصل خطأ صغير'}</h2><p class="muted">${state.lang==='en'?'Reload the page and try again.':'اعمل Reload للصفحة وجرّب تاني.'}</p></section>`;
+    }
   }
-  function render(id){
-    id=valid(id)?id:'home';
+
+  function route(id,opts={}){
+    id=isValid(id)?id:'home';
     state.view=id;
-    if(typeof window.renderView==='function') window.renderView(id);
-    document.querySelectorAll('.view').forEach(v=>{
-      const active=v.id===`view-${id}`;
-      v.hidden=!active;
-      v.classList.toggle('active',active);
-    });
-    paint();
+    rendering=true;
+    renderCurrent(id);
+    setVisible(id);
+    paintNav();
     if(typeof applyTheme==='function') applyTheme();
     if(typeof applyLanguage==='function') applyLanguage();
     document.body.dataset.online=navigator.onLine?'true':'false';
     document.body.dataset.lowPower=state.settings?.lowPower?'true':'false';
+    save();
+    rendering=false;
+    if(opts.scroll!==false) window.scrollTo({top:0,left:0,behavior:'auto'});
+    if(id==='home'&&typeof updateRing==='function') requestAnimationFrame(updateRing);
   }
-  function route(id,scroll=true){
-    id=valid(id)?id:'home';
-    render(id); save();
-    if(scroll) window.scrollTo({top:0,left:0,behavior:'auto'});
+
+  function open(id){
+    id=isValid(id)?id:'home';
+    const hash=`#${id}`;
+    if(location.hash!==hash) history.pushState({view:id},'',hash);
+    route(id,{scroll:true});
   }
-  window.navigate=function(id){
-    if(!valid(id)) return;
-    const target=`#${id}`;
-    if(location.hash!==target) window.history.pushState({view:id},'',target);
-    route(id,true);
+
+  // Delegated navigation: survives every nav repaint and works on touch devices.
+  function bindNav(container){
+    if(!container || container.dataset.bound==='1') return;
+    container.dataset.bound='1';
+    container.addEventListener('click',event=>{
+      const link=event.target.closest('.nav-btn[data-view]');
+      if(!link || !container.contains(link)) return;
+      event.preventDefault();
+      open(link.dataset.view);
+    });
+  }
+  bindNav(top); bindNav(mobile);
+
+  window.addEventListener('hashchange',()=>{
+    const id=(location.hash||'').slice(1);
+    if(!isValid(id)) return route('home');
+    route(id);
+  },{passive:true});
+
+  window.navigate=id=>open(id);
+  window.nav=paintNav;
+  window.renderAll=()=>route(state.view||'home',{scroll:false});
+  window.setLang=v=>{
+    state.lang=v==='en'?'en':'ar';
+    document.documentElement.lang=state.lang;
+    document.documentElement.dir=state.lang==='ar'?'rtl':'ltr';
+    save();
+    route(state.view||'home',{scroll:false});
   };
-  window.nav=paint;
-  window.renderAll=()=>route(state.view||'home',false);
-  window.addEventListener('hashchange',()=>route(currentHash()||'home',true));
-  window.addEventListener('popstate',()=>route(currentHash()||'home',true));
-  const initial=currentHash()||state.view||'home';
-  if(location.hash!==`#${initial}`) window.history.replaceState({view:initial},'',`#${initial}`);
-  route(initial,false);
+
+  const initial=((location.hash||'').slice(1));
+  route(isValid(initial)?initial:(isValid(state.view)?state.view:'home'),{scroll:false});
+})();
+
+/* ============================================================================
+   MIHRAB V19 — LOW-COST AMBIENT LIGHT
+   CSS-driven only; no canvas loop, no per-frame JS.
+   ============================================================================ */
+(function MihrabAmbient(){
+  'use strict';
+  if(!document.body || document.getElementById('mihrab-ambient')) return;
+  const layer=document.createElement('div');
+  layer.id='mihrab-ambient';
+  layer.setAttribute('aria-hidden','true');
+  document.body.prepend(layer);
 })();
