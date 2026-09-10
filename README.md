@@ -38,3 +38,7 @@ Historical completion data is event-based where available. Legacy completed reco
 - Local asset references in `index.html`: checked.
 
 Not verified in this environment: physical touch on a real device, GitHub Pages production behavior, and service-worker update lifecycle on the deployed origin. The environment blocked reliable Chromium navigation to the local project, so no browser/device claims are made here.
+
+
+### Development checks
+Run `node check-i18n.js` to verify required Arabic/English UI translation keys and prevent the known hardcoded UI labels from reappearing.
