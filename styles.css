@@ -1,476 +1,289 @@
 /* ==========================================================================
-   MIHRAB — ULTRA-PREMIUM SPATIAL ETHEREAL SYSTEM
-   Apple Vision Pro Depth + Dune Atmosphere + Islamic Serenity + Restraint
+   MIHRAB — THE SANCTUARY (Non-Dashboard Spatial Environment)
    ========================================================================== */
 @property --p { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
 
 :root {
-  /* Obsidian/Dune Base - Deep, atmospheric, warm */
-  --bg: #050606;
-  --bg-soft: #0a0d0c;
+  /* The Void (Deep, endless space, not just a dark background) */
+  --bg: #030404;
+  --bg-soft: #060808;
   
-  /* Vision Pro Glass Materials */
-  --glass-bg: rgba(20, 24, 22, 0.45);
-  --glass-bg-hover: rgba(30, 36, 33, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --glass-highlight: rgba(255, 255, 255, 0.12);
-  --glass-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+  /* Material - Almost invisible unless interacted with */
+  --glass-bg: transparent; 
+  --glass-border: transparent;
+  --glass-highlight: rgba(255, 255, 255, 0.03); /* Barely there edge light */
   
-  /* Typography */
-  --text: #f0f0eb;
-  --muted: rgba(240, 240, 235, 0.55);
-  --faint: rgba(240, 240, 235, 0.3);
+  /* Typography - Monumental & Luminous */
+  --text: #e8e6e1;
+  --muted: rgba(232, 230, 225, 0.45);
+  --faint: rgba(232, 230, 225, 0.2);
   
-  /* Accents (Platinum + Gold default) */
-  --accent: #d0d4d6;
-  --accent-2: #d8bc67;
+  /* Ethereal Accents (Dune Sand + Platinum) */
+  --accent: #b5b8b9;
+  --accent-2: #c4a75c;
   --a: var(--accent);
   --c: var(--accent-2);
-  --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
-  --accent-2-soft: color-mix(in srgb, var(--accent-2) 12%, transparent);
+  --accent-soft: color-mix(in srgb, var(--accent) 5%, transparent);
   
   /* Geometry */
-  --radius: 28px;
-  --radius-sm: 18px;
+  --radius: 24px;
   
-  /* Physics (Updated via JS) */
+  /* Physics Engine Sync */
   --px: 50%; --py: 50%;
   --mx: 0; --my: 0;
 }
 
-/* Theme Overrides */
-body[data-theme="aurora"] { --accent: #68d7b4; --accent-2: #d8bc67; }
-body[data-theme="midnight"] { --accent: #94a5ff; --accent-2: #d8bc67; }
-body[data-theme="sunrise"] { --accent: #e2aa61; --accent-2: #c97983; }
-body[data-theme="paper"] {
-  --bg: #f5f2eb; --bg-soft: #ebe7dd;
-  --glass-bg: rgba(255, 255, 255, 0.55); --glass-bg-hover: rgba(255, 255, 255, 0.8);
-  --glass-border: rgba(0, 0, 0, 0.05); --glass-highlight: rgba(255, 255, 255, 0.6);
-  --glass-shadow: 0 24px 48px rgba(0, 0, 0, 0.08);
-  --text: #2c2820; --muted: rgba(44, 40, 32, 0.6); --faint: rgba(44, 40, 32, 0.35);
-  --accent: #96691a; --accent-2: #b9863a;
-}
-
-/* ==========================================================================
-   BASE & TYPOGRAPHY
-   ========================================================================== */
+/* Base Reset */
 * { box-sizing: border-box; }
 html { min-height: 100%; background: var(--bg); scroll-behavior: smooth; }
 body {
   margin: 0; min-height: 100%; background: var(--bg); color: var(--text);
   font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Arabic", "Segoe UI", "Noto Sans Arabic", "Noto Kufi Arabic", Tahoma, sans-serif;
-  line-height: 1.6; overflow-x: hidden; overflow-y: auto;
+  line-height: 1.7; overflow-x: hidden; overflow-y: auto;
   -webkit-text-size-adjust: 100%; text-rendering: optimizeLegibility; padding-top: env(safe-area-inset-top);
   perspective: 1200px;
 }
 body[dir="rtl"] { font-family: -apple-system, BlinkMacSystemFont, "SF Arabic", Inter, "Segoe UI", "Noto Sans Arabic", "Noto Kufi Arabic", Tahoma, sans-serif; }
-.brand-ar { font-family: -apple-system, BlinkMacSystemFont, "SF Arabic", "Segoe UI", "Noto Sans Arabic", Tahoma, sans-serif; }
 button, input, select, textarea { font: inherit; color: inherit; touch-action: manipulation; }
 a { color: inherit; text-decoration: none; }
 button { border: 0; background: none; cursor: pointer; }
-::selection { background: var(--accent); color: var(--bg); }
 
 /* ==========================================================================
-   ATMOSPHERE (Dune Nebula + Islamic Micro-Grid)
+   THE ATMOSPHERE (Cinematic Niche Lighting)
    ========================================================================== */
-body::before, body::after { content: ""; position: fixed; inset: -20%; z-index: -3; pointer-events: none; }
+body::before, body::after { content: ""; position: fixed; inset: 0; z-index: -3; pointer-events: none; }
 
-/* The Breathing Nebula */
+/* The Mihrab Light (A physical light source from the top/center) */
 body::before {
-  background:
-    radial-gradient(45% 45% at var(--px) var(--py), color-mix(in srgb, var(--accent) 8%, transparent), transparent 80%),
-    radial-gradient(35% 35% at calc(var(--px) - 10%) calc(var(--py) + 15%), color-mix(in srgb, var(--accent-2) 6%, transparent), transparent 70%);
-  filter: blur(40px);
-  animation: atmospheric-drift 20s ease-in-out infinite alternate;
+  background: 
+    radial-gradient(ellipse 80% 60% at 50% -10%, color-mix(in srgb, var(--accent-2) 6%, transparent), transparent),
+    radial-gradient(circle at calc(var(--px) * 100%) calc(var(--py) * 100%), color-mix(in srgb, var(--accent) 4%, transparent), transparent 50%);
+  filter: blur(50px);
 }
 
-/* The Micro-Grid (Calm Geometry) */
+/* The Micro-Grid (Calm Islamic Geometry, very faint) */
 body::after {
-  background-image: radial-gradient(color-mix(in srgb, var(--text) 3.5%, transparent) 1px, transparent 1px);
-  background-size: 20px 20px;
-  mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
-  -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
-  opacity: 0.6;
+  background-image: radial-gradient(color-mix(in srgb, var(--accent-2) 4%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
+  opacity: 0.4;
 }
 
-@keyframes atmospheric-drift {
-  0% { transform: scale(1) translate(0, 0); }
-  100% { transform: scale(1.05) translate(2%, -1%); }
-}
+.app { width: min(1000px, calc(100% - 40px)); margin: 40px auto 80px; position: relative; z-index: 1; transform-style: preserve-3d; }
 
 /* ==========================================================================
-   SPATIAL ARCHITECTURE (Vision Pro Glass)
-   ========================================================================== */
-.app { width: min(1200px, calc(100% - 32px)); margin: 24px auto 48px; position: relative; z-index: 1; transform-style: preserve-3d; }
-
-.spatial-surface {
-  position: relative;
-  background: var(--glass-bg);
-  border-radius: var(--radius);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
-  backdrop-filter: blur(30px) saturate(130%);
-  -webkit-backdrop-filter: blur(30px) saturate(130%);
-  transform-style: preserve-3d;
-  /* Cinematic physical tilt based on JS pointer */
-  transform: rotateX(calc(var(--my) * 1deg)) rotateY(calc(var(--mx) * -1deg));
-  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
-  overflow: hidden;
-}
-
-/* Surface Internal Light Reflection */
-.spatial-surface::before {
-  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: radial-gradient(circle at calc(var(--px) * 100%) calc(var(--py) * 100%), color-mix(in srgb, var(--accent) 5%, transparent), transparent 60%);
-  mix-blend-mode: screen; transition: opacity 0.5s ease;
-}
-
-@media (hover: hover) {
-  .spatial-surface:hover { transform: rotateX(calc(var(--my) * 2deg)) rotateY(calc(var(--mx) * -2deg)) translateZ(8px); }
-  .spatial-surface:hover::before { opacity: 0.8; }
-}
-
-/* ==========================================================================
-   TOPBAR & NAVIGATION (The Portal)
+   THE PORTAL (Topbar - No borders, just fog)
    ========================================================================== */
 .topbar {
-  position: sticky; top: 16px; z-index: 30; display: grid;
-  grid-template-columns: auto minmax(0,1fr) auto; gap: 16px; align-items: center;
-  padding: 14px 20px;
-  background: color-mix(in srgb, var(--glass-bg) 80%, transparent);
-  border: 1px solid var(--glass-border); border-radius: 32px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.3), inset 0 1px 0 var(--glass-highlight);
-  backdrop-filter: blur(35px) saturate(140%); -webkit-backdrop-filter: blur(35px) saturate(140%);
-  transform-style: preserve-3d;
+  position: sticky; top: 20px; z-index: 30; display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 24px; margin-bottom: 60px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 90%, transparent), transparent);
+  box-shadow: 0 20px 40px -10px var(--bg);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
 }
-.brand-cluster { display: flex; align-items: center; gap: 12px; min-width: 0; transform: translateZ(5px); }
 
-/* Exact Logo Preservation */
-.mihrab-mark { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--glass-border)); background: linear-gradient(135deg, var(--accent-soft), transparent); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 0 20px color-mix(in srgb, var(--accent) 15%, transparent); }
-.mihrab-mark svg { width: 30px; height: 30px; fill: none; stroke: var(--accent-2); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.brand-cluster { display: flex; align-items: center; gap: 14px; }
+.mihrab-mark { width: 38px; height: 38px; display: grid; place-items: center; opacity: 0.8; transition: 0.5s; }
+.mihrab-mark:hover { opacity: 1; filter: drop-shadow(0 0 15px color-mix(in srgb, var(--accent-2) 40%, transparent)); }
+.mihrab-mark svg { width: 28px; height: 28px; fill: none; stroke: var(--accent-2); stroke-width: 1.5; }
 .mark-floor { stroke: var(--accent); } .mark-dot { fill: var(--accent-2); stroke: none; }
-.brand-copy { min-width: 0; }
-.brand-ar { font-size: 19px; font-weight: 800; line-height: 1; }
-.brand-en { font-size: 8px; letter-spacing: .23em; color: var(--accent-2); text-transform: uppercase; margin-top: 3px; }
-.brand-copy small { display: block; font-size: 9px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
+.brand-ar { font-size: 22px; font-weight: 300; letter-spacing: 1px; color: var(--accent-2); text-shadow: 0 0 20px color-mix(in srgb, var(--accent-2) 20%, transparent); }
+.brand-en, .brand-copy small { display: none; } /* Kill noise */
 
-/* Desktop Nav */
-.top-nav { display: flex; justify-content: center; min-width: 0; gap: 4px; padding: 5px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3); }
-.nav-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 15px; color: var(--muted); font-size: 12px; font-weight: 600; white-space: nowrap; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-.nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
-.nav-btn.active { color: var(--text); background: linear-gradient(135deg, var(--accent-soft), var(--accent-2-soft)); box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 20px color-mix(in srgb, var(--accent) 8%, transparent); transform: translateZ(8px); }
-.nav-icon { color: var(--accent-2); font-size: 11px; } .nav-btn.active .nav-icon { color: var(--accent); }
+/* Nav - Floating Text, No Pills */
+.top-nav { display: flex; gap: 24px; }
+.nav-btn { color: var(--muted); font-size: 13px; font-weight: 400; letter-spacing: 0.5px; padding: 8px 0; position: relative; transition: color 0.4s; }
+.nav-btn::after { content: ''; position: absolute; bottom: 0; left: 50%; right: 50%; height: 1px; background: var(--accent-2); transition: 0.4s ease; opacity: 0; box-shadow: 0 0 10px var(--accent-2); }
+.nav-btn:hover { color: var(--text); }
+.nav-btn.active { color: var(--text); }
+.nav-btn.active::after { left: 0; right: 0; opacity: 1; }
+.nav-icon { display: none; } /* Minimalist approach */
 
-.top-actions { display: flex; align-items: center; gap: 6px; transform: translateZ(5px); }
-.icon-btn { width: 40px; height: 40px; border: 1px solid var(--glass-border); border-radius: 14px; background: rgba(255,255,255,0.02); color: var(--muted); display: grid; place-items: center; transition: all 0.3s ease; }
-.icon-btn:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent) 30%, var(--glass-border)); background: var(--accent-soft); }
+.top-actions { display: flex; gap: 16px; }
+.icon-btn { color: var(--muted); font-size: 16px; transition: 0.4s; }
+.icon-btn:hover { color: var(--accent-2); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent-2) 40%, transparent)); }
 .mobile-nav { display: none; }
 
 /* ==========================================================================
-   VIEW ROUTING (Liquid Spatial Transition)
+   KILLING THE DASHBOARD (Spatial Surfaces -> Open Void)
    ========================================================================== */
-main { padding: 24px 0; transform-style: preserve-3d; }
+main { transform-style: preserve-3d; }
 .view { display: none; }
-.view.active { display: block; animation: spatial-entrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-@keyframes spatial-entrance {
-  from { opacity: 0; filter: blur(8px); transform: scale(0.97) translateZ(-40px); }
-  to { opacity: 1; filter: blur(0); transform: scale(1) translateZ(0); }
+.view.active { display: block; animation: emerge 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes emerge {
+  from { opacity: 0; filter: blur(10px); transform: translateY(20px) translateZ(-50px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0) translateZ(0); }
+}
+
+/* Remove card backgrounds, use only subtle floor reflections */
+.spatial-surface {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: inset 0 -1px 0 var(--glass-highlight); /* Just a floor line */
+  padding: 30px 0;
+  margin-bottom: 20px;
+  transform-style: preserve-3d;
+  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (hover: hover) {
+  .spatial-surface:hover { transform: rotateX(calc(var(--my) * 1.5deg)) rotateY(calc(var(--mx) * -1.5deg)); }
 }
 
 /* ==========================================================================
-   TYPOGRAPHY & HIERARCHY
+   TYPOGRAPHY (Monumental)
    ========================================================================== */
-.section-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin: 40px 4px 16px; transform: translateZ(15px); }
-.section-title h2 { font-size: 20px; margin: 0 0 4px; letter-spacing: -0.02em; text-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-.section-title p { margin: 0; color: var(--muted); font-size: 12px; }
-h3 { font-size: 15px; margin: 0 0 14px; letter-spacing: -0.02em; }
-.kicker { font-size: 10px; letter-spacing: 0.15em; color: var(--accent); font-weight: 800; text-transform: uppercase; }
-.muted, .tiny { color: var(--muted); } .tiny { font-size: 10px; }
-.badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent) 15%, var(--glass-border)); background: rgba(0,0,0,0.2); color: var(--muted); font-size: 10px; white-space: nowrap; box-shadow: inset 0 1px 1px rgba(255,255,255,0.05); }
-.badge.core { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+.section-title { margin: 60px 0 30px; display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--glass-highlight); padding-bottom: 15px; }
+.section-title h2 { font-size: 24px; font-weight: 200; margin: 0; color: var(--text); text-shadow: 0 4px 20px rgba(0,0,0,0.8); letter-spacing: -0.5px; }
+.section-title p { margin: 8px 0 0; color: var(--muted); font-size: 12px; font-weight: 300; }
+h3 { font-size: 14px; font-weight: 400; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin: 0 0 20px; }
+.kicker { font-size: 10px; letter-spacing: 0.2em; color: var(--accent-2); font-weight: 600; text-transform: uppercase; }
+.badge { padding: 4px 10px; border-radius: 4px; border: 1px solid var(--glass-highlight); color: var(--muted); font-size: 10px; font-weight: 300; }
+.badge.core { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 20%, transparent); }
 
 /* ==========================================================================
-   HERO (Cinematic Anchor)
+   HERO (The Opening Ceremony)
    ========================================================================== */
-.hero { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.6fr); gap: 16px; align-items: stretch; }
-.hero-main { min-height: 420px; padding: 48px; display: flex; flex-direction: column; justify-content: center; }
-.hero-main::after { content: ""; position: absolute; right: -20%; bottom: -30%; width: 70%; height: 80%; background: radial-gradient(circle, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%); filter: blur(40px); pointer-events: none; }
-.holographic { transform: translateZ(30px); position: relative; z-index: 1; }
-.holographic-sub { transform: translateZ(15px); position: relative; z-index: 1; }
-.hero-main h1 { font-size: clamp(42px, 5.5vw, 76px); line-height: 1; letter-spacing: -0.04em; margin: 16px 0 20px; max-width: 720px; }
-.hero-accent { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 40px color-mix(in srgb, var(--accent) 20%, transparent); }
-.hero-main p { max-width: 650px; color: var(--muted); font-size: 14px; line-height: 1.8; margin: 0 0 28px; }
-.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 0 80px; position: relative; }
+.hero::before { content: ""; position: absolute; top: 0; width: 1px; height: 100px; background: linear-gradient(to bottom, transparent, var(--accent-2), transparent); opacity: 0.3; } /* Vertical connecting beam */
+.hero-main h1 { font-size: clamp(48px, 6vw, 82px); font-weight: 200; line-height: 1.1; margin: 20px 0; letter-spacing: -1px; text-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+.hero-accent { color: var(--accent-2); font-weight: 400; }
+.hero-main p { color: var(--muted); font-size: 16px; font-weight: 300; max-width: 500px; margin: 0 auto 40px; }
+.hero-actions { display: flex; gap: 16px; justify-content: center; }
 
-/* Buttons */
-.btn { min-height: 44px; padding: 10px 20px; border: 1px solid var(--glass-border); border-radius: 16px; background: rgba(255,255,255,0.03); color: var(--text); font-size: 13px; font-weight: 600; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
-.btn:active { transform: scale(0.96); }
-@media (hover:hover) { .btn:hover { background: rgba(255,255,255,0.08); border-color: color-mix(in srgb, var(--accent) 25%, var(--glass-border)); box-shadow: 0 6px 20px rgba(0,0,0,0.3); } }
-.btn.primary { color: var(--bg); border-color: transparent; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 10px 30px color-mix(in srgb, var(--accent) 25%, transparent), inset 0 1px 1px rgba(255,255,255,0.4); text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-@media (hover:hover) { .btn.primary:hover { filter: brightness(1.1); box-shadow: 0 15px 40px color-mix(in srgb, var(--accent) 35%, transparent); transform: translateY(-2px); } }
+.btn { padding: 12px 28px; border: 1px solid var(--glass-highlight); border-radius: 8px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 300; letter-spacing: 1px; transition: 0.4s; }
+.btn:hover { border-color: var(--accent-2); color: var(--accent-2); box-shadow: 0 0 20px color-mix(in srgb, var(--accent-2) 15%, transparent); }
+.btn.primary { color: var(--bg); background: var(--accent-2); border-color: var(--accent-2); box-shadow: 0 0 30px color-mix(in srgb, var(--accent-2) 30%, transparent); font-weight: 500; }
+.btn.primary:hover { background: #e3cc84; box-shadow: 0 0 50px color-mix(in srgb, var(--accent-2) 50%, transparent); }
 
-/* Hero Side & Ring */
-.hero-side { padding: 32px; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; }
-.ring { width: 220px; height: 220px; margin: 10px auto; display: grid; place-items: center; border-radius: 50%; position: relative; background: conic-gradient(var(--accent) var(--p), rgba(255,255,255,0.03) 0); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent), 0 0 60px color-mix(in srgb, var(--accent) 8%, transparent); transform: translateZ(15px); }
-.ring::after { content: ""; position: absolute; inset: 12px; border-radius: 50%; background: var(--bg-soft); box-shadow: inset 0 0 50px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.03); }
-.ring > div { position: relative; z-index: 1; text-align: center; }
-.ring b { display: block; font-size: 44px; font-weight: 300; letter-spacing: -0.04em; text-shadow: 0 4px 15px rgba(0,0,0,0.4); }
-.ring span { display: block; color: var(--muted); font-size: 11px; margin-top: 0px; letter-spacing: 0.1em; }
+/* The Eclipse Ring (Not a dashboard chart, a celestial object) */
+.hero-side { display: flex; flex-direction: column; align-items: center; margin-top: 40px; }
+.ring { width: 180px; height: 180px; display: grid; place-items: center; border-radius: 50%; position: relative; background: conic-gradient(var(--accent-2) var(--p), transparent 0); mask-image: radial-gradient(transparent 65%, black 66%); -webkit-mask-image: radial-gradient(transparent 65%, black 66%); filter: drop-shadow(0 0 15px color-mix(in srgb, var(--accent-2) 40%, transparent)); transform: translateZ(20px); }
+.ring-content { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.ring-content b { font-size: 36px; font-weight: 200; color: var(--text); }
+.ring-content span { font-size: 10px; color: var(--accent-2); letter-spacing: 2px; text-transform: uppercase; }
 
 /* ==========================================================================
-   LAYOUT GRIDS
+   TASKS (Inscriptions in the void)
    ========================================================================== */
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 16px; }
-.stat-card { padding: 20px 24px; text-align: center; }
-.stat-card small { color: var(--muted); font-size: 11px; display: block; margin-bottom: 6px; letter-spacing: 0.05em; text-transform: uppercase; }
-.stat-card strong { font-size: 28px; font-weight: 300; letter-spacing: -0.02em; }
-
-.bento { display: grid; grid-template-columns: 1.25fr 0.75fr 0.75fr; gap: 16px; margin-top: 16px; }
-.card { padding: 24px; } .card.tall { min-height: 100%; }
-.grid { display: grid; gap: 16px; } .grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); } .grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
-.section-box { padding: 24px; }
-
-/* ==========================================================================
-   INTERACTIVE TASKS (Tactile & Dark Matter)
-   ========================================================================== */
-.tasks { display: flex; flex-direction: column; gap: 10px; }
+.tasks { display: flex; flex-direction: column; gap: 2px; }
 .task-item, .mtask, .lecture, .task {
-  position: relative; display: flex; align-items: center; gap: 14px; min-width: 0;
-  border: 1px solid transparent; border-radius: 18px; padding: 14px 16px;
-  background: rgba(255,255,255,0.015);
-  transform: translateZ(0);
+  display: flex; align-items: center; gap: 16px; padding: 16px 8px;
+  border-bottom: 1px solid var(--glass-highlight);
+  background: transparent;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-/* Energy Rails (Living Edge) */
-.task-item::after, .mtask::after, .lecture::after, .task::after {
-  content: ""; position: absolute; inset-inline-end: 12px; bottom: 0; width: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  box-shadow: 0 0 15px color-mix(in srgb, var(--accent) 50%, transparent);
-  transition: width 0.4s ease;
 }
 @media (hover: hover) {
   .task-item:not(.done):hover, .mtask:not(.done):hover, .lecture:not(.done):hover, .task:not(.done):hover {
-    background: rgba(255,255,255,0.04); border-color: color-mix(in srgb, var(--accent) 15%, var(--glass-border));
-    transform: translateZ(10px) translateX(-4px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    padding-left: 16px;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent-2) 5%, transparent), transparent);
+    border-bottom-color: color-mix(in srgb, var(--accent-2) 30%, transparent);
   }
-  .task-item:not(.done):hover::after, .mtask:not(.done):hover::after, .lecture:not(.done):hover::after, .task:not(.done):hover::after { width: calc(100% - 24px); }
 }
 
-/* DARK MATTER COMPLETION (Stages 1-7) */
-.just-checked { animation: dark-matter-ripple 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-@keyframes dark-matter-ripple {
-  0% { transform: translateZ(15px) scale(1.02); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 30%, transparent); }
-  40% { transform: translateZ(15px) scale(1.02); box-shadow: 0 0 30px 10px color-mix(in srgb, var(--accent) 0%, transparent); background: var(--accent-soft); }
-  100% { transform: translateZ(-8px) scale(0.98); }
+/* Dark Matter Completion (Sinks into the void, turns to ash) */
+.just-checked { animation: ash-fade 0.8s forwards; }
+@keyframes ash-fade {
+  0% { transform: scale(1.01); filter: brightness(1.5); }
+  50% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(0.98); opacity: 0.4; }
 }
-
 .task-item.done, .mtask.done, .lecture.done, .task.done {
-  background: rgba(2, 4, 3, 0.6); /* Deep void */
-  box-shadow: inset 0 8px 20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.01);
-  transform: translateZ(-8px);
-  border-color: transparent;
+  opacity: 0.3; transform: scale(0.98); border-bottom-color: transparent; filter: grayscale(100%);
 }
-.task-item.done .task-text, .mtask.done span, .lecture.done span, .task.done span {
-  text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--accent) 25%, transparent);
-  color: var(--faint);
-}
+.task-item.done .task-text { text-decoration: line-through; text-decoration-color: var(--muted); }
+
+/* The Physical Checkbox */
 .task-item input, .mtask input, .lecture input, .task input {
-  appearance: none; width: 22px; height: 22px; border-radius: 6px;
-  border: 1px solid var(--line-strong); background: rgba(0,0,0,0.3);
+  appearance: none; width: 16px; height: 16px; border-radius: 50%; /* Dots instead of boxes */
+  border: 1px solid var(--muted); background: transparent;
   display: grid; place-items: center; flex: 0 0 auto;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
+  cursor: pointer; transition: 0.4s;
 }
 .task-item input:checked, .mtask input:checked, .lecture input:checked, .task input:checked {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2)); border-color: transparent;
-  box-shadow: 0 0 15px color-mix(in srgb, var(--accent) 25%, transparent);
+  background: var(--accent-2); border-color: var(--accent-2); box-shadow: 0 0 15px color-mix(in srgb, var(--accent-2) 40%, transparent);
 }
-.task-item input:checked::after, .mtask input:checked::after, .lecture input:checked::after, .task input:checked::after {
-  content: "✓"; font-size: 14px; color: var(--bg); font-weight: 900; transform: translateY(-1px);
-}
-.task-text, .mtask span, .lecture span, .task span { min-width: 0; flex: 1; font-size: 13px; line-height: 1.5; }
+.task-text, .mtask span, .lecture span, .task span { font-size: 14px; font-weight: 300; line-height: 1.6; }
+.mihrab-badge { padding: 4px 8px; font-size: 9px; color: var(--accent-2); border: 1px solid var(--glass-highlight); border-radius: 4px; }
 
 /* ==========================================================================
-   DYNAMIC MOMENTUM & QUICK ACTIONS
+   DYNAMIC SIGNALS & QUICK ACTIONS
    ========================================================================== */
 .focus-banner {
-  margin-top: 16px; padding: 20px 24px; border: 1px solid color-mix(in srgb, var(--accent) 15%, var(--glass-border)); border-radius: 24px;
-  background: linear-gradient(90deg, var(--accent-soft), transparent);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 12px 35px rgba(0,0,0,0.2); transform: translateZ(10px);
+  text-align: center; padding: 40px 0; margin: 40px 0;
+  border-top: 1px solid var(--glass-highlight); border-bottom: 1px solid var(--glass-highlight);
 }
-.focus-banner b { display: block; font-size: 14px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-.focus-banner span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+.focus-banner b { display: block; font-size: 16px; font-weight: 300; color: var(--accent-2); letter-spacing: 1px; }
+.focus-banner span { display: block; margin-top: 8px; color: var(--muted); font-size: 12px; }
 
-.quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
-.quick-action { padding: 16px; text-align: start; border: 1px solid var(--glass-border); border-radius: 20px; background: rgba(255,255,255,0.02); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-@media (hover:hover) { .quick-action:hover { transform: translateY(-4px) translateZ(8px); border-color: color-mix(in srgb, var(--accent) 25%, var(--glass-border)); background: rgba(255,255,255,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.25); } }
-.quick-action:active { transform: scale(0.96); }
-.quick-action b { display: block; font-size: 15px; } .quick-action small { display: block; color: var(--muted); margin-top: 4px; font-size: 11px; }
-
-/* ==========================================================================
-   RAFIQ QURAN BRIDGE (Living Portal)
-   ========================================================================== */
-.quran-bridge {
-  border-inline-start: 1px solid color-mix(in srgb, var(--accent) 70%, transparent);
-  box-shadow: inset 15px 0 50px -35px var(--accent), 0 0 0 1px rgba(255,255,255,0.02);
-  overflow: hidden;
-}
-.quran-bridge::after {
-  content: ""; position: absolute; inset-inline-start: 10%; inset-inline-end: 10%; bottom: 24px; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  box-shadow: 0 0 25px color-mix(in srgb, var(--accent) 60%, transparent);
-  animation: bridge-breath 6s ease-in-out infinite; pointer-events: none;
-}
-@keyframes bridge-breath { 0%, 100% { opacity: 0.2; transform: scaleX(0.7); } 50% { opacity: 1; transform: scaleX(1); } }
-.bridge-icon { width: 50px; height: 50px; border-radius: 16px; display: grid; place-items: center; color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--glass-border)); background: var(--accent-soft); box-shadow: 0 0 40px color-mix(in srgb, var(--accent) 15%, transparent); margin-bottom: 16px; font-size: 20px; }
-.bridge-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; padding-bottom: 16px; }
-
-/* Fix 1: Rafiq Iframe Layout Constraints */
-.iframe-wrap { 
-  margin-top: 16px; border: 1px solid var(--glass-border); border-radius: var(--radius); 
-  overflow: hidden; display: flex; flex-direction: column; 
-}
-.iframe-head { 
-  display: flex; justify-content: space-between; align-items: center; 
-  padding: 16px 24px; border-bottom: 1px solid var(--glass-border); 
-  background: color-mix(in srgb, var(--glass-bg) 60%, transparent); 
-  backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-}
-.iframe-wrap iframe { 
-  display: block; width: 100%; height: min(75vh, 800px); 
-  border: 0; background: var(--bg); 
-}
+.quick-grid { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+.quick-action { padding: 16px 24px; border: 1px solid var(--glass-highlight); border-radius: 8px; text-align: center; transition: 0.4s; }
+.quick-action:hover { border-color: var(--text); box-shadow: 0 5px 20px rgba(0,0,0,0.5); transform: translateY(-2px); }
+.quick-action b { display: block; font-size: 16px; font-weight: 300; }
+.quick-action small { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
 
 /* ==========================================================================
-   ISLAMIC STUDIES (Timeline & Lectures)
+   RAFIQ & TIMELINES (Minimal integration)
    ========================================================================== */
-/* Fix 2: Shari Timeline Glass Cards */
-.timeline { display: grid; gap: 12px; margin-top: 20px; }
-.timeline-card {
-  padding: 20px 24px; border: 1px solid var(--glass-border); border-radius: var(--radius-sm);
-  background: rgba(255,255,255,0.015); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex; flex-direction: column; gap: 8px; transform-style: preserve-3d;
-}
-@media (hover: hover) {
-  .timeline-card:hover { 
-    background: rgba(255,255,255,0.04); border-color: color-mix(in srgb, var(--accent) 20%, var(--glass-border)); 
-    transform: translateZ(12px) translateX(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.25); 
-  }
-}
-.timeline-card.today {
-  background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 30%, var(--glass-border));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 12px 35px rgba(0,0,0,0.2);
-}
-.timeline-card .day { 
-  font-size: 15px; font-weight: 700; color: var(--accent); 
-  display: flex; align-items: center; gap: 8px; 
-}
+.iframe-wrap { margin-top: 24px; border: 1px solid var(--glass-highlight); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.iframe-head { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--glass-highlight); background: rgba(0,0,0,0.3); }
+.iframe-wrap iframe { display: block; width: 100%; height: min(75vh, 800px); border: 0; filter: grayscale(20%) contrast(1.1); } /* Blend it slightly into the dark mode */
+
+.timeline { display: flex; flex-direction: column; gap: 0; border-left: 1px solid var(--glass-highlight); margin-left: 10px; padding-left: 20px; }
+.timeline-card { padding: 20px 0; position: relative; }
+.timeline-card::before { content: ''; position: absolute; left: -24px; top: 26px; width: 7px; height: 7px; border-radius: 50%; background: var(--glass-highlight); transition: 0.4s; }
+.timeline-card.today::before { background: var(--accent-2); box-shadow: 0 0 10px var(--accent-2); }
+.timeline-card .day { font-size: 16px; font-weight: 300; color: var(--muted); }
 .timeline-card.today .day { color: var(--accent-2); }
-.timeline-card ul { 
-  margin: 0; padding-inline-start: 24px; color: var(--muted); 
-  font-size: 13px; line-height: 1.8; 
-}
-.timeline-card li::marker { color: var(--accent); }
-
-/* Fix 3: Lecture Grid */
-.lecture-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-top: 20px; }
+.timeline-card ul { margin: 8px 0 0; padding: 0; list-style: none; color: var(--text); font-size: 13px; font-weight: 300; }
+.timeline-card li { margin-bottom: 4px; }
 
 /* ==========================================================================
-   FOCUS MODE (Light Tunnel)
+   FOCUS MODE (The True Light Tunnel)
    ========================================================================== */
-.focus-mode { position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center; background: radial-gradient(circle at center, rgba(0,0,0,0.7), #000 95%); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); perspective: 1200px; }
-.focus-mode.open { display: flex; animation: tunnel-in 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-@keyframes tunnel-in { from { opacity: 0; transform: scale(1.15) translateZ(-150px); } to { opacity: 1; transform: scale(1) translateZ(0); } }
+.focus-mode { position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center; background: #000; }
+.focus-mode.open { display: flex; animation: void-entrance 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes void-entrance { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: scale(1); } }
 
 .focus-shell {
-  width: min(720px, 100%); padding: 60px 40px; text-align: center;
-  border-radius: 48px; border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--glass-border));
-  background: rgba(10, 14, 12, 0.4);
-  box-shadow: 0 0 150px color-mix(in srgb, var(--accent) 15%, transparent), inset 0 1px 1px rgba(255,255,255,0.05);
-  animation: breathe-focus 10s ease-in-out infinite alternate;
+  text-align: center; position: relative;
+  /* The singular light source in the void */
+  background: radial-gradient(circle at center, color-mix(in srgb, var(--accent-2) 15%, transparent) 0%, transparent 60%);
+  width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
 }
-@keyframes breathe-focus { 0% { transform: translateZ(40px) scale(1); box-shadow: 0 0 100px color-mix(in srgb, var(--accent) 10%, transparent); } 100% { transform: translateZ(60px) scale(1.03); box-shadow: 0 0 180px color-mix(in srgb, var(--accent) 25%, transparent); } }
-
-.focus-kicker { font-size: 11px; letter-spacing: 0.4em; color: var(--accent); font-weight: 900; text-transform: uppercase; }
-.focus-shell h2 { font-size: 32px; font-weight: 300; line-height: 1.3; max-width: 540px; margin: 20px auto; text-shadow: 0 4px 20px rgba(0,0,0,0.6); }
-.focus-timer { font-size: 96px; font-weight: 200; line-height: 1; letter-spacing: -0.04em; margin: 40px 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 60px color-mix(in srgb, var(--accent) 30%, transparent); }
+.focus-kicker { font-size: 12px; letter-spacing: 4px; color: var(--muted); text-transform: uppercase; margin-bottom: 20px; }
+.focus-shell h2 { font-size: 32px; font-weight: 200; max-width: 600px; margin: 0 20px; color: var(--text); }
+.focus-timer { font-size: 120px; font-weight: 100; letter-spacing: -2px; margin: 40px 0; color: var(--accent-2); text-shadow: 0 0 80px color-mix(in srgb, var(--accent-2) 30%, transparent); }
 
 /* ==========================================================================
-   MODALS & FORMS
+   MOBILE & PERFORMANCE
    ========================================================================== */
-.mihrab-overlay { position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-.mihrab-overlay.open { display: flex; animation: fade-in 0.4s; }
-@keyframes fade-in { from{opacity:0} to{opacity:1} }
-.mihrab-modal { width: min(720px, 100%); max-height: min(90vh, 800px); overflow: auto; border: 1px solid var(--glass-border); border-radius: 36px; box-shadow: 0 50px 150px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.05); transform: translateZ(50px); }
-.mihrab-modal-head { display: flex; gap: 12px; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; background: color-mix(in srgb, var(--glass-bg) 80%, transparent); backdrop-filter: blur(25px); z-index: 2; }
-.mihrab-modal-head input { flex: 1; border: 0; outline: 0; background: transparent; padding: 8px; font-size: 15px; color: var(--text); }
-.mihrab-close { width: 40px; height: 40px; border-radius: 14px; background: rgba(255,255,255,0.04); color: var(--muted); font-size: 22px; transition: 0.3s; }
-.mihrab-close:hover { background: rgba(255,255,255,0.1); color: var(--text); }
-.modal-body { padding: 24px; }
-.command-list { padding: 16px; } .command-item { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 16px; border-radius: 16px; color: var(--text); text-align: start; transition: 0.3s; }
-.command-item:hover { background: rgba(255,255,255,0.04); transform: translateX(-6px); } .command-item small { color: var(--accent); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; transform: none !important; } }
 
-/* Progress Bars */
-.progress-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); } .progress-head b { color: var(--text); }
-.progress { height: 6px; border-radius: 999px; background: rgba(0,0,0,0.4); box-shadow: inset 0 1px 4px rgba(0,0,0,0.6); overflow: hidden; margin-top: 10px; }
-.progress > i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-2)); box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 50%, transparent); transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
-
-/* ==========================================================================
-   PERFORMANCE & ACCESSIBILITY
-   ========================================================================== */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; transform: none !important; }
-}
-body[data-low-power="true"]::before, body[data-low-power="true"]::after { animation-play-state: paused; filter: none; opacity: 0.1; }
-
-/* ==========================================================================
-   MOBILE FIRST — ZERO SCROLL LOCKING
-   ========================================================================== */
 @media (max-width: 840px) {
-  /* Enforce Normal Flow & Prevent Layout Shifts */
-  .app { width: 100%; margin: 10px auto calc(110px + env(safe-area-inset-bottom)); padding: 0 calc(16px + env(safe-area-inset-right)) 0 calc(16px + env(safe-area-inset-left)); transform-style: flat; }
-  body { overflow-x: hidden; overflow-y: auto; perspective: none; }
+  .app { width: 100%; margin: 20px auto 100px; padding: 0 20px; transform-style: flat; }
+  body::before { filter: blur(30px); }
   
-  /* Topbar flattened to 2D */
-  .topbar { position: relative; top: auto; display: flex; flex-direction: column; align-items: stretch; gap: 12px; padding: 20px; border-radius: 28px; transform-style: flat; backdrop-filter: blur(20px); }
-  .brand-cluster { width: 100%; justify-content: flex-start; transform: none; }
-  .top-actions { position: absolute; top: 20px; inset-inline-end: 20px; transform: none; }
+  .topbar { position: relative; top: 0; flex-direction: column; gap: 20px; padding: 0 0 20px 0; margin-bottom: 30px; box-shadow: none; mask-image: none; -webkit-mask-image: none; border-bottom: 1px solid var(--glass-highlight); }
   .top-nav { display: none; }
   
-  /* Solid Native-Feeling Bottom Nav */
+  /* Mobile Bottom Nav - Float in void */
   .mobile-nav {
-    display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; padding: 10px;
-    position: fixed; left: calc(16px + env(safe-area-inset-left)); right: calc(16px + env(safe-area-inset-right)); bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 60;
-    border: 1px solid var(--glass-border); border-radius: 28px;
-    background: color-mix(in srgb, var(--glass-bg) 95%, transparent); box-shadow: 0 25px 70px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.05);
-    backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%);
+    display: flex; justify-content: space-around;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    padding: 15px 10px 25px;
+    background: linear-gradient(to top, var(--bg) 60%, transparent);
   }
-  .mobile-nav .nav-btn { flex-direction: column; justify-content: center; gap: 6px; padding: 12px 4px; border-radius: 20px; font-size: 10px; min-height: 56px; transform: none !important; }
-  .mobile-nav .nav-icon { font-size: 18px; }
+  .mobile-nav .nav-btn { flex-direction: column; font-size: 9px; padding: 10px; color: var(--muted); }
+  .mobile-nav .nav-btn.active { color: var(--accent-2); }
+  .mobile-nav .nav-btn::after { display: none; }
+  .mobile-nav .nav-icon { display: block; font-size: 20px; margin-bottom: 4px; }
 
-  /* Disable 3D Transforms on Mobile for Scrolling Perf */
-  .spatial-surface, .timeline-card { transform: none !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 12px 35px rgba(0,0,0,0.4); }
-  
-  /* Layout Reflow */
-  .hero { grid-template-columns: 1fr; }
-  .hero-main { padding: 40px 24px; min-height: auto; }
   .hero-main h1 { font-size: clamp(40px, 12vw, 56px); }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .bento { grid-template-columns: 1fr; gap: 12px; }
-  .quick-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 12px; }
-  .section-title { flex-wrap: wrap; transform: none; margin-top: 32px; }
-  
-  .focus-timer { font-size: 72px; }
-  .focus-shell { padding: 40px 24px; transform: none; box-shadow: 0 0 60px color-mix(in srgb, var(--accent) 15%, transparent); }
+  .section-title { flex-direction: column; gap: 10px; }
+  .focus-timer { font-size: 80px; }
   .iframe-wrap iframe { height: 65vh; }
-}
-
-@media (max-width: 390px) {
-  .app { padding: 0 calc(10px + env(safe-area-inset-right)) 0 calc(10px + env(safe-area-inset-left)); }
-  .mobile-nav { left: calc(10px + env(safe-area-inset-left)); right: calc(10px + env(safe-area-inset-right)); }
-  .mobile-nav .nav-btn { font-size: 9px; }
-  .hero-actions .btn { flex: 1; }
-  .hero-actions .btn.primary { flex-basis: 100%; }
 }
