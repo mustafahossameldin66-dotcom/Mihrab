@@ -1,60 +1,40 @@
-# Mihrab — Sanctuary Final
+# Mihrab — Sanctuary V37
 
 A mobile-first spatial redesign of Mihrab built only with HTML, CSS, SVG, and Vanilla JavaScript.
 
-## First impression
+## What changed in V37
 
-Mihrab now opens through a full-screen native threshold rather than dropping the user directly into a dashboard:
+V37 keeps the Sanctuary direction and focuses on polish, tactility, and performance:
 
-**Open → enter the portal → arrive in the sanctuary → move through rooms.**
+- The mobile sanctuary is lighter and shorter, while retaining the portal identity.
+- Atmospheric drift/breathe is slower; broad permanent `will-change` hints are removed.
+- Low Power is one consolidated performance override: it removes continuous compositor-heavy effects without flattening the material language.
+- Tasks use an accessible custom checkbox treatment plus tactile press, hover illumination, completion ripple/rail/sink motion, and Undo.
+- Desktop Now/Next/Later notes drift slowly and deliberately rather than snapping.
+- Pointer inertia is softer and remains RAF-batched.
+- Responsive media rules for 840px, 390px, and reduced motion are consolidated into single blocks.
 
-The exact original Mihrab brand geometry and typography relationship are preserved. The atmosphere is created with layered CSS gradients, SVG geometry, depth, masks, restrained blur, and a centralized pointer system. No WebGL, Three.js, React, Vue, Svelte, canvas loop, or particle engine is used.
+## Architecture
 
-## Spatial architecture
+The app remains HTML/CSS/SVG/Vanilla JavaScript. No React, Vue, Svelte, Three.js, WebGL, Canvas loops, or particle engine was introduced.
 
-The Home room is organized around:
+The existing localStorage model, routes, brand SVG, Rafiq bridge, content library, history, Focus Mode, themes, language switching, and PWA structure remain in place.
 
-- cinematic portal / hero scene
-- Now / Next / Later execution
-- protected daily work
-- six navigable rooms inside the same visual world
-- long-run progress signal
-- living ambient atmosphere
+## Data safety
 
-The Islamic Studies room is data-driven: active, paused, and completed series are rendered from the generic library model. Future Islamic series use the same renderer without series-specific code.
+Historical completion data is event-based where available. Legacy completed records without a recorded completion date remain undated; the app does not synthesize a historical completion date.
 
-## History and data
+## Verification actually performed for V37
 
-Completion events are recorded locally and used for consistency metrics. Series session milestones are recorded at 25%, 50%, 75%, and 100%. Existing completed records with no recorded completion date remain undated; the app never synthesizes a historical completion date.
+- `node --check app.js`: PASS.
+- CSS brace balance: PASS.
+- One `:root`: PASS.
+- One 840px responsive block: PASS.
+- One 390px responsive block: PASS.
+- One reduced-motion block: PASS.
+- One consolidated Low Power architecture: PASS.
+- No broad permanent `will-change` usage: PASS.
+- Manifest JSON: PASS.
+- Local asset references in `index.html`: checked.
 
-The existing localStorage keys and legacy migration path are retained. No backend is introduced for analytics.
-
-## Preserved functionality
-
-The existing six routes, task state, completion, editing, task progress, Quick Capture, Command Palette, Focus Mode, theme switching, language switching, forms/modals, local state, schedules, progress data, PWA shell, offline cache architecture, backup/restore, Rafiq bridge, content library, course/marketing/Qur’an/Islamic logic, and settings remain in the application.
-
-## Verification
-
-Verified in a controlled Chromium/CDP browser harness using the actual application JavaScript and CSS:
-
-- startup and full-screen entry threshold
-- all six main routes with no render error
-- Home room constellation and daily task field
-- generic Islamic series rendering
-- session completion and automatic series completion
-- 25/50/75/100% milestone creation
-- legacy completed record with unknown date remains undated
-- Daily Momentum is stable for the day and persisted in its local key
-- task completion records exactly one completion event per interaction
-- Undo records an uncompletion event
-- shared modal opens/closes
-- System/Auto theme and Arabic/English switching
-- low-power attribute path
-- 390px mobile width without horizontal overflow
-- JavaScript syntax and CSS brace balance
-
-Not verified here: physical touch on a real phone/tablet, browser behavior on the user's deployed GitHub Pages origin, and service-worker update behavior on that production origin.
-
-
-## V34 refinement
-The current build keeps the Sanctuary visual direction while refining light-mode material contrast, reducing room-card visual collisions, and making Low Power a performance mode rather than a visual flattening mode.
+Not verified in this environment: physical touch on a real device, GitHub Pages production behavior, and service-worker update lifecycle on the deployed origin. The environment blocked reliable Chromium navigation to the local project, so no browser/device claims are made here.

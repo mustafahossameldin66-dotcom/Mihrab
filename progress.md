@@ -1,3 +1,52 @@
+# Current State — V37
+
+The current working tree is V37 Performance/Motion refinement on top of the Sanctuary direction. The intended experience is a living spatial sanctuary, with slower motion, richer task interaction, a lighter mobile center, and Low Power that preserves the visual identity.
+
+# Architecture
+
+- Router: one delegated hash router.
+- Rendering: existing centralized render functions.
+- State: existing localStorage state with event-based history additions.
+- CSS: one `:root`; responsive rules consolidated by breakpoint; V37 is the authoritative performance layer.
+- Pointer/ambient: one RAF-batched pointer engine; CSS-driven atmosphere.
+- Modal: shared modal path.
+- Theme: manual themes plus System/Auto.
+- Content library: generic series model.
+- History: append-like local event records for task/focus/series milestones.
+- PWA/cache: service worker cache `mihrab-v37-sanctuary`.
+
+# Completed
+
+- Reduced mobile sanctuary visual/vertical weight.
+- Slowed atmospheric motion and pointer convergence.
+- Added premium tactile task completion choreography and custom accessible checkbox visuals.
+- Consolidated Low Power into one authoritative behavior without flattening the sanctuary.
+- Removed broad permanent `will-change`.
+- Consolidated responsive and reduced-motion media blocks.
+- Updated V37 asset/version references and service-worker cache name.
+
+# In Progress
+
+None for the V37 code phase.
+
+# Next Step
+
+Real-device touch/performance testing after deployment.
+
+# Known Issues
+
+No unresolved code issue confirmed in static verification. Physical-device and deployed-origin behavior remain unverified in this environment.
+
+# Verification
+
+Static verification passed: JavaScript syntax, CSS brace balance, single `:root`, consolidated responsive blocks, consolidated Low Power rules, manifest JSON.
+
+Browser navigation to local files/ports was blocked by the execution environment during this session, so browser/device testing is explicitly not claimed.
+
+# Important Decisions
+
+Low Power must be a lighter renderer for the same world, not a separate low-quality theme. Motion should be slow and intentional. Task completion should feel spatial and tactile, using transforms/opacity/shadow rather than heavy JS animation.
+
 # Current State
 Mihrab Sanctuary Final is implemented from the V30 baseline. The Home experience is a spatial sanctuary rather than a conventional dashboard: a full-screen entry threshold, cinematic portal scene, living atmosphere, Now/Next/Later execution layer, six-room constellation, and deeper daily execution chamber. Islamic Studies is now generic/data-driven and completion history is event-based.
 
@@ -107,3 +156,25 @@ No existing storage key was renamed or deleted. The legacy key `dersh-integrated
 - Low Power removes backdrop filters and live background animation while preserving stage shadow/material and page structure.
 - Service worker cache name bumped to mihrab-v36-sanctuary.
 - Real-device touch and production GitHub Pages lifecycle remain unverified here.
+
+
+## V37 Performance / Motion Refinement
+- Reduced mobile sanctuary stage height and portal scale while preserving the portal identity.
+- Consolidated low-power behavior into one authoritative V37 block; preserves material identity while removing continuous compositor work.
+- Added slow, restrained desktop floating-note motion and richer task completion choreography using transform/opacity/shadow.
+- Reduced pointer convergence speed for smoother inertia.
+- Removed broad permanent `will-change`; hover/focus promotion only where needed.
+- Reduced ambient blur and slowed atmospheric breathing/drift.
+- Static and runtime verification performed for this phase; results recorded after testing.
+
+
+# V37 Verification Record
+- JavaScript syntax: PASS (`node --check app.js`).
+- CSS brace balance: PASS; one `:root`; one `@media (max-width:840px)`; one `@media (max-width:390px)`; one reduced-motion block.
+- Low-power architecture: PASS static audit; one authoritative V37 low-power section, no legacy V36 low-power overrides remain.
+- Permanent `will-change`: removed from broad base selectors; hover/focus promotion only on desktop room interaction.
+- Mobile sanctuary: reduced stage/portal height and visual weight while retaining living atmosphere.
+- Task interaction: premium custom accessible checkbox styling, tactile press state, hover illumination, completion ripple/rail/sink sequence, Undo preserved.
+- Background: slower ambient drift/breathe and reduced blur cost.
+- PWA cache: `mihrab-v37-sanctuary`.
+- Browser verification note: environment policy blocked Chromium navigation to local/file URLs in this session; therefore no claim of real browser/device testing is made here.
