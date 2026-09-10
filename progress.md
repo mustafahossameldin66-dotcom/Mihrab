@@ -1,38 +1,100 @@
 # Mihrab — Progress Log
 
-**Baseline this session:** `Mihrab_V26_Fixed.zip` (418-line app.js, 128-line styles.css — the "Fixed" rebuild, smaller/cleaner than the earlier V19 Lifelong branch).
+## Current State
 
-**How to resume after a context/limit reset:** upload the latest zip + this file, and say "كمل من progress.md". Claude reads the "Next up" section below and continues from there.
+Mihrab V27 Spatial is implemented as a clean continuation of the existing vanilla HTML/CSS/JS application. The visual system now uses layered ambient atmosphere, spatial glass surfaces, calmer motion, first-open arrival motion, a restrained Focus tunnel, and data-driven Islamic Studies cards. Existing six primary routes remain: Home, Marketing, Islamic Studies, Qur’an, Courses, System.
 
----
+The exact existing Mihrab logo markup and brand text were preserved. No framework was introduced.
 
-## ✅ Done this session
+## Architecture
 
-1. **Animated ring + counter** (`app.js` → `updateRing`/`animateRingTo`, `styles.css` → `@property --p`)
-   - The home-ring percentage and the `n/total` count now animate smoothly (850ms, ease-out-cubic) instead of jumping instantly when a task is checked/unchecked.
-   - Respects `prefers-reduced-motion`: animation is skipped (instant update) if the user's OS asks for reduced motion.
+- **Router:** one `route()` function over the existing six routes; hash navigation and mobile/desktop navigation share the same route state.
+- **Render model:** one route renderer per view with one shared `rerender()` pipeline.
+- **State model:** existing `study-dashboard-focus-v7` localStorage key retained; schema advanced to `4` without renaming the key. Existing state is merged and normalized by `ensureState()`.
+- **CSS architecture:** one `styles.css` with one `:root` token layer, theme layer, shared spatial surface language, interaction motion, responsive/mobile rules, reduced-motion and low-power guards. No appended FINAL OVERRIDE stack was added.
+- **Responsive architecture:** mobile-first navigation remains the same six-item bottom navigation; one-finger vertical scrolling remains enabled; no global `touch-action:none` or permanent body scroll lock.
+- **Pointer/ambient system:** one delegated `pointermove` engine using requestAnimationFrame and CSS variables (`--px`/`--py`). It is skipped when the primary pointer is not fine.
+- **Modal system:** one shared modal overlay; Escape and backdrop close; body scroll locking is applied only while modal/focus overlays are active.
+- **Theme system:** manual themes plus `auto` following `prefers-color-scheme`; system theme changes are listened to while Auto is selected.
+- **Content library system:** library records are normalized with `importance` (`core` / `important` / `optional`) and status (`active` / `paused` / `done`).
+- **Series progress/completion system:** Islamic Studies rendering is generic over any `category:'islamic'` library record. Session completion increments `completedSessions`; reaching 100% moves the series to `done` and records a completion event.
+- **Consistency/history system:** local append-like `history.events` plus `history.days` snapshots track actual task/plan/focus/series events. Metrics are derived only from recorded data; unknown historical periods remain empty/unknown rather than fabricated.
+- **Service worker/cache system:** cache identifier advanced to `mihrab-v27-spatial`; application CSS/JS query versions updated to `27.0`.
 
-2. **Completion glow** (`styles.css` → `.just-checked`, `glow-bloom` keyframes)
-   - Checking a task now blooms a slower, warmer glow (1.15s) around the row instead of the old instant hard-edged flash.
+## Completed
 
-3. **100% ring celebration** (`styles.css` → `.ring.burst`, `ring-burst-*` keyframes; `app.js` → burst trigger inside `animateRingTo`)
-   - When the ring crosses from <100% to 100% for the day, it plays a one-time soft light burst (radiant glow + gentle number pop) for ~1.5s, then settles back to the normal resting glow.
+1. Preserved the existing brand/logo geometry and naming.
+2. Preserved the six primary routes and existing core task/navigation mechanisms.
+3. Added a richer three-scale CSS ambient atmosphere with pointer response while remaining CSS-only.
+4. Added restrained spatial-surface lighting, material layering, longer/calmer interaction timing, and page/first-open motion.
+5. Added a Focus Mode tunnel treatment with concentric rings and timer-driven breathing atmosphere.
+6. Added System/Auto theme behavior.
+7. Refactored Islamic Studies into a generic library-driven renderer rather than hard-coded Ayman/Awareness display branches.
+8. Added explicit importance levels for library records with backward-compatible defaults.
+9. Added series-session completion and automatic completed-state handling.
+10. Added local consistency/history tracking, weekly/monthly/yearly/all-time metric surfaces, current/best streak calculations, Reality vs Plan, and a neutral non-punitive framing.
+11. Added contextual loading/error recovery wording rather than silent failure in route rendering.
+12. Updated service-worker cache version and asset query versions.
+13. Updated README language to reflect the actual CSS ambient implementation.
 
-4. **Typography pass** (`styles.css`, top of file)
-   - Reordered the system-font stack to prioritize better Arabic-rendering fonts per platform (`SF Arabic`, `Segoe UI`, `Noto Sans Arabic`, `Noto Kufi Arabic`) while keeping `Inter` for Latin text (numbers, English labels, acronyms like SWOT/SEO).
-   - Added a **commented-out `@font-face` scaffold** for a self-hosted premium Arabic display font (used only on `.brand-ar` for now). This keeps the app's stated "offline-first, no remote font service" principle intact — nothing is fetched from the internet.
-   - **Action needed from you (optional):** if you want a distinctive premium Arabic display face (e.g. Amiri, Aref Ruqaa, Lateef, or a paid font you own), download the `.woff2` file yourself, drop it at `./assets/fonts/display-ar.woff2`, and uncomment the `@font-face` block near the top of `styles.css`. I can't fetch font files myself (no network access in this tool), so this step has to happen on your end.
+## In Progress
 
----
+- Browser and physical-device verification has not been performed in this environment.
+- A final visual pass can still be done after observing the deployed build on an actual phone and desktop browser.
 
-## 🕒 Next up (requested, not done yet — backlog, in the order you mentioned them)
+## Next Step
 
-- [ ] **"Feel alive/motivated on open"** — beyond the existing time-of-day smart banner, consider a slightly richer opening moment (e.g. a one-time settle-in animation for the hero on first paint of the day, not on every render).
-- [ ] **Slower/calmer micro-animations app-wide** — current pass only touched the ring + task glow. Nav switching, card hovers, and modal open/close still use the original faster timings (0.2s). Worth a consistent "slow, calm" pass across all of them, not just the two most visible spots.
-- [ ] **Broader "visually stunning" pass** — you asked for creative additions here specifically. Some options to pick from next time: subtle parallax depth on hero cards on pointer move (there's already an ambient pointer listener at the bottom of `app.js` driving `--px`/`--py` — could extend it to tilt cards slightly), a softer multi-layer ambient glow behind the ring itself (not just on burst), animated gradient text sweep on headings.
-- [ ] **Other completion moments** — the glow bloom currently only fires on `.just-checked` (daily task list). `togglePlan` (weekly plan/library checkboxes) doesn't get the same treatment yet — worth deciding if it should.
+Run the V27 files in a browser/localhost and verify each route, touch scroll, modal/focus behavior, Auto theme switching, existing stored data, and the visual balance of the spatial effects on a real mobile device.
 
----
+## Known Issues
 
-## ⚠️ Standing note (not a code task — a reminder for both of us)
-This project is explicitly a "later, once the study-period system is stable" project per our agreement. Treat every session on Mihrab as optional bonus work, not the priority — the Qur'an memorization schedule and the study-period trackers come first. If a session starts and the memorization/study plan hasn't been checked on recently, ask before diving into more Mihrab work.
+Only confirmed limitation: this session performed static code checks, not real browser, responsive-device, or physical touch testing.
+
+## Verification
+
+Static verification completed:
+- `node --check app.js` passes.
+- Exactly one `:root` rule exists in `styles.css`.
+- Exactly one `route()` function exists.
+- Exactly one `pointermove` engine exists.
+- No `touch-action:none` exists.
+- No permanent `overflow:hidden` body/html rule was introduced.
+- Required local logo/icon assets exist.
+- `index.html` points to CSS/JS version `27.0`.
+- Service worker cache is `mihrab-v27-spatial`.
+- Existing logo path names `mark-outer`, `mark-inner`, `mark-floor`, `mark-dot` are still present in the original markup.
+- The six route IDs remain unchanged.
+
+Browser verification: **not run**.
+Responsive resize verification: **not run**.
+Mobile simulation: **not run**.
+Real-device testing: **not run**.
+
+## Important Decisions
+
+- Do not fabricate historical completion dates. Existing completed records without a historical timestamp remain completed but date-unknown.
+- Do not create a backend solely for analytics; history remains local-first.
+- Do not create a new route solely for analytics; Progress/Insights is surfaced within System to preserve the existing primary navigation architecture.
+- Keep missed work from becoming automatic catch-up debt.
+- Keep low-power and reduced-motion modes premium but materially simpler.
+
+## Files Changed
+
+- `app.js`
+- `styles.css`
+- `index.html`
+- `sw.js`
+- `README.md`
+- `progress.md`
+
+A backup of the pre-V27 source files is retained only inside the working directory for comparison and is not part of the final project package.
+
+## Data / Migration Notes
+
+- Existing localStorage key remains `study-dashboard-focus-v7`.
+- Legacy fallback key `dersh-integrated-v4` remains readable.
+- Schema is now `4`.
+- Existing user state is merged into the new defaults.
+- New `history`, `ui`, and `importance` fields are additive and receive backward-compatible defaults.
+- Backup/restore continues serializing the entire current `state`.
+- No storage key was renamed and no user data reset was intentionally introduced.

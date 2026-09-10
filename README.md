@@ -26,7 +26,7 @@ Mihrab is a local-first PWA designed to stay useful for the long run: today-firs
 
 
 ## Performance
-- System → Performance includes Low Power Mode to disable the ambient canvas and reduce live effects.
+- System → Performance includes Low Power Mode to reduce ambient motion and live effects.
 - Live effects respect `prefers-reduced-motion` and are paused while the tab is hidden.
 
 ## Lifelong use

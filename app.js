@@ -18,12 +18,44 @@ const SHARI_MAP={'السبت':'زاد (تفريغ) + أحمد السيد + أي�
 const AWARENESS=[1,2,3,4,5,6,7,8,9];
 const OLD_KEY='dersh-integrated-v4';
 const KEY='study-dashboard-focus-v7';
-let state={theme:'mono',lang:'ar',view:'home',dayType:'كلية',todayDate:'',today:{},plan:{},weekly:{marketingHours:0,mckinsey:false,dose:false,review:false,rating:'',cert:false},weekDayTypes:{},quranFrameOpen:false,mode:'normal',modeDate:'',schemaVersion:3,settings:{lowPower:false},inbox:[],library:[],backupAt:'',metrics:{focusMinutes:0,sessions:0}};
+let state={theme:'mono',lang:'ar',view:'home',dayType:'كلية',todayDate:'',today:{},plan:{},weekly:{marketingHours:0,mckinsey:false,dose:false,review:false,rating:'',cert:false},weekDayTypes:{},quranFrameOpen:false,mode:'normal',modeDate:'',schemaVersion:4,settings:{lowPower:false},inbox:[],library:[],backupAt:'',metrics:{focusMinutes:0,sessions:0},history:{events:[],days:{},series:{}},ui:{lastOpenDate:''}};
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function effectiveDate(){const d=new Date();if(d.getHours()<5)d.setDate(d.getDate()-1);return d}
 function keyDate(){return effectiveDate().toLocaleDateString('en-CA')}
-function resetDay(){const k=keyDate();if(state.todayDate!==k){state.todayDate=k;state.today={};save()}}
+function ensureHistory(){
+  state.history ||= {events:[],days:{},series:{}};
+  state.history.events ||= [];
+  state.history.days ||= {};
+  state.history.series ||= {};
+  state.ui ||= {lastOpenDate:''};
+}
+function daySnapshot(date, tasks, todayState){
+  const ids=tasks.map(x=>x[0]);
+  return {planned:ids.length,completed:ids.filter(id=>!!todayState[id]).length,active:ids.filter(id=>!!todayState[id]).length>0,updatedAt:new Date().toISOString()};
+}
+function recordEvent(kind,id,completed,meta={}){
+  ensureHistory();
+  const date=keyDate();
+  state.history.events.push({date,kind,id,completed:!!completed,at:new Date().toISOString(),...meta});
+  if(state.history.events.length>4000) state.history.events.splice(0,state.history.events.length-4000);
+}
+function syncTodayHistory(){
+  ensureHistory();
+  if(!state.todayDate)return;
+  state.history.days[state.todayDate]=daySnapshot(state.todayDate,dayTasks(todayName()),state.today);
+}
+function resetDay(){
+  const k=keyDate();
+  ensureHistory();
+  if(state.todayDate!==k){
+    if(state.todayDate){ state.history.days[state.todayDate]=state.history.days[state.todayDate]||{planned:0,completed:0,active:false}; }
+    state.todayDate=k; state.today={};
+  }
+  syncTodayHistory();
+  if(state.ui.lastOpenDate!==k){state.ui.lastOpenDate=k;state.ui.justOpened=true;}
+  save();
+}
 function todayName(){return JS_WEEKDAY_AR[effectiveDate().getDay()]}
 function todayDayType(){return state.weekDayTypes[todayName()]||state.dayType||'كلية'}
 function marketingTarget(){const t=todayDayType();return t==='كلية'?'45–60 دقيقة':t==='بدون كلية'?'2–2.5 ساعة':'3.5–4 ساعات'}
@@ -78,9 +110,19 @@ function translateText(t){let s=t;const exact=I18N[s.trim()];if(exact)return exa
  .replaceAll('اليوم','Today').replaceAll('الأسبوع','Week').replaceAll('المحاضرات','lectures').replaceAll('محاضرة','lecture')
  .replaceAll('جلسة','session').replaceAll('حوالي','About').replaceAll('دقيقة','min').replaceAll('ساعة','h').replaceAll('تقدم','Progress').replaceAll('مهمة','task').replaceAll('المحتوى','Content').replaceAll('ملاحظة','Note');}
 function translateRendered(){}
-function applyTheme(){applyLanguage();document.body.dataset.theme=state.theme;document.documentElement.style.colorScheme=state.theme==='paper'?'light':'dark'}
-function setTheme(t){const allowed=['aurora','midnight','sunrise','paper','mono'];state.theme=allowed.includes(t)?t:'mono';save();applyTheme();renderAll({preserveScroll:true})}
-function cycleTheme(){const arr=['aurora','midnight','sunrise','paper','mono'];setTheme(arr[(arr.indexOf(state.theme)+1)%arr.length])}
+function resolveTheme(){
+  if(state.theme==='auto') return matchMedia('(prefers-color-scheme: light)').matches?'paper':'mono';
+  return state.theme;
+}
+function applyTheme(){
+  applyLanguage();
+  const resolved=resolveTheme();
+  document.body.dataset.theme=resolved;
+  document.body.dataset.themeMode=state.theme;
+  document.documentElement.style.colorScheme=resolved==='paper'?'light':'dark';
+}
+function setTheme(t){const allowed=['auto','aurora','midnight','sunrise','paper','mono'];state.theme=allowed.includes(t)?t:'mono';save();applyTheme();renderAll({preserveScroll:true})}
+function cycleTheme(){const arr=['auto','aurora','midnight','sunrise','paper','mono'];setTheme(arr[(arr.indexOf(state.theme)+1)%arr.length])}
 function renderHome(){
  const day=todayName(), items=dayTasks(day), pr=pct(items.map(x=>x[0]),state.today);
  const done=pr.n, total=pr.total, remaining=Math.max(total-done,0);
@@ -128,8 +170,43 @@ function renderHome(){
 function renderMarketing(){let overallIds=[],out=`<div class="section-title"><div><h2>💻 معسكر التسويق الطبي الرقمي</h2><p>10 أسابيع · 12 ساعة/أسبوع · كل أسبوع يضيف قطعة إلى دراسة حالة واحدة.</p></div><span class="badge core">أولوية مهنية</span></div><section class="awareness" style="margin-bottom:14px"><div class="kicker">THE UNIFIED CASE STUDY</div><h2 style="margin:8px 0">صيدلية الفيروز الإكلينيكية</h2><p class="muted" style="line-height:1.9;margin:0">مشروع موحّد: صيدلية إكلينيكية افتراضية في حي الفيروز، الأقصر، تقدم استشارات دوائية أونلاين ومتابعة للمرضى.</p></section><div class="grid grid-2"><section class="section-box"><h3>🧠 طريقة اليوم</h3><p>🎥 ساعة تعلم بصري/فيديو → 🤖 15 دقيقة عصف AI → ✍️ 15 دقيقة توليف شخصي بإيدك → 🧠 30 دقيقة Anki.</p><div class="note">سؤال التطبيق الثابت: «موضوع النهارده — إزاي بيتطبق على صيدلية الفيروز تحديدًا؟»</div></section><section class="section-box"><h3>🛡️ Buffer Rule</h3><p>فاتك يوم؟ لا تعوضه في اليوم التالي. زحزح الجدول. وقت الضغط يقل الإنتاج الجديد قبل الأساسيات.</p></section></div>`;
  MARKETING.forEach(([phase,weeks])=>{out+=`<div class="section-title"><div><h2>${esc(phase)}</h2></div></div>`;weeks.forEach(([title,days,deep])=>{const ids=days.concat(deep).map(x=>idFor(title,x));const pr=pct(ids,state.plan);overallIds.push(...ids);out+=`<details class="week-card"><summary><span><b>${esc(title)}</b></span><span class="badge">${pr.p}% · ${pr.n}/${pr.total}</span></summary><div class="week-body"><div class="progress-head"><span>تقدم الأسبوع</span><b>${pr.p}%</b></div><div class="progress"><i style="width:${pr.p}%"></i></div><div class="week-grid" style="margin-top:12px"><div class="week-block"><h4>📚 أيام التعلم</h4>${days.map(x=>{const id=idFor(title,x),d=pChecked(id);return `<label class="mtask ${d?'done':''}"><input type="checkbox" ${d?'checked':''} onchange="togglePlan('${id}')"><span>${esc(x)}</span></label>`}).join('')}</div><div class="week-block"><h4>🔻 التطبيق العميق</h4>${deep.map(x=>{const id=idFor(title,x),d=pChecked(id);return `<label class="mtask ${d?'done':''}"><input type="checkbox" ${d?'checked':''} onchange="togglePlan('${id}')"><span>${esc(x)}</span></label>`}).join('')}</div></div></div></details>`})});
  const ov=pct(overallIds,state.plan);out+=`<div class="section-title"><div><h2>🧠 نظام Anki داخل المعسكر</h2><p>المعلومة التي لا تحتاج الاحتفاظ بها طويلًا لا تتحول تلقائيًا إلى بطاقة.</p></div></div><div class="grid grid-3">${[['Must memorize: 4Ps, STP, SWOT, AIDA, TOFU/MOFU/BOFU, Buyer Persona, USP, CTA, SEO, CAC, LTV, CTR, CPC, CPM, ROAS, Conversion Rate, UTM, SMART, KPIs.'],['Understand and apply: AMA definition, marketing history, Marketing 1.0/2.0/3.0/5.0, evolution stories, and company examples.'],['Reference only: statistics, studies, and long examples.']].map(x=>`<div class="section-box"><p style="line-height:1.85">${esc(x[0])}</p></div>`).join('')}</div><div class="grid grid-2" style="margin-top:12px"><div class="section-box"><h3>✅ بوابة إنشاء البطاقة</h3><p>هل سأحتاجها بعد 3 شهور؟ هل سأستخدمها في شغل حقيقي؟ هل سأضطر للبحث عنها كل مرة؟ نعم على واحدة أو أكثر → بطاقة.</p></div><div class="section-box"><h3>🎯 معيار نجاح المشروع</h3><p>مشكلة واضحة → حل مفهوم → نتيجة موثقة في الـPortfolio.</p></div></div><div class="section-box" style="margin-top:12px"><div class="progress-head"><span>التقدم الكلي</span><b>${ov.p}%</b></div><div class="progress"><i style="width:${ov.p}%"></i></div></div><div class="section-box" style="margin-top:12px;border-color:color-mix(in srgb,var(--c) 28%,var(--line))"><h3>🚀 بعد الأسبوع 10</h3><p>Drug Commercialization مؤجل لما بعد المعسكر. الشهادة الموازية (HubSpot / Google) تظل 20–30 دقيقة وقت الفراغ ولا تكرر محتوى المعسكر.</p></div>`;return out}
-function renderShari(){const day=todayName();const rows=DAYS.map(d=>`<div class="timeline-card ${d===day?'today':''}"><div class="day">${d} ${d===day?'· اليوم':''}</div><ul><li>${esc(SHARI_MAP[d])}</li>${d==='الجمعة'?'<li>جلسة أطول + تدبر</li>':'<li>حوالي 70–85 دقيقة</li>'}</ul></div>`).join('');
- return `<div class="section-title"><div><h2>🕌 العلم الشرعي</h2><p>مسار مستقل وثابت. لا يدخل في منافسة مع التسويق.</p></div><span class="badge core">أساسي</span></div><div class="timeline">${rows}</div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>📚 المصادر الأساسية</h3><p>أحمد السيد — نبدأ بـ «بناء العقيدة للجيل الصاعد».</p><p><b style="color:var(--a)">أيمن عبد الرحيم — مسار أساسي ثابت.</b></p><p>فقه النفس — عبد الرحمن ذاكر.</p><p>الخلفاء الراشدين — راغب السرجاني.</p><p>الجمعة — أحمد عبد المنعم: تدبر وتفسير.</p></section><section class="section-box"><h3>🧭 ترتيب المسارات</h3><p>«تأسيس وعي المسلم المعاصر» موجود هنا كمسار أساسي من محتوى أيمن، وليس بطاقة وهمية في النظام.</p><p>«البيت المسلم» يمكن الرجوع إليه عند الحاجة فقط، وليس مسارًا إلزاميًا موازيًا.</p></section></div><div class="section-title"><div><h2>🧭 تأسيس وعي المسلم المعاصر</h2><p>أيمن عبد الرحيم · 9 محاضرات · الهدف تأسيس/إعادة توجيه الوعي، لا جمع أكبر عدد من المعلومات.</p></div><span class="badge core">Core</span></div><div class="awareness"><div class="grid grid-2"><div><h3 style="margin-top:0">🎯 هدف الدورة</h3><p style="line-height:1.9;margin:0">إعادة أو تأسيس توجه ووعي صحيح — وليس جمع أكبر قدر من المعلومات — مع فهم كيف يؤثر عالم الأفكار في السلوك.</p><p class="muted" style="line-height:1.9;margin:9px 0 0">اللغة + التدين + الثقافة تشكّل عالم الأفكار الذي ينعكس على عالم السلوك، وآخر المحاضرات تركز على ما يمكن فعله بالأفكار الجديدة بعد التعلم.</p></div><div><h3 style="margin-top:0">🧭 مكانها في الخطة</h3><p style="line-height:1.9;margin:0">أيمن عبد الرحيم مسار أساسي ثابت. التنفيذ الأسبوعي الأساسي: السبت والاثنين والأربعاء، مع حصة أطول الجمعة. في ضغط اليوم لا تُلغى هويته من الخطة؛ الذي يمكن ضغطه هو الجرعة التنفيذية.</p></div></div><div class="grid grid-3" style="margin-top:13px"><div class="note"><b>01</b><br>التوجه والوعي قبل الكم المعلوماتي</div><div class="note"><b>02</b><br>تاريخ يشرح أثر عالم الأفكار على السلوك</div><div class="note"><b>03</b><br>الانتقال من الفكرة إلى ما نفعله بها</div></div><div class="lecture-grid">${AWARENESS.map(n=>`<label class="lecture"><input type="checkbox" ${pChecked('aware_'+n)?'checked':''} onchange="togglePlan('aware_${n}')"><span>المحاضرة ${n} من 9</span></label>`).join('')}</div><div class="note" style="margin-top:10px">💡 ملاحظة الدورة: يوجد Trailer منفصل في بعض المنصات، لكنه ليس واحدًا من المحاضرات التسع الأساسية.</div></div><div class="section-title"><div><h2>✅ تنفيذ اليوم الشرعي</h2><p>${day} — علّم البنود لما تخلصها.</p></div></div><section class="section-box">${taskHTML(shariItems(day))}</section>`}
+function importanceMeta(x){
+  const v=x.importance||(x.core?'core':x.important?'important':'optional');
+  return state.lang==='en'
+    ? (v==='core'?['Core','أساسي']:v==='important'?['Important','مهم']:['Optional','اختياري'])
+    : (v==='core'?['أساسي','Core']:v==='important'?['مهم','Important']:['اختياري','Optional']);
+}
+function renderShari(){
+  const en=state.lang==='en',day=todayName();
+  const series=state.library.filter(x=>x.category==='islamic'&&x.status!=='done');
+  const completed=state.library.filter(x=>x.category==='islamic'&&x.status==='done');
+  const dayRows=DAYS.map(d=>{
+    const scheduled=series.filter(x=>x.days?.includes(d));
+    const active=d===day;
+    return `<article class="timeline-card ${active?'today':''}"><div class="day">${en?translateText(d):d} ${active?(en?'· today':'· اليوم'):''}</div>
+      ${scheduled.length?scheduled.map(x=>{const [label]=importanceMeta(x);const title=en&&x.titleEn?x.titleEn:x.title;
+        return `<div class="timeline-track"><div><b>${esc(title)}</b><small>${x.sessions?`${x.completedSessions||0}/${x.sessions} ${en?'sessions':'جلسة'}`:(en?'Open track':'مسار مفتوح')}</small></div><span class="badge importance-${esc(x.importance||(x.core?'core':x.important?'important':'optional'))}">${esc(label)}</span></div>`}).join(''):`<div class="note">${en?'No scheduled Islamic track.':'لا يوجد مسار شرعي مجدول.'}</div>`}
+    </article>`;
+  }).join('');
+  const card=x=>{
+    const title=en&&x.titleEn?x.titleEn:x.title, [imp]=importanceMeta(x), total=Number(x.sessions)||0, done=Number(x.completedSessions)||0, percent=total?Math.round(done/total*100):0;
+    return `<article class="series-card spatial-surface">
+      <div class="series-top"><div><div class="kicker">${en?'Islamic studies':'علم شرعي'}</div><h3>${esc(title)}</h3></div><span class="badge importance-${esc(x.importance||(x.core?'core':x.important?'important':'optional'))}">${esc(imp)}</span></div>
+      <p class="muted">${esc(x.purpose||(en?'A data-driven track in the shared Islamic studies library.':'مسار داخل مكتبة العلم الشرعي ويُدار بنفس النظام العام للمسارات.'))}</p>
+      ${total?`<div class="progress-head"><span>${en?'Progress':'التقدم'}</span><b>${done}/${total} · ${percent}%</b></div><div class="progress"><i style="width:${percent}%"></i></div>`:`<div class="note">${en?'Session count is not set yet.':'عدد الجلسات غير محدد بعد.'}</div>`}
+      <div class="series-meta"><span>${x.days?.length?x.days.map(d=>en?translateText(d):d).join(' · '):(en?'Unscheduled':'غير مجدول')}</span><span>${x.duration||30} ${en?'min':'د'}</span></div>
+      <div class="modal-actions"><button class="btn" onclick="openTrackDetails('${x.id}')">${en?'Details':'تفاصيل'}</button>${total&&done<total?`<button class="btn primary" onclick="completeSeriesSession('${x.id}')">${en?'Complete session':'أنجز جلسة'}</button>`:''}</div>
+    </article>`;
+  };
+  const doneCard=x=>{const title=en&&x.titleEn?x.titleEn:x.title;return `<div class="achievement-row"><div><b>${esc(title)}</b><small>${en?'Completed':'اكتمل'} ${x.completedAt?new Date(x.completedAt).toLocaleDateString(en?'en-US':'ar-EG'):''}</small></div><span class="badge">${en?'Completed':'مكتمل'}</span></div>`};
+  return `<div class="section-title"><div><h2>🕌 ${en?'Islamic studies':'العلم الشرعي'}</h2><p>${en?'One generic library model handles every present and future Islamic series.':'مكتبة واحدة ونظام واحد: أي مسار جديد يُعرض ويُدار تلقائيًا من نفس النموذج.'}</p></div><span class="badge core">${en?'Core layer':'أساسي'}</span></div>
+    <div class="timeline">${dayRows}</div>
+    <div class="section-title"><div><h2>${en?'Active series':'المسارات النشطة'}</h2><p>${en?'Scan first, open details only when needed.':'المعلومات الأساسية أولًا، والتفاصيل عند الطلب.'}</p></div></div>
+    <div class="grid grid-2 series-grid">${series.map(card).join('')||`<section class="section-box"><div class="note">${en?'No active Islamic series yet. Add one from System → Library.':'لا توجد مسارات نشطة حاليًا. أضف مسارًا من النظام ← المكتبة.'}</div></section>`}</div>
+    <section class="section-box achievement-panel"><div class="section-title" style="margin:0 0 8px"><div><h3>✦ ${en?'Completed / achievements':'المكتمل / سجل الإنجاز'}</h3><p>${en?'Completed tracks remain reviewable; archived is a different state.':'المكتمل لا يختفي؛ الأرشيف حالة مختلفة ويظل قابلًا للاسترجاع.'}</p></div><span class="badge">${completed.length}</span></div>${completed.length?completed.map(doneCard).join(''):`<div class="note">${en?'Nothing completed here yet.':'لم يكتمل مسار هنا بعد.'}</div>`}</section>
+    <div class="section-title"><div><h2>✅ ${en?'Today’s execution':'تنفيذ اليوم'}</h2><p>${en?`${translateText(day)} — mark the daily duties as you finish them.`:`${day} — علّم البنود لما تخلصها.`}</p></div></div>
+    <section class="section-box">${taskHTML(shariItems(day))}</section>`;
+}
 function renderQuran(){
  const open=!!state.quranFrameOpen;
  return `<div class="section-title"><div><h2>📖 القرآن</h2><p>مراجعة المحفوظ أثناء الدراسة؛ رفيق القرآن يظل أداة مستقلة تدخل لها وقت ما تحتاج.</p></div><span class="badge core">مراجعة فقط</span></div>
@@ -148,6 +225,64 @@ function renderQuran(){
  ${open?`<div class="section-title"><div><h2>✦ رفيق القرآن</h2><p>يُحمّل الإطار فقط عند طلبه حتى تظل اللوحة سريعة وخفيفة.</p></div><span class="badge">Cloudflare</span></div><div class="iframe-wrap"><div class="iframe-head"><b>رفيق القرآن</b><div style="display:flex;gap:7px;align-items:center"><span class="badge">Live</span><button class="icon-btn" onclick="toggleRafiqFrame()" aria-label="إغلاق">×</button></div></div><iframe id="rafiqFrame" title="رفيق القرآن داخل Mihrab" src="${RAFIQ_URL}" loading="lazy" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe></div>`:''}`;
 }
 function renderCourses(){return `<div class="section-title"><div><h2>📚 الكورسات والأنظمة المساندة</h2><p>مساندة لا تسبق الأساسيات.</p></div></div><div class="grid grid-3"><section class="section-box"><h3>🧠 Anki</h3><p>المراجعة المستحقة أولًا. الجديد بميزانية ثابتة. أماكنه المفضلة: المواصلات، المصلى، والفواصل.</p></section><section class="section-box"><h3>🚀 McKinsey Forward</h3><p>حوالي ساعتين أسبوعيًا. أول ما ينكمش عند ضغط الدراسة.</p><label class="task ${state.weekly.mckinsey?'done':''}"><input type="checkbox" ${state.weekly.mckinsey?'checked':''} onchange="state.weekly.mckinsey=this.checked;save();renderAll()"><span>أنجزت نصيب الأسبوع</span></label></section><section class="section-box"><h3>💊 The Pharmacist's Guide to Dose Calculations</h3><p>2:41 ساعة إجماليًا · جلسات قصيرة 10–15 دقيقة تقريبًا. أيضًا من أول الأشياء التي يمكن تأجيلها عند الضغط.</p><label class="task ${state.weekly.dose?'done':''}"><input type="checkbox" ${state.weekly.dose?'checked':''} onchange="state.weekly.dose=this.checked;save();renderAll()"><span>أنجزت نصيب الأسبوع</span></label></section></div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🎓 HubSpot / Google</h3><p>20–30 دقيقة وقت الفراغ، بالتوازي مع المعسكر، بدون إعادة شرح ما تدرسه بالفعل.</p><label class="task ${state.weekly.cert?'done':''}"><input type="checkbox" ${state.weekly.cert?'checked':''} onchange="state.weekly.cert=this.checked;save();renderAll()"><span>أنجزت نصيب الشهادة الموازية</span></label></section><section class="section-box"><h3>📗 EasyPeasy</h3><p>يظل موجودًا كقراءة خفيفة داخل اليوم، ولا يضخم الخطة الرئيسية.</p></section></div><div class="section-box" style="margin-top:12px;border-color:color-mix(in srgb,var(--c) 28%,var(--line))"><h3>⏸️ Drug Commercialization</h3><p>مؤجل إلى ما بعد معسكر التسويق.</p></div>`}
+function metricsRange(daysBack){
+  const end=new Date(); end.setHours(23,59,59,999);
+  const start=new Date(end); start.setDate(start.getDate()-daysBack+1); start.setHours(0,0,0,0);
+  return {start,end};
+}
+function dateKeyFromDate(d){return d.toLocaleDateString('en-CA')}
+function getPeriodMetrics(period){
+  const now=new Date(), r=period==='week'?metricsRange(7):period==='month'?metricsRange(30):period==='quarter'?metricsRange(90):period==='year'?metricsRange(365):null;
+  if(period==='day'){
+    const k=keyDate(), s=state.history.days[k]||{planned:dayTasks(todayName()).length,completed:dayTasks(todayName()).filter(x=>state.today[x[0]]).length,active:false};
+    return {...s,activeDays:s.completed>0?1:0,consistency:s.planned?Math.round(s.completed/s.planned*100):null};
+  }
+  const days=Object.entries(state.history.days).filter(([k])=>{
+    if(!r)return true; const d=new Date(k+'T12:00:00'); return d>=r.start&&d<=r.end;
+  }).map(([,v])=>v);
+  const planned=days.reduce((a,v)=>a+(v.planned||0),0), completed=days.reduce((a,v)=>a+(v.completed||0),0), activeDays=days.filter(v=>v.active||v.completed>0).length;
+  return {planned,completed,activeDays,consistency:planned?Math.round(completed/planned*100):null};
+}
+function currentStreak(){
+  ensureHistory();
+  let cursor=new Date(), count=0;
+  while(true){
+    const k=dateKeyFromDate(cursor), d=state.history.days[k];
+    if(!(d&&((d.completed||0)>0||(d.active)))) break;
+    count++; cursor.setDate(cursor.getDate()-1);
+  }
+  return count;
+}
+function bestStreak(){
+  const keys=Object.keys(state.history.days).sort(), good=new Set(keys.filter(k=>{const d=state.history.days[k];return d&&(d.completed||0)>0||d.active;}));
+  let best=0, run=0, prev=null;
+  keys.forEach(k=>{if(!good.has(k))return;const d=new Date(k+'T12:00:00');if(prev&&((d-prev)/86400000)!==1)run=0;run++;best=Math.max(best,run);prev=d;});
+  return best;
+}
+function historySummary(){
+  const all=getPeriodMetrics('all'), week=getPeriodMetrics('week'), month=getPeriodMetrics('month'), year=getPeriodMetrics('year');
+  const completedSeries=state.library.filter(x=>x.status==='done').length;
+  const events=state.history.events||[];
+  const sessions=events.filter(e=>e.kind==='focus'&&e.completed).length;
+  return {all,week,month,year,completedSeries,sessions,currentStreak:currentStreak(),bestStreak:bestStreak()};
+}
+function renderInsights(){
+  const en=state.lang==='en', m=historySummary(), fmt=(v)=>v==null?'—':v;
+  const row=(label,data)=>`<div class="metric-row"><span>${label}</span><b>${fmt(data)}</b></div>`;
+  return `<section class="section-box insights-shell">
+    <div class="section-title" style="margin:0 0 10px"><div><h2>◌ ${en?'Progress & Insights':'التقدم والالتزام'}</h2><p>${en?'Actual recorded history only. Missing history stays unknown.':'الأرقام مبنية على أحداث مسجلة فعلًا فقط؛ لا يتم اختراع تاريخ غير موجود.'}</p></div><span class="badge">${en?'Local-first':'محلي أولًا'}</span></div>
+    <div class="insight-hero"><div><span class="kicker">${en?'THIS WEEK':'هذا الأسبوع'}</span><strong>${fmt(m.week.consistency)}${m.week.consistency==null?'':'%'}</strong><small>${m.week.activeDays} ${en?'active days':'أيام نشطة'} · ${m.week.completed}/${m.week.planned||0} ${en?'completed':'منجزة'}</small></div><div><span class="kicker">${en?'CURRENT STREAK':'الاستمرارية الحالية'}</span><strong>${m.currentStreak}</strong><small>${en?'days':'يوم'}</small></div><div><span class="kicker">${en?'RECENTLY COMPLETED':'مكتمل مؤخرًا'}</span><strong>${m.completedSeries}</strong><small>${en?'series':'مسارات'}</small></div></div>
+    <div class="grid grid-2 insight-grid">
+      <section class="insight-card"><div class="kicker">${en?'WEEK':'أسبوع'}</div>${row(en?'Active days':'أيام نشطة',m.week.activeDays)}${row(en?'Planned':'مخطط',m.week.planned)}${row(en?'Completed':'منجز',m.week.completed)}${row(en?'Consistency':'الالتزام',m.week.consistency==null?'—':m.week.consistency+'%')}</section>
+      <section class="insight-card"><div class="kicker">${en?'MONTH':'شهر'}</div>${row(en?'Active days':'أيام نشطة',m.month.activeDays)}${row(en?'Completed work':'العمل المنجز',m.month.completed)}${row(en?'Consistency':'الالتزام',m.month.consistency==null?'—':m.month.consistency+'%')}</section>
+      <section class="insight-card"><div class="kicker">${en?'YEAR':'سنة'}</div>${row(en?'Active days':'أيام نشطة',m.year.activeDays)}${row(en?'Completed items':'بنود منجزة',m.year.completed)}${row(en?'Strongest signal':'أطول streak',m.bestStreak+' days')}</section>
+      <section class="insight-card"><div class="kicker">${en?'ALL-TIME':'كل الوقت'}</div>${row(en?'Completed tasks':'مهام منجزة',m.all.completed)}${row(en?'Completed series':'مسارات مكتملة',m.completedSeries)}${row(en?'Longest streak':'أطول استمرارية',m.bestStreak+' days')}</section>
+    </div>
+    <div class="section-title" style="margin:18px 0 8px"><div><h3>${en?'Reality vs Plan':'الواقع مقابل الخطة'}</h3><p>${en?'A neutral read, not a punishment system.':'قراءة محايدة، وليست نظام عقاب أو تعويض قهري.'}</p></div></div>
+    <div class="reality-bars"><div><span>${en?'Planned':'مخطط'}</span><b>${m.week.planned}</b></div><div><span>${en?'Actually completed':'منجز فعليًا'}</span><b>${m.week.completed}</b></div></div>
+    <div class="note" style="margin-top:10px">${en?'No automatic catch-up is created from missed work.': 'البنود الفائتة لا تتحول تلقائيًا إلى ديْن في اليوم التالي.'}</div>
+  </section>`;
+}
 function renderSystemBase(){
  const themes = state.lang==='en'
   ? [['aurora','Aurora','Emerald + Gold'],['midnight','Midnight','Indigo + Gold'],['sunrise','Velvet','Amber + Burgundy'],['paper','Champagne','Ivory + Gold'],['mono','Obsidian','Platinum + Gold']]
@@ -168,7 +303,7 @@ function renderSystemBase(){
  <div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🗓️ ${state.lang==='en'?'Day types':'نوع كل يوم'}</h3>${DAYS.map(d=>`<div class="quote-settings"><div><b>${dayLabels[d]}</b><div class="tiny muted">${state.lang==='en'?'Sets the marketing dose for that day':'يحدد جرعة التسويق لذلك اليوم'}</div></div><select aria-label="${state.lang==='en'?'Day type for ':'نوع يوم '}${dayLabels[d]}" onchange="state.weekDayTypes['${d}']=this.value;save();renderAll()">${['كلية','بدون كلية','ديب وورك','راحة'].map(v=>`<option value="${v}" ${(state.weekDayTypes[d]||'كلية')===v?'selected':''}>${dayTypeLabels[v]}</option>`).join('')}</select></div>`).join('')}</section>
  <section class="section-box"><h3>🎨 ${state.lang==='en'?'Board identity':'هوية اللوحة'}</h3><p class="muted" style="margin-top:-3px">${state.lang==='en'?'Themes, language, and day types live here. The plan itself stays fixed.':'الثيمات واللغة ونوع كل يوم هنا. الخطة نفسها تفضل ثابتة.'}</p><div class="note">${state.lang==='en'?'These controls change presentation and operation only while keeping your plan intact.':'التغيير هنا بصري وتشغيلي فقط: الثيم يغيّر الخلفية والزجاج والحدود والظلال والإضاءة مع الحفاظ على نفس المحتوى.'}</div></section></div>
  <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h2 style="font-size:20px">🔎 ${state.lang==='en'?'Weekly review':'التقييم الأسبوعي'}</h2><p>${state.lang==='en'?'Choose your real weekly rating — it saves and counts as the weekly review.':'اختار تقييمك الحقيقي للأسبوع — الاختيار بيتحفظ ويُعتبر المراجعة الأسبوعية منجزة.'}</p></div><span class="badge ${rating?'core':''}">${rating?(state.lang==='en'?'Saved':'محفوظ'):(state.lang==='en'?'Not rated':'لم يُقيَّم')}</span></div><div class="review-grid">${reviewChoices.map(([id,e,t,d])=>`<label class="review-choice ${rating===id?'selected':''}"><input type="radio" name="weekly-rating" value="${id}" ${rating===id?'checked':''} onchange="setWeeklyRating('${id}')"><span class="emoji">${e}</span><b>${t}</b><small>${d}</small></label>`).join('')}</div><div class="note" style="margin-top:11px">${state.lang==='en'?'Weekly review: 10–15 minutes. Ask: what was easy to sustain, what kept slipping, and what will you reduce or lock in next week?':'المراجعة الأسبوعية: 10–15 دقيقة. اسأل نفسك: ماذا التزمت به بسهولة؟ ماذا ظل يتأجل؟ وما الذي سأخففه أو أثبته الأسبوع القادم؟'}</div></section>
- <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 8px"><div><h3 style="margin:0">📱 ${state.lang==='en'?'Use it as an app':'استخدمها كتطبيق'}</h3><p>${state.lang==='en'?'Install Mihrab on your phone home screen as a standalone app.':'ثبّت Mihrab على شاشة الموبايل لفتحها كتطبيق مستقل بدل المتصفح.'}</p></div><span class="badge">PWA</span></div><button class="btn primary" onclick="installPWA()" id="installBtn">${state.lang==='en'?'Install on device ↗':'تثبيت على الجهاز ↗'}</button><div class="tiny muted" style="margin-top:8px">${state.lang==='en'?'Home-screen install: yes. A live home-screen widget requires a native app; this board is designed as a lightweight, installable PWA.':'الهوم سكرين: نعم. Widget حيّ فوق الشاشة الرئيسية يحتاج تطبيقًا أصليًا؛ اللوحة هنا مصممة لتكون PWA خفيفة وقابلة للتثبيت.'}</div></section><section class="section-box power-card" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h3>⚡ ${state.lang==='en'?'Performance':'الأداء'}</h3><p>${state.lang==='en'?'Control live effects without changing your plan.':'تحكم في المؤثرات الحية من غير ما تغيّر الخطة.'}</p></div><span class="badge">${state.settings.lowPower?(state.lang==='en'?'Low power':'توفير'): (state.lang==='en'?'Live':'حي')}</span></div><label class="switch"><input type="checkbox" ${state.settings.lowPower?'checked':''} onchange="state.settings.lowPower=this.checked;save();document.body.dataset.lowPower=this.checked?'true':'false';renderAll()"> ${state.lang==='en'?'Low Power Mode — reduce canvas/glow effects':'وضع توفير الطاقة — يقلل الـCanvas والـglow'}</label></section>
+ <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 8px"><div><h3 style="margin:0">📱 ${state.lang==='en'?'Use it as an app':'استخدمها كتطبيق'}</h3><p>${state.lang==='en'?'Install Mihrab on your phone home screen as a standalone app.':'ثبّت Mihrab على شاشة الموبايل لفتحها كتطبيق مستقل بدل المتصفح.'}</p></div><span class="badge">PWA</span></div><button class="btn primary" onclick="installPWA()" id="installBtn">${state.lang==='en'?'Install on device ↗':'تثبيت على الجهاز ↗'}</button><div class="tiny muted" style="margin-top:8px">${state.lang==='en'?'Home-screen install: yes. A live home-screen widget requires a native app; this board is designed as a lightweight, installable PWA.':'الهوم سكرين: نعم. Widget حيّ فوق الشاشة الرئيسية يحتاج تطبيقًا أصليًا؛ اللوحة هنا مصممة لتكون PWA خفيفة وقابلة للتثبيت.'}</div></section><section class="section-box power-card" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h3>⚡ ${state.lang==='en'?'Performance':'الأداء'}</h3><p>${state.lang==='en'?'Control live effects without changing your plan.':'تحكم في المؤثرات الحية من غير ما تغيّر الخطة.'}</p></div><span class="badge">${state.settings.lowPower?(state.lang==='en'?'Low power':'توفير'): (state.lang==='en'?'Live':'حي')}</span></div><label class="switch"><input type="checkbox" ${state.settings.lowPower?'checked':''} onchange="state.settings.lowPower=this.checked;save();document.body.dataset.lowPower=this.checked?'true':'false';renderAll()"> ${state.lang==='en'?'Low Power Mode — reduce ambient/glow effects':'وضع توفير الطاقة — يقلل الحركة والـglow'}</label></section>
  <div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>📊 ${state.lang==='en'?'Marketing this week':'التسويق هذا الأسبوع'}</h3><div class="progress-head"><span>${state.lang==='en'?'Hours':'الساعات'}</span><b>${state.weekly.marketingHours||0} / 12</b></div><div class="progress"><i style="width:${Math.min(100,(state.weekly.marketingHours||0)/12*100)}%"></i></div><div class="field" style="margin-top:10px"><label>${state.lang==='en'?'Enter actual hours':'أدخل الساعات الفعلية'}</label><input type="number" min="0" step="0.5" value="${state.weekly.marketingHours||0}" onchange="state.weekly.marketingHours=parseFloat(this.value)||0;save();renderAll()"></div></section><section class="section-box"><h3>🛡️ ${state.lang==='en'?'Energy modes':'أوضاع الطاقة'}</h3><p><b>🟢 ${state.lang==='en'?'Normal:':'طبيعي:'}</b> ${state.lang==='en'?'Full plan.':'الخطة كاملة.'}</p><p><b>🟡 ${state.lang==='en'?'Low energy:':'منخفض الطاقة:'}</b> ${state.lang==='en'?'Prayer/adhkar + some Qur’an + small marketing output + old Anki only. Side content pauses first.':'الصلاة/الأذكار + قدر من القرآن + إنتاج تسويق صغير + Anki قديم فقط. المحتوى الجانبي يتوقف أولًا.'}</p><p><b>🔴 ${state.lang==='en'?'Exceptional:':'استثنائي:'}</b> ${state.lang==='en'?'Prayer + adhkar + a little Qur’an + rest.':'الصلاة + الأذكار + قرآن يسير + راحة.'}</p></section></div>
  <div class="section-box" style="margin-top:12px"><h3>🧩 ${state.lang==='en'?'Operating rules':'قواعد التشغيل'}</h3><div class="grid grid-2"><div>${(state.lang==='en'?['Sleep 6–8 hours.','During exams: regular Anki continues; new production reduces first.','If two days are lost in a row: no forced catch-up; review why.']:['النوم 6–8 ساعات.','امتحانات: Anki regular مستمر، والإنتاج الجديد يقل أولًا.','لو يومان ضاعا وراء بعض: لا تعويض قهري؛ راجع السبب.']).map(x=>`<p>${x}</p>`).join('')}</div><div>${(state.lang==='en'?['Islamic studies stay fixed.','Qur’an stays fixed but timing is flexible.','Marketing is the professional priority; McKinsey and Dose shrink first.']:['الشرعي ثابت.','القرآن ثابت لكن توقيته مرن.','Marketing هو الأولوية المهنية؛ McKinsey وDose أول من يتقلص.']).map(x=>`<p>${x}</p>`).join('')}</div></div></div>`;
 }
@@ -195,8 +330,15 @@ function renderSystemBase(){
     state.settings={lowPower:false,...(state.settings||{})};
     state.inbox ||= [];
     state.library ||= [];
+    state.library.forEach(x=>{
+      x.importance ||= (x.core?'core':x.important?'important':'optional');
+      x.status ||= 'active';
+      if(x.category==='islamic' && x.sessions==null && x.group!=='zad') x.sessions=0;
+      if(x.completedSessions==null) x.completedSessions=0;
+    });
     state.metrics={focusMinutes:0,sessions:0,...(state.metrics||{})};
-    state.schemaVersion=3;
+    ensureHistory();
+    state.schemaVersion=4;
   }
 
   function migrate(){
@@ -214,12 +356,12 @@ function renderSystemBase(){
   function librarySeeds(){
     if(state.library.some(x=>x.systemSeed)) return;
     state.library=[
-      {id:'lib_zad',title:'أكاديمية زاد',titleEn:'ZAD Academy',category:'islamic',group:'zad',days:[...DAYS],duration:30,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true},
-      {id:'lib_ayman',title:'مسار أيمن عبد الرحيم',titleEn:'Ayman Abdel Rahim track',category:'islamic',group:'ayman',days:['السبت','الاثنين','الأربعاء','الجمعة'],duration:30,core:true,status:'active',sessions:9,completedSessions:0,systemSeed:true},
-      {id:'lib_awareness',title:'تأسيس وعي المسلم المعاصر',titleEn:'Building the Contemporary Muslim’s Awareness',category:'islamic',group:'awareness',days:['السبت','الاثنين','الأربعاء','الجمعة'],duration:30,core:true,status:'active',sessions:9,completedSessions:0,systemSeed:true},
-      {id:'lib_aqeedah',title:'بناء العقيدة للجيل الصاعد',titleEn:'Building Aqeedah for the Rising Generation',category:'islamic',group:'ahmed-sayed',days:['السبت','الاثنين','الأربعاء'],duration:30,core:true,status:'done',sessions:8,completedSessions:8,systemSeed:true},
-      {id:'lib_easy',title:'EasyPeasy Way to Quit',titleEn:'EasyPeasy Way to Quit',category:'reading',days:[],duration:10,core:false,status:'active',sessions:0,completedSessions:0,systemSeed:true},
-      {id:'lib_google',title:'Google / HubSpot certifications',titleEn:'Google / HubSpot certifications',category:'career',days:[],duration:25,important:true,status:'active',sessions:0,completedSessions:0,systemSeed:true}
+      {id:'lib_zad',title:'أكاديمية زاد',titleEn:'ZAD Academy',category:'islamic',group:'zad',days:[...DAYS],duration:30,core:true,importance:'core',status:'active',sessions:0,completedSessions:0,systemSeed:true},
+      {id:'lib_ayman',title:'مسار أيمن عبد الرحيم',titleEn:'Ayman Abdel Rahim track',category:'islamic',group:'ayman',days:['السبت','الاثنين','الأربعاء','الجمعة'],duration:30,core:true,importance:'core',status:'active',sessions:9,completedSessions:0,systemSeed:true},
+      {id:'lib_awareness',title:'تأسيس وعي المسلم المعاصر',titleEn:'Building the Contemporary Muslim’s Awareness',category:'islamic',group:'awareness',days:['السبت','الاثنين','الأربعاء','الجمعة'],duration:30,core:true,importance:'core',status:'active',sessions:9,completedSessions:0,systemSeed:true},
+      {id:'lib_aqeedah',title:'بناء العقيدة للجيل الصاعد',titleEn:'Building Aqeedah for the Rising Generation',category:'islamic',group:'ahmed-sayed',days:['السبت','الاثنين','الأربعاء'],duration:30,core:true,importance:'core',status:'done',sessions:8,completedSessions:8,systemSeed:true},
+      {id:'lib_easy',title:'EasyPeasy Way to Quit',titleEn:'EasyPeasy Way to Quit',category:'reading',days:[],duration:10,core:false,importance:'optional',status:'active',sessions:0,completedSessions:0,systemSeed:true},
+      {id:'lib_google',title:'Google / HubSpot certifications',titleEn:'Google / HubSpot certifications',category:'career',days:[],duration:25,important:true,importance:'important',status:'active',sessions:0,completedSessions:0,systemSeed:true}
     ];
   }
 
@@ -325,7 +467,7 @@ function renderSystemBase(){
     const row=document.querySelector(`[data-task-id="${CSS.escape(id)}"]`); if(row){row.classList.toggle('done',state.today[id]);if(state.today[id]){row.classList.remove('just-checked');void row.offsetWidth;row.classList.add('just-checked')}}
     updateRing();
   }
-  function togglePlan(id){state.plan[id]=!state.plan[id];save();const row=document.querySelector(`[data-plan-row="${CSS.escape(id)}"]`);row?.classList.toggle('done',!!state.plan[id]);const badge=row?.closest('.week-card')?.querySelector('summary .badge');if(badge){const inputs=[...row.closest('.week-card').querySelectorAll('[data-plan-id]')];const ids=inputs.map(i=>i.dataset.planId);const p=pct(ids,state.plan);badge.textContent=`${p.p}% · ${p.n}/${p.total}`} }
+  function togglePlan(id){state.plan[id]=!state.plan[id];recordEvent('plan',id,state.plan[id]);save();const row=document.querySelector(`[data-plan-row="${CSS.escape(id)}"]`);row?.classList.toggle('done',!!state.plan[id]);const badge=row?.closest('.week-card')?.querySelector('summary .badge');if(badge){const inputs=[...row.closest('.week-card').querySelectorAll('[data-plan-id]')];const ids=inputs.map(i=>i.dataset.planId);const p=pct(ids,state.plan);badge.textContent=`${p.p}% · ${p.n}/${p.total}`} }
   let ringAnimHandle=null;
   function easeOutCubic(t){return 1-Math.pow(1-t,3)}
   function animateRingTo(ring,fromP,toP,fromN,toN,total){
@@ -376,20 +518,21 @@ function renderSystemBase(){
 
   function startFocus(id){
     const item=id?taskObjects().find(x=>x.id===id):nowNextLater()[0]; if(!item){infoModal(state.lang==='en'?'Core is complete.':'الأساسيات خلصت.');return;}
+    document.body.classList.add('modal-open');
     const overlay=$('#focusMode'),shell=$('#focusShell'); overlay.classList.add('open');
     let end=Date.now()+(item.duration||25)*60000, done=false;
-    function paint(){const left=Math.max(0,Math.ceil((end-Date.now())/1000));shell.querySelector('.focus-timer').textContent=`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;if(left<=0){if(!done){done=true;state.metrics.focusMinutes+=item.duration||25;state.metrics.sessions++;save()}return;} window.__mihrabFocusRAF=requestAnimationFrame(paint)}
+    function paint(){const left=Math.max(0,Math.ceil((end-Date.now())/1000));shell.querySelector('.focus-timer').textContent=`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;if(left<=0){if(!done){done=true;state.metrics.focusMinutes+=item.duration||25;state.metrics.sessions++;recordEvent('focus',item.id,true,{minutes:item.duration||25});save()}return;} window.__mihrabFocusRAF=requestAnimationFrame(paint)}
     shell.innerHTML=`<div class="focus-kicker">${state.lang==='en'?'MIHRAB FOCUS':'تركيز مِحْرَاب'}</div><h2>${esc(item.label)}</h2><div class="focus-timer">25:00</div><div class="focus-actions"><button class="btn primary" onclick="finishFocus('${esc(item.id)}');closeFocus()">${state.lang==='en'?'Mark done':'تم'}</button><button class="btn" onclick="extendFocus(5)">+5m</button><button class="btn" onclick="closeFocus()">${state.lang==='en'?'Exit':'خروج'}</button></div>`;
     paint(); window.__mihrabFocusEnd=()=>end; window.__mihrabFocusPaint=paint;
   }
   function extendFocus(min){if(window.__mihrabFocusEnd){const end=window.__mihrabFocusEnd()+min*60000;window.__mihrabFocusEnd=()=>end;cancelAnimationFrame(window.__mihrabFocusRAF||0);window.__mihrabFocusPaint?.();}}
-  function closeFocus(){$('#focusMode')?.classList.remove('open');cancelAnimationFrame(window.__mihrabFocusRAF||0);}
+  function closeFocus(){$('#focusMode')?.classList.remove('open');document.body.classList.remove('modal-open');cancelAnimationFrame(window.__mihrabFocusRAF||0);}
   function finishFocus(id){state.today[id]=true;save();closeFocus();rerender()}
   window.startFocus=startFocus;window.extendFocus=extendFocus;window.closeFocus=closeFocus;window.finishFocus=finishFocus;
 
   function openModal(html){ensureModals();$('#mihrabModal').innerHTML=html;$('#mihrabOverlay').classList.add('open');}
   function ensureModals(){if($('#mihrabOverlay'))return;document.body.insertAdjacentHTML('beforeend',`<div class="mihrab-overlay" id="mihrabOverlay" role="dialog" aria-modal="true"><div class="mihrab-modal" id="mihrabModal"></div></div><input id="mihrabImportInput" type="file" accept="application/json,.json" hidden><div class="focus-mode" id="focusMode"><div class="focus-shell" id="focusShell"></div></div>`)}
-  function closeModal(){$('#mihrabOverlay')?.classList.remove('open')}
+  function closeModal(){const o=$('#mihrabOverlay');if(!o)return;o.classList.remove('open');document.body.classList.remove('modal-open');$('#mihrabModal')?.classList.remove('material-enter')}
   window.closeMihrabModal=closeModal;
   function infoModal(message,title){const en=state.lang==='en';openModal(`<div class="mihrab-modal-head"><b>${esc(title||(en?'Note':'ملاحظة'))}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><p style="white-space:pre-line;line-height:1.9;margin:0 0 14px">${esc(message)}</p><div class="modal-actions"><button class="btn primary" onclick="closeMihrabModal()">${en?'OK':'تمام'}</button></div></div>`);}
   window.infoModal=infoModal;
@@ -408,11 +551,28 @@ function renderSystemBase(){
   $('#mihrabImportInput')?.addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const p=JSON.parse(r.result);const next=p.state||p;if(!next||typeof next!=='object')throw Error();state={...state,...next};ensureState();save();rerender();infoModal(state.lang==='en'?'Backup restored.':'تم استرجاع النسخة الاحتياطية.')}catch(err){infoModal(state.lang==='en'?'Invalid backup.':'النسخة الاحتياطية غير صالحة.')}};r.readAsText(f);});
 
   window.addContent=()=>openModal(`<div class="mihrab-modal-head"><b>${state.lang==='en'?'Add track / course':'إضافة مسار / كورس'}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><div class="form-grid"><label class="field-lite"><span>${state.lang==='en'?'Title':'الاسم'}</span><input id="libTitle"></label><label class="field-lite"><span>${state.lang==='en'?'English title':'الاسم بالإنجليزي'}</span><input id="libTitleEn"></label><label class="field-lite"><span>${state.lang==='en'?'Category':'القسم'}</span><select id="libCat"><option value="islamic">${state.lang==='en'?'Islamic':'شرعي'}</option><option value="career">${state.lang==='en'?'Career':'مهني'}</option><option value="course">${state.lang==='en'?'Course':'كورس'}</option><option value="reading">${state.lang==='en'?'Reading':'قراءة'}</option></select></label><label class="field-lite"><span>${state.lang==='en'?'Minutes':'الدقائق'}</span><input id="libDur" type="number" min="1" value="30"></label></div><label class="field-lite"><span>${state.lang==='en'?'Days':'الأيام'}</span><select id="libDays" multiple size="4">${DAYS.map(d=>`<option value="${d}">${state.lang==='en'?I18N[d]||d:d}</option>`).join('')}</select></label><div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${state.lang==='en'?'Cancel':'إلغاء'}</button><button class="btn primary" onclick="saveContent()">${state.lang==='en'?'Add':'إضافة'}</button></div></div>`);
-  window.saveContent=()=>{const title=$('#libTitle')?.value.trim();if(!title)return;state.library.unshift({id:'lib_'+Date.now().toString(36),title,titleEn:$('#libTitleEn').value.trim(),category:$('#libCat').value,duration:Number($('#libDur').value)||30,days:[...$('#libDays').selectedOptions].map(o=>o.value),core:false,important:false,status:'active',sessions:0,completedSessions:0,createdAt:new Date().toISOString()});save();closeModal();rerender()};
+  window.saveContent=()=>{const title=$('#libTitle')?.value.trim();if(!title)return;state.library.unshift({id:'lib_'+Date.now().toString(36),title,titleEn:$('#libTitleEn').value.trim(),category:$('#libCat').value,duration:Number($('#libDur').value)||30,days:[...$('#libDays').selectedOptions].map(o=>o.value),core:false,important:false,importance:'optional',status:'active',sessions:0,completedSessions:0,createdAt:new Date().toISOString()});save();closeModal();rerender()};
   window.archiveContent=id=>{const x=state.library.find(i=>i.id===id);if(!x)return;const en=state.lang==='en';openModal(`<div class="mihrab-modal-head"><b>${en?'Archive this track?':'أرشفة هذا المسار؟'}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><p class="muted" style="margin:0 0 14px;line-height:1.8">${en?'It moves to the Paused tab — you can bring it back anytime.':'هينتقل لتبويب المتوقف — تقدر ترجّعه في أي وقت.'}</p><div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${en?'Cancel':'إلغاء'}</button><button class="btn primary" onclick="setLibraryStatus('${id}','paused')">${en?'Archive':'أرشفة'}</button></div></div>`);};
   window.completeContent=id=>setLibraryStatus(id,'done');
   window.activateContent=id=>setLibraryStatus(id,'active');
-  function setLibraryStatus(id,status){const x=state.library.find(i=>i.id===id);if(x){x.status=status;save();closeModal();rerender()}}
+  function setLibraryStatus(id,status){
+  const x=state.library.find(i=>i.id===id); if(!x)return;
+  x.status=status;
+  if(status==='done'){
+    const total=Number(x.sessions)||0; x.completedSessions=total||x.completedSessions||0; x.completedAt=x.completedAt||new Date().toISOString();
+    state.history.series[x.id]={title:x.title,category:x.category,importance:x.importance||(x.core?'core':x.important?'important':'optional'),completedAt:x.completedAt,sessions:total,completedSessions:x.completedSessions};
+    recordEvent('series-completed',x.id,true,{category:x.category});
+  }
+  save();closeModal();rerender();
+}
+function completeSeriesSession(id){
+  const x=state.library.find(i=>i.id===id); if(!x)return;
+  const total=Number(x.sessions)||0; if(!total){infoModal(state.lang==='en'?'This series has no session count yet.':'هذا المسار لا يحتوي عدد جلسات محدد بعد.');return;}
+  x.completedSessions=Math.min(total,(Number(x.completedSessions)||0)+1);
+  recordEvent('series-session',id,true,{session:x.completedSessions,total});
+  if(x.completedSessions>=total) setLibraryStatus(id,'done'); else {save();rerender();}
+}
+window.completeSeriesSession=completeSeriesSession;
   window.editContent=id=>{const x=state.library.find(i=>i.id===id);if(!x)return;openModal(`<div class="mihrab-modal-head"><b>${state.lang==='en'?'Edit track':'تعديل المسار'}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><label class="field-lite"><span>${state.lang==='en'?'Title':'الاسم'}</span><input id="editTitle" value="${esc(x.title||'')}"></label><label class="field-lite"><span>${state.lang==='en'?'Minutes':'الدقائق'}</span><input id="editDur" type="number" min="1" value="${x.duration||30}"></label><div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${state.lang==='en'?'Cancel':'إلغاء'}</button><button class="btn primary" onclick="saveEditedContent('${id}')">${state.lang==='en'?'Save':'حفظ'}</button></div></div>`) };
   window.saveEditedContent=id=>{const x=state.library.find(i=>i.id===id);if(x){x.title=$('#editTitle').value.trim()||x.title;x.duration=Math.max(1,Number($('#editDur').value)||x.duration);save();closeModal();rerender()}};
   window.openTrackDetails=id=>{const x=state.library.find(i=>i.id===id);if(!x)return;const title=state.lang==='en'&&x.titleEn?x.titleEn:x.title;const d=x.days?.length?x.days.join(' · '):(state.lang==='en'?'Unscheduled':'غير مجدول');openModal(`<div class="mihrab-modal-head"><b>${esc(title)}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><div class="detail-grid"><div><small>Status</small><b>${esc(x.status)}</b></div><div><small>Duration</small><b>${x.duration||30} min</b></div><div><small>Schedule</small><b>${esc(d)}</b></div><div><small>Progress</small><b>${x.sessions?`${x.completedSessions||0}/${x.sessions}`:'Open'}</b></div></div></div>`)};
@@ -428,7 +588,7 @@ function renderSystemBase(){
     const list=shown.length?shown.map(x=>`<div class="library-item"><button class="library-title-btn" onclick="openTrackDetails('${x.id}')"><b>${esc(en&&x.titleEn?x.titleEn:x.title)}</b><span>↗</span></button><small>${esc(x.category)} · ${x.duration||30} min · ${(x.days||[]).join(' · ')|| (en?'Unscheduled':'غير مجدول')}</small><div class="library-meta"><span class="library-status ${x.status}">${tabs.find(t=>t[0]===x.status)?.[1]||x.status}</span>${actionsFor(x)}</div></div>`).join(''):`<div class="note">${en?'Nothing here yet.':'مفيش حاجة هنا لسه.'}</div>`;
     return `<section class="section-box lifecycle-card"><div class="section-title"><div><h2>${en?'Long-run system':'النظام على المدى الطويل'}</h2><p>${en?'The plan stays yours; content can evolve without editing code.':'الخطة ملكك، والمحتوى يتغير من غير لمس الكود.'}</p></div><button class="btn primary" onclick="addContent()">＋ ${en?'Add track':'إضافة مسار'}</button></div><div class="lib-tabs">${tabsHtml}</div><div class="library-list">${list}</div></section><div class="grid grid-2 lifecycle-grid"><section class="section-box"><h3>${en?'Inbox':'صندوق الوارد'}</h3><p class="muted">${en?'Quick ideas land here first.':'أي فكرة سريعة تدخل هنا الأول.'}</p>${inbox.length?inbox.slice(0,8).map(x=>`<div class="inbox-item"><div class="grow"><b>${esc(x.text)}</b><small>${x.duration}m</small></div><button class="tiny-action" onclick="completeInbox('${x.id}')">${en?'Done':'تم'}</button><button class="tiny-action" onclick="deleteInbox('${x.id}')">×</button></div>`).join(''):`<div class="note">${en?'Inbox is clear.':'صندوق الوارد فاضي.'}</div>`}<button class="btn" onclick="openQuickCapture()">＋ ${en?'Quick capture':'إضافة سريعة'}</button></section><section class="section-box"><h3>${en?'Backup & restore':'النسخ الاحتياطي'}</h3><p class="muted">${en?'Keep a JSON backup before moving devices or making major changes.':'خُد نسخة JSON قبل نقل الجهاز أو أي تغيير كبير.'}</p><div class="modal-actions"><button class="btn primary" onclick="exportMihrab()">${en?'Export JSON':'تصدير JSON'}</button><button class="btn" onclick="openImport()">${en?'Import':'استيراد'}</button></div></section></div>`;
   }
-  const renderSystem=()=>renderSystemBase()+systemExtras();
+  const renderSystem=()=>renderSystemBase()+systemExtras()+renderInsights();
 
   function bindThemePointer(){
     if(!window.matchMedia || !matchMedia('(pointer:fine)').matches) return; // touch devices get no benefit from a cursor-follow glow — skip the continuous recalculation entirely
@@ -437,9 +597,11 @@ function renderSystemBase(){
     window.addEventListener('pointermove',e=>{tx=e.clientX/Math.max(1,innerWidth);ty=e.clientY/Math.max(1,innerHeight);if(!raf)raf=requestAnimationFrame(tick)},{passive:true});tick();
   }
 
-  migrate();librarySeeds();applyLanguage();applyTheme();ensureModals();
+  migrate();librarySeeds();applyLanguage();applyTheme();ensureModals();window.matchMedia?.('(prefers-color-scheme: light)').addEventListener?.('change',()=>{if(state.theme==='auto')applyTheme();});
+
   const initial=validView((location.hash||'').slice(1)||state.view);route(initial,{scroll:false,push:false});
   bindThemePointer();
+  if(state.ui?.justOpened){document.body.classList.add('day-arrival');delete state.ui.justOpened;save();setTimeout(()=>document.body.classList.remove('day-arrival'),1500)}
 })();
 
 
