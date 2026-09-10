@@ -14,12 +14,15 @@ const MARKETING = [["المرحلة الأولى: التأسيس، السيو، 
 const PRIORITY = ["⭐⭐⭐ لازم يتحفظ: 4Ps، STP، SWOT، AIDA، Marketing Funnel (TOFU/MOFU/BOFU)، Buyer Persona، USP، CTA، SEO (On-page / Off-page / Technical)، CAC، LTV، CTR، CPC، CPM، ROAS، Conversion Rate، UTM، SMART، KPIs.", "⭐⭐ يتفهم ويتطبق: تعريف AMA، تاريخ التسويق، Marketing 1.0/2.0/3.0/5.0، قصة التطور، أمثلة الشركات.", "⭐ يُرجع إليه عند الحاجة: الإحصائيات، الدراسات، والأمثلة الطويلة."];
 const DAYS=['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
 const JS_WEEKDAY_AR=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-const NAV=[['home','⌂','مركز اليوم','Today'],['marketing','↗','التسويق','Marketing'],['shari','✦','العلم الشرعي','Islamic Studies'],['quran','☾','القرآن','Qur’an'],['courses','▣','الكورسات','Courses'],['system','◌','النظام','System']];
+const NAV=[['home','⌂','اليوم','Today'],['execution','◈','التنفيذ','Execution'],['focus','◉','التركيز','Focus'],['progress','◒','التقدم','Progress'],['system','◌','النظام','System']];
+const LEGACY_VIEWS=['marketing','shari','quran','courses'];
+const AREA_DEFS=[['study','الدراسة','Study','🎓'],['quran','القرآن','Qur’an','۝'],['islamic','العلم الشرعي','Islamic','◇'],['career','التسويق','Career','✦'],['personal','الشخصي','Personal','⌂']];
+const PRAYER_IDS=[['pr_f','الفجر','Fajr'],['pr_d','الظهر','Dhuhr'],['pr_a','العصر','Asr'],['pr_m','المغرب','Maghrib'],['pr_i','العشاء','Isha']];
 const SHARI_MAP={'السبت':'زاد (تفريغ) + أحمد السيد + أيمن عبد الرحيم','الأحد':'زاد (تفريغ) + فقه النفس + السرجاني','الاثنين':'زاد (تفريغ) + أحمد السيد + أيمن عبد الرحيم','الثلاثاء':'زاد (تفريغ) + فقه النفس + السرجاني','الأربعاء':'زاد (تفريغ) + أحمد السيد + أيمن عبد الرحيم','الخميس':'زاد (تفريغ) + فقه النفس + السرجاني','الجمعة':'زاد (3 محاضرات) + تدبر (أحمد عبد المنعم)'};
 const AWARENESS=[1,2,3,4,5,6,7,8,9];
 const OLD_KEY='dersh-integrated-v4';
 const KEY='study-dashboard-focus-v7';
-let state={theme:'mono',lang:'ar',view:'home',dayType:'كلية',todayDate:'',today:{},plan:{},weekly:{marketingHours:0,mckinsey:false,dose:false,review:false,rating:'',cert:false},weekDayTypes:{},quranFrameOpen:false,mode:'normal',modeDate:'',schemaVersion:4,settings:{lowPower:false},inbox:[],library:[],backupAt:'',metrics:{focusMinutes:0,sessions:0},history:{events:[],series:{},milestones:[],plans:{}},dailyMomentum:{date:'',index:0}};
+let state={theme:'mono',lang:'ar',view:'home',dayType:'كلية',todayDate:'',today:{},plan:{},weekly:{marketingHours:0,mckinsey:false,dose:false,review:false,rating:'',cert:false},weekDayTypes:{},quranFrameOpen:false,mode:'normal',modeDate:'',schemaVersion:5,settings:{lowPower:false},inbox:[],library:[],backupAt:'',metrics:{focusMinutes:0,sessions:0},history:{events:[],series:{},milestones:[],plans:{}},dailyMomentum:{date:'',index:0},projects:[{id:'p_marketing',name:'معسكر التسويق الطبي الرقمي',area:'career',status:'active',progress:0}],areas:[],worship:{prayerNotes:{},sunnah:{},fasts:{},dhikr:{date:'',count:0}}};
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function effectiveDate(){const d=new Date();if(d.getHours()<5)d.setDate(d.getDate()-1);return d}
@@ -343,7 +346,7 @@ function enterMihrab(skip=false){
 }
 (function(){
   'use strict';
-  const VIEWS=['home','marketing','shari','quran','courses','system'];
+  const VIEWS=['home','execution','focus','progress','system','marketing','shari','quran','courses'];
   let libraryTab='active';
   window.setLibraryTab=t=>{libraryTab=['active','paused','done'].includes(t)?t:'active';rerender()};
   const $=(s,r=document)=>r.querySelector(s);
@@ -361,11 +364,15 @@ function enterMihrab(skip=false){
     state.metrics={focusMinutes:0,sessions:0,...(state.metrics||{})};
     state.history={events:[],series:{},milestones:[],plans:{},...(state.history||{})}; state.history.events ||= []; state.history.series ||= {}; state.history.milestones ||= []; state.history.plans ||= {};
     state.dailyMomentum={date:'',index:0,...(state.dailyMomentum||{})};
+    state.projects=Array.isArray(state.projects)?state.projects:[];
+    state.areas=Array.isArray(state.areas)?state.areas:AREA_DEFS.map(([id,title,titleEn,icon])=>({id,title,titleEn,icon}));
+    state.worship={prayerNotes:{},sunnah:{},fasts:{},dhikr:{date:'',count:0},...(state.worship||{})};
+    state.worship.prayerNotes ||= {}; state.worship.sunnah ||= {}; state.worship.fasts ||= {}; state.worship.dhikr ||= {date:'',count:0};
     try{
       const storedMomentum=JSON.parse(localStorage.getItem(MOMENTUM_KEY)||'null');
       if(storedMomentum && typeof storedMomentum.date==='string' && Number.isInteger(storedMomentum.index)) state.dailyMomentum={date:storedMomentum.date,index:storedMomentum.index};
     }catch{}
-    state.schemaVersion=4;
+    state.schemaVersion=5;
   }
 
   function migrate(){
@@ -401,8 +408,9 @@ function enterMihrab(skip=false){
     if(m==='busy') return p!=='optional';
     return true;
   }
-  function taskObjects(){
-    const items=dayTasks(todayName()).filter(([id])=>modeAllows(id)).map(([id,text])=>({id,label:text,duration:durationFor[id]||15,priority:priorityOf(id),done:tChecked(id)}));
+    function taskObjects(){
+    const lowEnergy=!!state.settings?.lowEnergy;
+    const items=dayTasks(todayName()).filter(([id])=>modeAllows(id)).filter(([id])=>!lowEnergy || (priorityOf(id)!=='optional' && (durationFor[id]||15)<=30)).map(([id,text])=>({id,label:text,duration:durationFor[id]||15,priority:priorityOf(id),done:tChecked(id)}));
     // systemSeed library entries mirror categories already in the fixed daily list (zad/awareness/etc.) —
     // only inject the user's own added tracks here so Focus/smartTime never suggest the same duty twice.
     state.library.filter(x=>x.status==='active'&&!x.systemSeed&&x.days?.includes(todayName())).forEach(x=>items.push({id:x.id,label:state.lang==='en'&&x.titleEn?x.titleEn:x.title,duration:x.duration||15,priority:x.core?'core':x.important?'important':'optional',done:!!state.today[x.id],custom:true}));
@@ -418,8 +426,62 @@ function enterMihrab(skip=false){
   function nowNextLater(){return taskObjects().filter(x=>!x.done).sort((a,b)=>a.duration-b.duration).slice(0,3)}
   function coreDone(){const core=taskObjects().filter(x=>x.priority==='core');return core.length>0&&core.every(x=>x.done)}
 
+  function areaForTask(id){
+    if(['pr_f','pr_d','pr_a','pr_m','pr_i','azkar','bro'].includes(id)) return 'personal';
+    if(['rafiq','quran'].includes(id)) return 'quran';
+    if(['aw','zad','taj'].includes(id)) return 'islamic';
+    if(['marketing','linkedin','azb'].includes(id)) return 'career';
+    if(['anki'].includes(id)) return 'study';
+    if(['easy','mouth','skin','hair'].includes(id)) return 'personal';
+    return 'study';
+  }
+  function projectForTask(id){if(['marketing','linkedin','azb'].includes(id))return 'p_marketing';return null;}
+  function worshipSummary(){
+    const today=keyDate(), w=state.worship||{};
+    const prayers=PRAYER_IDS.map(([id,ar,en])=>({id,ar,en,done:!!state.today[id]}));
+    const prayerDone=prayers.filter(x=>x.done).length;
+    const sunnahDone=['s_fajr','s_dhuhr','s_maghrib','s_isha','s_witr','s_duha'].filter(k=>!!w.sunnah[k]).length;
+    const fasted=!!w.fasts[today];
+    return {prayers,prayerDone,sunnahDone,fasted,dhikr:Number(w.dhikr?.date===today?w.dhikr.count:0)||0};
+  }
+  function renderWorshipRail(){
+    const en=state.lang==='en', ws=worshipSummary();
+    const sunnah=[['s_fajr',en?'Fajr sunnah':'سنة الفجر'],['s_dhuhr',en?'Dhuhr sunnah':'رواتب الظهر'],['s_maghrib',en?'Maghrib sunnah':'سنة المغرب'],['s_isha',en?'Isha sunnah':'سنة العشاء'],['s_witr',en?'Witr':'الوتر'],['s_duha',en?'Duha':'الضحى']];
+    return `<section class="worship-rail glass-surface"><div class="worship-head"><div><span class="micro-label">05 / ${en?'WORSHIP CORE':'العبادة'}</span><h3>${en?'Protected, not gamified.':'عبادة محفوظة من الزحام.'}</h3><p>${en?'A quiet layer for the essentials — no XP, no pressure.':'طبقة هادئة للأساسيات، بلا نقاط ولا ضغط.'}</p></div><span class="worship-score">${ws.prayerDone}/5</span></div><div class="prayer-dock">${ws.prayers.map(x=>`<label class="prayer-chip ${x.done?'done':''}"><input type="checkbox" data-today-id="${x.id}" ${x.done?'checked':''}><span>${esc(en?x.en:x.ar)}</span></label>`).join('')}</div><div class="sunnah-dock">${sunnah.map(([id,label])=>`<button class="ritual-chip ${state.worship.sunnah[id]?'done':''}" onclick="toggleSunnah('${id}')"><span>${state.worship.sunnah[id]?'✓':'○'}</span>${esc(label)}</button>`).join('')}</div><div class="worship-actions"><button class="worship-counter" onclick="addDhikr(33)"><b>${ws.dhikr}</b><span>${en?'dhikr today':'استغفار اليوم'}</span><small>+33</small></button><button class="ritual-chip ${ws.fasted?'done':''}" onclick="toggleFastToday()"><span>${ws.fasted?'✓':'○'}</span>${en?'Fasted today':'صيام اليوم'}</button></div></section>`;
+  }
+  function renderExecution(){
+    const en=state.lang==='en', items=taskObjects().sort((a,b)=>priorityRank[a.priority]-priorityRank[b.priority]||a.duration-b.duration), groups={};
+    items.forEach(x=>(groups[areaForTask(x.id)] ||= []).push(x));
+    const areaCards=AREA_DEFS.map(([id,ar,enTitle,icon])=>{const xs=groups[id]||[];const count=xs.filter(x=>x.done).length;return `<button class="area-card" onclick="document.getElementById('area-${id}')?.scrollIntoView({behavior:'smooth',block:'start'})"><span class="area-glyph">${icon}</span><div><b>${en?enTitle:ar}</b><small>${count}/${xs.length} ${en?'done':'منجز'}</small></div><i>↘</i></button>`}).join('');
+    const projects=Array.isArray(state.projects)&&state.projects.length?state.projects:[{id:'p_marketing',name:en?'Digital Medical Marketing Bootcamp':'معسكر التسويق الطبي الرقمي',area:'career',status:'active',progress:0}];
+    projects.forEach(project=>{const areaTasks=items.filter(x=>areaForTask(x.id)===project.area);project.progress=areaTasks.length?Math.round(areaTasks.filter(x=>x.done).length/areaTasks.length*100):(project.progress||0)});
+    const taskBlocks=AREA_DEFS.map(([id,ar,enTitle])=>{const xs=groups[id]||[];if(!xs.length)return '';return `<section class="execution-area" id="area-${id}"><div class="area-heading"><div><span class="micro-label">${en?enTitle.toUpperCase():ar}</span><h3>${en?`Work that belongs here`:`شغلك داخل ${ar}`}</h3></div><span>${xs.filter(x=>x.done).length}/${xs.length}</span></div><div class="task-stack">${xs.map(x=>{const label=esc(x.label);return `<article class="execution-task ${x.done?'done':''}" data-task-id="${esc(x.id)}"><div class="task-main"><input type="checkbox" data-today-id="${esc(x.id)}" ${x.done?'checked':''}><div><b>${label}</b><small>${x.duration} ${en?'min':'دقيقة'} · ${x.priority==='core'?(en?'essential':'أساسي'):x.priority==='important'?(en?'important':'مهم'):(en?'optional':'اختياري')}</small></div></div><div class="task-actions"><button onclick="startFocus('${esc(x.id)}')">${en?'Focus':'ركّز'}</button><button onclick="toggleTaskDetails('${esc(x.id)}')">${en?'Details':'التفاصيل'}</button></div></article>`}).join('')}</div></section>`}).join('');
+    return `<div class="execution-room page-room"><div class="room-hero"><div><span class="micro-label">MIHRAB / EXECUTION</span><h1>${en?'Turn intention into motion.':'حوّل النية إلى حركة.'}</h1><p>${en?'One place to know what to do, why it matters, and what comes next.':'مكان واحد تعرف منه ماذا ستفعل، ولماذا، وما الخطوة التالية.'}</p></div><button class="btn primary" onclick="openProjectCreator()">＋ ${en?'New project':'مشروع جديد'}</button></div><div class="execution-console"><div><span class="micro-label">NOW</span><h2>${items[0]?esc(items[0].label):(en?'The field is clear.':'المجال هادئ.')}</h2><p>${items[0]?`${items[0].duration} ${en?'min':'دقيقة'} · ${en?'ready to focus':'جاهزة للتركيز'}`:''}</p></div><div class="console-buttons">${items[0]?`<button class="btn primary" onclick="startFocus('${esc(items[0].id)}')">${en?'Enter Focus':'ادخل التركيز'} ↗</button>`:''}<button class="btn" onclick="smartTime(15)">${en?'15 min':'15 دقيقة'}</button><button class="btn" onclick="toggleLowEnergy()">${en?'No energy':'مفيش طاقة'}</button></div></div><section class="area-field"><div class="section-title"><div><span class="micro-label">01 / AREAS</span><h2>${en?'Your life, organized.':'مجالات حياتك، مرتبة.'}</h2></div></div><div class="area-grid">${areaCards}</div></section><section class="project-field"><div class="section-title"><div><span class="micro-label">02 / PROJECTS</span><h2>${en?'Projects turn areas into outcomes.':'المشاريع تحوّل المجالات إلى نتائج.'}</h2></div></div><div class="project-list">${projects.map(project=>`<article class="project-card"><div><span class="project-icon">✦</span><div><b>${esc(project.name)}</b><small>${esc((AREA_DEFS.find(a=>a[0]===project.area)?.[en?2:1])||'')}</small></div></div><div class="project-progress"><div><span>${project.progress||0}%</span><small>${en?'progress':'تقدم'}</small></div><div class="progress-track"><i style="width:${project.progress||0}%"></i></div></div><button class="btn" onclick="navigate('${project.id==='p_marketing'?'marketing':'execution'}')">${en?'Open':'افتح'} ↗</button></article>`).join('')}</div></section>${renderWorshipRail()}<section class="task-field"><div class="section-title"><div><span class="micro-label">03 / TASKS</span><h2>${en?'What is actually waiting.':'إيه اللي مستنيك فعلًا.'}</h2></div><span class="badge">${items.length} ${en?'today':'اليوم'}</span></div>${taskBlocks}</section></div>`;
+  }
+  function renderFocusRoom(){
+    const en=state.lang==='en', list=taskObjects().filter(x=>!x.done).slice(0,8);return `<div class="focus-room page-room"><div class="focus-intro"><span class="micro-label">MIHRAB / FOCUS</span><h1>${en?'Enter the quiet.':'ادخل إلى الهدوء.'}</h1><p>${en?'Choose one meaningful task. The room fades; the work remains.':'اختار مهمة واحدة تستحق انتباهك. العالم ينسحب، والشغل يفضل.'}</p></div><div class="focus-orbit"><div class="focus-ring ring1"></div><div class="focus-ring ring2"></div><div class="focus-ring ring3"></div><div class="focus-core"><span>◉</span><b>${en?'FOCUS':'تركيز'}</b><small>${en?'One thing at a time.':'شيء واحد في كل مرة.'}</small></div></div><div class="focus-choices">${list.map(x=>`<button class="focus-choice" onclick="startFocus('${esc(x.id)}')"><span>${x.priority==='core'?'01':x.priority==='important'?'02':'03'}</span><div><b>${esc(x.label)}</b><small>${x.duration} ${en?'minutes':'دقيقة'}</small></div><i>↗</i></button>`).join('')||`<div class="note">${en?'The essential field is complete.':'الأساسيات اكتملت.'}</div>`}</div></div>`;
+  }
+  function renderProgress(){
+    const en=state.lang==='en', p=state.progressPeriod||'week';
+    const choices=[['day',en?'Day':'يوم'],['week',en?'Week':'أسبوع'],['month',en?'Month':'شهر'],['year',en?'Year':'سنة']];
+    const metric=p==='day'?(()=>{const xs=dayTasks(todayName()), done=xs.filter(([id])=>state.today[id]).length;return {consistency:xs.length?Math.round(done/xs.length*100):null,activeDays:done?1:0,planned:xs.length,completedPlanned:done,completed:done,sessions:0,currentStreak:currentStreak()};})():consistencyMetrics(p==='year'?'year':p);
+    const ws=worshipSummary(); const tabs=choices.map(([id,label])=>`<button class="progress-tab ${p===id?'active':''}" onclick="setProgressPeriod('${id}')">${label}</button>`).join('');
+    return `<div class="progress-room page-room"><div class="room-hero"><div><span class="micro-label">MIHRAB / PROGRESS</span><h1>${en?'See the shape of your effort.':'شوف شكل مجهودك مع الوقت.'}</h1><p>${en?'One observatory. Change the window, not the place.':'مراقبة واحدة. غيّر الفترة، مش المكان.'}</p></div></div><div class="progress-tabs">${tabs}</div><section class="progress-observatory"><div class="progress-main"><div class="progress-number"><span>${metric.consistency==null?'—':metric.consistency+'%'}</span><small>${en?'consistency':'الثبات'}</small></div><div class="progress-orbit"><div class="progress-orbit-inner"><b>${metric.activeDays}</b><small>${en?'active days':'أيام نشطة'}</small></div></div></div><div class="progress-metrics"><div><small>${en?'Planned':'المخطط'}</small><b>${metric.planned}</b></div><div><small>${en?'Completed':'المكتمل'}</small><b>${metric.completedPlanned}</b></div><div><small>${en?'Sessions':'الجلسات'}</small><b>${metric.sessions}</b></div><div><small>${en?'Streak':'التتابع'}</small><b>${metric.currentStreak}</b></div></div></section><section class="progress-mini-grid"><article><span>${en?'Today':'اليوم'}</span><b>${dayTasks(todayName()).filter(([id])=>state.today[id]).length}/${dayTasks(todayName()).length}</b><small>${en?'task field':'ميدان المهام'}</small></article><article><span>${en?'Worship':'العبادة'}</span><b>${ws.prayerDone}/5</b><small>${ws.sunnahDone} ${en?'sunnah':'سنن'}</small></article><article><span>${en?'Meaningful work':'عمل ذو معنى'}</span><b>${metric.completed}</b><small>${en?'recorded events':'أحداث مسجلة'}</small></article></section><section class="review-strip"><div><span class="micro-label">WEEKLY REVIEW</span><h3>${state.weekly.rating?(en?'Recorded.':'مسجلة.'): (en?'A quiet question for the week.':'سؤال هادئ للأسبوع.')}</h3><p>${en?'What was easy to sustain, what kept slipping, and what will you reduce or lock in next week?':'إيه اللي التزمت به بسهولة؟ وإيه اللي استمر يتأجل؟ وإيه اللي هتخففه أو تثبته الأسبوع الجاي؟'}</p></div><button class="btn" onclick="navigate('system')">${en?'Review':'المراجعة'} ↗</button></section></div>`;
+  }
+  function setProgressPeriod(v){state.progressPeriod=['day','week','month','year'].includes(v)?v:'week';save();rerender()}
+  window.setProgressPeriod=setProgressPeriod;
+  function toggleSunnah(id){state.worship.sunnah[id]=!state.worship.sunnah[id];recordEvent(state.worship.sunnah[id]?'worship.sunnah.complete':'worship.sunnah.uncomplete',{ritual:id});save();rerender()}
+  function addDhikr(n=1){const d=keyDate();if(state.worship.dhikr.date!==d)state.worship.dhikr={date:d,count:0};state.worship.dhikr.count+=n;recordEvent('worship.dhikr',{count:n});save();rerender()}
+  function toggleFastToday(){const d=keyDate();state.worship.fasts[d]=!state.worship.fasts[d];recordEvent(state.worship.fasts[d]?'worship.fast.complete':'worship.fast.uncomplete',{day:d});save();rerender()}
+  function toggleTaskDetails(id){const row=document.querySelector(`[data-task-id="${CSS.escape(id)}"]`);row?.classList.toggle('expanded')}
+  window.toggleSunnah=toggleSunnah;window.addDhikr=addDhikr;window.toggleFastToday=toggleFastToday;window.toggleTaskDetails=toggleTaskDetails;
+  function openProjectCreator(){const en=state.lang==='en';openModal(`<div class="mihrab-modal-head"><b>${en?'New project':'مشروع جديد'}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><label class="field-lite"><span>${en?'Project name':'اسم المشروع'}</span><input id="projectName"></label><label class="field-lite"><span>${en?'Area':'المجال'}</span><select id="projectArea">${AREA_DEFS.map(([id,ar,enTitle])=>`<option value="${id}">${en?enTitle:ar}</option>`).join('')}</select></label><div class="modal-actions"><button class="btn" onclick="closeMihrabModal()">${en?'Cancel':'إلغاء'}</button><button class="btn primary" onclick="saveProject()">${en?'Create':'إنشاء'}</button></div></div>`)}
+  function saveProject(){const name=$('#projectName')?.value.trim();if(!name)return;state.projects.push({id:'p_'+Date.now().toString(36),name,area:$('#projectArea').value,status:'active',progress:0,createdAt:new Date().toISOString()});save();closeModal();rerender()}
+  window.openProjectCreator=openProjectCreator;window.saveProject=saveProject;
+  function toggleLowEnergy(){state.settings.lowEnergy=!state.settings.lowEnergy;save();applyTheme();rerender()}
+  window.toggleLowEnergy=toggleLowEnergy;
   function render(id){
-    const renderer={home:renderHome,marketing:renderMarketing,shari:renderShari,quran:renderQuran,courses:renderCourses,system:renderSystem}[id];
+    const renderer={home:renderHome,execution:renderExecution,focus:renderFocusRoom,progress:renderProgress,marketing:renderMarketing,shari:renderShari,quran:renderQuran,courses:renderCourses,system:renderSystem}[id];
     const host=$('#view-'+id); if(!host||typeof renderer!=='function') return;
     host.innerHTML=renderer();
   }
@@ -464,7 +526,7 @@ function enterMihrab(skip=false){
     if(taskAction==='focus'){startFocus();return;}
     if(e.target.id==='mihrabOverlay') closeModal();
     const command=e.target.closest('[data-command]');
-    if(command){const id=command.dataset.command;closeModal();if(VIEWS.includes(id))return navigate(id);if(id==='focus')return startFocus();if(id==='capture')return openQuickCapture();if(id==='smart15')return smartTime(15);if(id==='smart30')return smartTime(30);if(id==='export')return exportMihrab();}
+    if(command){const id=command.dataset.command;closeModal();if(VIEWS.includes(id))return id==='focus'?navigate('focus'):navigate(id);if(id==='focus')return navigate('focus');if(id==='capture')return openQuickCapture();if(id.startsWith('smart'))return smartTime(Number(id.slice(5)));if(id==='export')return exportMihrab();}
   });
   document.addEventListener('change',e=>{
     const el=e.target;
@@ -504,7 +566,7 @@ function enterMihrab(skip=false){
   window.undoToday=id=>{if(!state.today[id])return;state.today[id]=false;recordEvent('task.uncomplete',{taskId:id,day:todayName(),reason:'undo'});clearTimeout(undoTimer);document.getElementById('mihrabUndo')?.classList.remove('open');rerender()};
   function toggleToday(id){
     const was=!!state.today[id]; state.today[id]=!was; if(state.today[id]) recordEvent('task.complete',{taskId:id,day:todayName()}); else recordEvent('task.uncomplete',{taskId:id,day:todayName()});
-    const row=document.querySelector(`[data-task-id="${CSS.escape(id)}"]`); if(row){row.classList.toggle('done',state.today[id]);if(state.today[id]){row.classList.remove('just-checked');void row.offsetWidth;row.classList.add('just-checked')}}
+    const rows=document.querySelectorAll(`[data-task-id="${CSS.escape(id)}"]`); rows.forEach(row=>{row.classList.toggle('done',state.today[id]);if(state.today[id]){row.classList.remove('just-checked');void row.offsetWidth;row.classList.add('just-checked');setTimeout(()=>row.classList.remove('just-checked'),2100)}});
     updateRing();
     if(!was) showUndo(id);
   }
@@ -582,7 +644,7 @@ function enterMihrab(skip=false){
   window.deleteInbox=id=>{state.inbox=state.inbox.filter(i=>i.id!==id);save();rerender()};
 
   window.openCommandPalette=()=>{const en=state.lang==='en';openModal(`<div class="mihrab-modal-head"><input id="commandInput" placeholder="${en?'Search or run a command…':'ابحث أو نفّذ أمرًا…'}" oninput="filterCommands(this.value)"><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="command-list" id="commandList"></div>`);filterCommands('');requestAnimationFrame(()=>$('#commandInput')?.focus())};
-  window.filterCommands=q=>{const list=$('#commandList');if(!list)return;const en=state.lang==='en';const items=[...NAV.map(x=>[x[0],en?x[3]:x[2],()=>navigate(x[0])]),['focus',en?'Start Focus':'ابدأ التركيز',startFocus],['capture',en?'Quick Capture':'إضافة سريعة',openQuickCapture],['smart15','15m',()=>smartTime(15)],['smart30','30m',()=>smartTime(30)],['export',en?'Export backup':'تصدير Backup',exportMihrab]].filter(x=>(x[0]+' '+x[1]).toLowerCase().includes((q||'').toLowerCase()));list.innerHTML=items.map(([id,label])=>`<button class="command-item" data-command="${id}"><span>${esc(label)}</span><small>↵</small></button>`).join('')||`<div class="note">${en?'No command found.':'مش لاقي الأمر ده.'}</div>`};
+  window.filterCommands=q=>{const list=$('#commandList');if(!list)return;const en=state.lang==='en';const items=[...NAV.map(x=>[x[0],en?x[3]:x[2],()=>navigate(x[0])]),['focus',en?'Start Focus':'ابدأ التركيز',startFocus],['capture',en?'Quick Capture':'إضافة سريعة',openQuickCapture],['smart5','5m',()=>smartTime(5)],['smart15','15m',()=>smartTime(15)],['smart30','30m',()=>smartTime(30)],['smart45','45m',()=>smartTime(45)],['smart60','60m',()=>smartTime(60)],['smart90','90m',()=>smartTime(90)],['export',en?'Export backup':'تصدير Backup',exportMihrab]].filter(x=>(x[0]+' '+x[1]).toLowerCase().includes((q||'').toLowerCase()));list.innerHTML=items.map(([id,label])=>`<button class="command-item" data-command="${id}"><span>${esc(label)}</span><small>↵</small></button>`).join('')||`<div class="note">${en?'No command found.':'مش لاقي الأمر ده.'}</div>`};
 
   function exportMihrab(){const blob=new Blob([JSON.stringify({app:'Mihrab',schemaVersion:state.schemaVersion,exportedAt:new Date().toISOString(),state},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`mihrab-backup-${keyDate()}.json`;a.click();URL.revokeObjectURL(a.href);state.backupAt=new Date().toISOString();save()}
   window.exportMihrab=exportMihrab;
