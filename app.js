@@ -322,9 +322,33 @@ function renderSystemBase(){
 
   function toggleToday(id){
     const was=!!state.today[id]; state.today[id]=!was; save();
-    const row=document.querySelector(`[data-task-id="${CSS.escape(id)}"]`); if(row){row.classList.toggle('done',state.today[id]);if(state.today[id]){row.classList.remove('just-checked');void row.offsetWidth;row.classList.add('just-checked')}}
+    const row=document.querySelector(`[data-task-id="${CSS.escape(id)}"]`);
+    if(row){
+      row.classList.toggle('done',state.today[id]);
+      if(state.today[id]){
+        row.classList.remove('just-checked'); void row.offsetWidth; row.classList.add('just-checked');
+        const label=row.querySelector('.task-text')?.textContent||row.querySelector('span')?.textContent||'';
+        showUndo(id,label);
+      }
+    }
     updateRing();
   }
+  let undoTimer=null;
+  function showUndo(id,label){
+    let host=document.getElementById('undoToast');
+    if(!host){host=document.createElement('div');host.id='undoToast';host.className='undo-toast';host.setAttribute('role','status');document.body.appendChild(host);}
+    const en=state.lang==='en';
+    host.innerHTML=`<span>${esc(label)}</span><button type="button" onclick="undoLastCheck('${esc(id)}')">${en?'Undo':'تراجع'}</button>`;
+    host.classList.remove('show'); void host.offsetWidth; host.classList.add('show');
+    clearTimeout(undoTimer);
+    undoTimer=setTimeout(()=>host.classList.remove('show'),4200);
+  }
+  function undoLastCheck(id){
+    clearTimeout(undoTimer);
+    const host=document.getElementById('undoToast'); if(host) host.classList.remove('show');
+    if(state.today[id]) toggleToday(id);
+  }
+  window.undoLastCheck=undoLastCheck;
   function togglePlan(id){state.plan[id]=!state.plan[id];save();const row=document.querySelector(`[data-plan-row="${CSS.escape(id)}"]`);row?.classList.toggle('done',!!state.plan[id]);const badge=row?.closest('.week-card')?.querySelector('summary .badge');if(badge){const inputs=[...row.closest('.week-card').querySelectorAll('[data-plan-id]')];const ids=inputs.map(i=>i.dataset.planId);const p=pct(ids,state.plan);badge.textContent=`${p.p}% · ${p.n}/${p.total}`} }
   let ringAnimHandle=null;
   function easeOutCubic(t){return 1-Math.pow(1-t,3)}

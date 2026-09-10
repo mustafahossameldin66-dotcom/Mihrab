@@ -8,7 +8,7 @@
 
 # Current State
 
-Baseline: `Mihrab_V27_Polish.zip` (the font-wiring + ring-animation session), now being reworked toward the full spatial spec.
+Baseline: `Mihrab_V27_Polish.zip` (the font-wiring + ring-animation session) → reworked through Phases 0–2 in a prior session (shipped as `Mihrab_V28_SpatialPhase1.zip`) → this session resumed from that exact uploaded zip (contents spot-checked against this file's Phase 1/2 claims before continuing — see Verification) and completed Phase 3.
 
 ## Audit findings (Phase 0 — done)
 Read index.html, app.js (456 lines), styles.css (151 lines → now larger), sw.js, manifest, README, PRODUCT_PRINCIPLES in full before any edit, per spec section 73.
@@ -54,7 +54,15 @@ Read index.html, app.js (456 lines), styles.css (151 lines → now larger), sw.j
   - Done: **hero highlight sweep** (spec 20) — a single one-shot light pass (1.3s, 8% white opacity) crosses `.hero-main` shortly after it settles into view. Fixed iteration count (`1`), not looping — respects spec 20's explicit "do not keep the title constantly animated."
   - **Phase 2 is now complete.** Remaining lower-priority items (topbar depth/haze beyond Phase 1's edge softening) folded into Phase 7 polish pass instead of blocking here.
 
-- [ ] **Phase 3 — Task completion "Dark Matter" + stats as instruments.** Replace the current single-stage glow with the staged sequence from spec 24 (ripple → pulse → z-shift → darken → dark matter), add Undo. Rework `.stat-card` toward "precision instrument" treatment (spec 22).
+- [x] **Phase 3 — Task completion "Dark Matter" + stats as instruments.**
+  - Done: re-audited `toggleToday`/`animateRingTo`/CSS before touching anything (per the standing audit-first rule) — confirmed against the actual uploaded zip, not assumed from memory, since a context reset happened between Phase 2 and this session.
+  - Done: `.just-checked`/`check-pop`/`glow-bloom` rewritten as **one continuous 1.05s timeline** (not parallel/stacked effects): ripple (0–22%) → luminous pulse (22–38%) → backward `translateZ` shift (38–62%, "recede") → fades into the resting `.done` state's darker inset shadow (62–100%). Matches spec 24's stage list without adding new classes.
+  - Done: **Undo** (spec 24's explicit requirement, previously missing). `toggleToday` now calls `showUndo(id,label)` only on the false→true transition (never on unchecking). A single shared `#undoToast` pill (created once, reused) shows the task's own label + an Undo button, auto-dismisses after 4.2s, sits above the mobile nav bar on small screens. Clicking Undo calls `undoLastCheck(id)`, which re-runs `toggleToday` (so the same code path handles both directions — no parallel "undo" state machine).
+  - Done: `.stat-card` reworked toward spec 22's "precision instrument" language — layered gradient using the existing `--surface-3` token (no new color), inset top highlight + bottom shadow for a bezel feel, a thin luminous baseline (reusing the same hairline-gradient language as the task-row hover line elsewhere, so it reads as the same visual system, not a new one), `tabular-nums` on the numbers so they don't jitter in width as they animate.
+  - Done: bumped cache again (`mihrab-v28-spatial` → `mihrab-v28-phase3`, index.html `?v=28.0`→`28.1`) — this is now the established per-build habit from Phase 1's lesson, not a one-off.
+  - **Found, not fixed (logged for Phase 7, not fixed now to keep this phase's diff scoped and easy to verify in isolation):**
+    - `app.js` line ~300 has a delegated listener for `input[type="checkbox"][data-today-id]` — grepped the whole file, **nothing renders that attribute** (only `data-task-id` is ever set). This listener is dead code.
+    - `styles.css` comma-groups almost every task-row rule across four selectors: `.task-item, .mtask, .lecture, .task`. Grepped for where `.mtask`/`.lecture`/`.task` markup is actually generated — **found none**; every real checklist row in the current codebase renders as `.task-item`. These three extra selector names appear to be dead CSS from an earlier markup version. Safe to remove (they match nothing), but left alone this phase to avoid mixing unrelated cleanup into a phase that's supposed to be about completion/stats only.
 - [ ] **Phase 4 — Consistency/Analytics engine.** The big net-new feature: weekly/monthly/yearly/all-time tracking, streaks, plan-vs-reality, weekly review, restrained visualizations. Needs its own data model design before any UI work — do this as a sub-session on its own.
 - [ ] **Phase 5 — Achievement history.** Dedicated "Recently Completed" + milestone timeline, built on top of the existing `state.library` status model (additive only, no migration).
 - [ ] **Phase 6 — Focus Mode "light tunnel" + Now/Next/Later + 15-min/No-Energy modes.** Audit what already exists here first (unconfirmed in Phase 0) before writing new code.
@@ -65,24 +73,30 @@ Read index.html, app.js (456 lines), styles.css (151 lines → now larger), sw.j
 ---
 
 # Next Step
-Phase 2 is complete. Phase 3 is next (task completion "Dark Matter" staged sequence + Undo + stat-card instrument treatment) — this is the first phase that touches the interaction the person uses most constantly (checking tasks), so it deserves extra care: implement it, then explicitly pause and ask for real confirmation before Phase 4 (the large analytics engine), rather than assuming silence/"كمل" means it reads correctly on-screen. Three prior visual check-in requests were answered with "كمل" (continue) rather than a yes/no on what was actually seen — proceeding is reasonable since the person has repeated the instruction clearly, but Phase 3 changes core daily interaction, so a check-in there is worth one more attempt.
+Phase 3 is complete (implemented this session, on a freshly re-audited copy of the uploaded checkpoint — see Verification below). As planned at the end of the previous session: **pause here and actually ask the person to open the app and confirm what they see**, specifically for the completion animation + Undo pill + stat cards, before starting Phase 4 (the large analytics engine — the single biggest remaining piece of net-new work in the whole spec, not worth building on an unconfirmed foundation). If the answer is again just "كمل" with no visual confirmation, proceed to Phase 4 anyway rather than stall indefinitely — but the offer to actually look should be made explicitly one more time first.
+If/when Phase 4 does start: it needs its own data-model design pass (event-based history per spec 53) before any UI, and should be treated as its own sub-session per the Important Decisions below.
 
 # Known Issues
 - Previous session's visual changes may not have been perceptible due to a stale cache (now fixed by bumping cache/version names) — unconfirmed whether that was the actual cause, flagged as the likely explanation, not verified.
-
+- Dead code found in Phase 3's audit, not yet removed (see Phase 3 notes above): the `data-today-id` listener in app.js, and the `.mtask`/`.lecture`/`.task` CSS selector groups. Deferred to Phase 7.
+- Undo/Dark-Matter animation only fires on rows using `.task-item[data-task-id]` markup — that's every real checklist row today (confirmed by grep), but if a future phase adds a checklist through different markup, it needs the same data attribute to get this treatment.
 
 # Verification (be honest — see spec section 78)
-- ✅ Static: `node --check app.js` passes.
-- ✅ Static: CSS brace count balanced (330/330) after edits.
-- ❌ NOT verified: no real browser rendering, no mobile device test, no visual review of Phase 1 or Phase 2 effects on-screen. Treat all visual results as unverified until confirmed by the person directly.
+- ✅ Static: `node --check app.js` passes (re-run after Phase 3 edits, on the actual uploaded checkpoint, not assumed from before the reset).
+- ✅ Static: CSS brace count balanced (365/365) after Phase 3 edits.
+- ✅ Static: grepped the uploaded zip to confirm Phase 1/2 claims in this file actually matched the shipped code (cache name, `view-settle`, modal variants, hero sweep) before building on top of them — they did.
+- ❌ NOT verified: no real browser rendering, no mobile device test, no visual review of Phase 1, 2, or 3 effects on-screen. Treat all visual results as unverified until confirmed by the person directly. This is now three phases deep without a single real look — worth flagging plainly to the person, not just logging here.
 
 # Important Decisions
 - Treating this as a multi-session project with an explicit phase plan, per the person's own stated priority order (Qur'an memorization > study-period system > this).
 - Extending the existing single pointer engine rather than adding new listeners, per spec section 74 (refactor, don't stack).
 - Analytics (Phase 4) deliberately deferred to its own sub-session — it's the largest, most architecturally significant piece (new data model, event-based history per spec 53) and should not be rushed alongside visual polish.
 
-# Files Changed (this session)
-- `styles.css`: material tier split (section ~91-93), new `.app::before` nebula layer + keyframes, low-power guard extended.
+# Files Changed (this session — Phase 3)
+- `styles.css`: `.just-checked`/`check-pop`/`glow-bloom` rewritten (staged Dark Matter sequence); new `.undo-toast` rules; `.stat-card` reworked.
+- `app.js`: `toggleToday` now triggers `showUndo`; added `showUndo`/`undoLastCheck` (exposed on `window`).
+- `sw.js`: cache bumped to `mihrab-v28-phase3`.
+- `index.html`: `?v=` bumped to 28.1 on both asset tags.
 
 # Data / Migration Notes
-- No storage schema changes this session. `state.library`, task state, theme, language — all untouched.
+- No storage schema changes this or the previous session. `state.library`, task state, theme, language — all untouched. Undo re-uses the exact same `toggleToday`/`state.today` path as a normal checkbox click, so there's no parallel state to migrate or drift.
