@@ -1,84 +1,88 @@
 # Current State
-Mihrab V32 Refined Sanctuary is implemented from the V30 baseline. The Home experience is a spatial sanctuary rather than a conventional dashboard: a full-screen entry threshold, cinematic portal scene, living atmosphere, Now/Next/Later execution layer, six-room constellation, and deeper daily execution chamber. Islamic Studies is now generic/data-driven and completion history is event-based.
+Mihrab V33 is a refined Sanctuary build with the V32 spatial visual system plus the planned spiritual-rhythm features recovered from the developer-planning conversation: Islamic/civil date separation, prayer reminders, Sunnah fasting tracking, Istighfar tally, private Kaffara/Nadhr tracking, Proof Vault, and Recent Story.
 
 # Architecture
 - router: one hash router in `app.js`
-- render model: one route renderer per main view; Home rebuilt around a spatial sanctuary composition
-- state model: existing localStorage state and legacy migration, with a dedicated persisted Daily Momentum record
-- CSS architecture: one `:root`, one material/atmosphere language, one responsive system with Sanctuary-specific responsive composition
-- responsive architecture: mobile-first behavior at <=840px plus 390px/320px safeguards
-- pointer/ambient system: one centralized pointer RAF engine with CSS variables; no per-card pointer listeners
+- render model: one route renderer per main view; Home is a spatial sanctuary composition; Shari adds a generic spiritual rhythm layer
+- state model: existing localStorage state and legacy migration plus additive `state.faith` data; no existing storage key renamed or deleted
+- CSS architecture: one `:root`; one material/atmosphere language; one responsive system
+- responsive architecture: mobile-first, with explicit safeguards at 320 / 360 / 375 / 390 / 430px
+- pointer/ambient system: one centralized pointer RAF engine; no per-card pointer listeners
 - modal system: one shared modal/overlay system
 - theme system: existing theme tokens plus System/Auto behavior
-- content library system: generic library records shared by System and Islamic Studies
-- series progress/completion system: generic session completion, automatic 100% completion, history snapshots, 25/50/75/100 milestones
-- consistency/history system: recorded events + daily plan snapshots; metrics do not infer missing history
-- service-worker/cache system: `mihrab-v32-sanctuary`
+- content library system: generic series/library records and future-safe renderer
+- series progress/completion system: generic session completion, automatic 100% completion, history snapshots, 25/50/75/100% milestones
+- consistency/history system: recorded events + daily plan snapshots; no inferred/fabricated history
+- spiritual date system: `spiritualDate()` uses configurable Maghrib as the civil/Islamic boundary; `islamicFromGregorian()` provides an arithmetic/tabular planning conversion
+- prayer rhythm: five editable prayer reminder times + daily prayer log mirrored to `pr_f`…`pr_i` tasks
+- fasting rhythm: local log keyed by spiritual date with recognized planning windows; no leaderboard/competitive state
+- quiet tally: Istighfar daily + all-time counters, local-first
+- private obligations: minimal type/quantity/completion only; no sensitive narrative stored
+- proof/history surfaces: Recent Story derived from real completion events; Proof Vault stores lightweight user-entered evidence metadata only
+- service-worker/cache system: `mihrab-v33-sanctuary`
 
 # Completed
-- Added full-screen Mihrab-native entry threshold and entry/skip transitions.
-- Entry uses the exact original Mihrab SVG geometry and exact Arabic/English brand treatment.
-- Rebuilt Home spatial composition around a central portal, Now/Next/Later, six rooms, and protected execution.
-- Added layered aurora, architectural mesh, micro-stars, rings, living surface motion, and low-power/reduced-motion handling.
-- Added deliberate mobile composition and verified no horizontal overflow at 390px.
-- Added persisted Daily Momentum using `mihrab.dailyMomentum.v1`.
-- Fixed task interaction so checkbox changes are handled by one delegated change listener and each completion generates one event.
-- Added completion Undo with a short toast window.
-- Added generic Islamic Studies library renderer with active/paused/completed states and importance badges.
-- Added generic session completion, automatic 100% completion, history snapshots, and 25/50/75/100 milestone records.
-- Preserved undated legacy completed records without synthesizing dates.
-- Added Recently Completed and Achievement Timeline surfaces in System.
-- Expanded local-first consistency metrics to week/month/quarter/year/all-time with tracked-vs-unknown behavior.
-- Updated service worker cache to `mihrab-v32-sanctuary`.
-- Updated README and progress handoff documentation.
+- Integrated the additional developer-planning requirements into the V32 sanctuary rather than creating a parallel application.
+- Added a dedicated spiritual-day clock separate from the existing 5am task-day logic so civil and Islamic date transitions remain distinct.
+- Added arithmetic Hijri conversion with an explicit UI warning that local moon-sighting/adopted calendars may differ.
+- Added editable Fajr, Dhuhr, Asr, Maghrib, and Isha reminder times.
+- Added quiet next-prayer signal on Home.
+- Added prayer completion rail that mirrors the existing daily prayer tasks and produces the normal task completion history event exactly once.
+- Added Sunnah fasting opportunity tracker for Monday/Thursday, white days, Shawwal, first ten of Dhu al-Hijjah, ʿArafah, and ʿAshura planning states.
+- Added Istighfar tally with daily reset by spiritual date and all-time count, explicitly non-competitive.
+- Added minimal private Kaffara/Nadhr tracker and privacy/fiqh-source guidance.
+- Added local-first Proof Vault and Recent Story surfaces.
+- Added System controls for prayer times and the Maghrib boundary.
+- Incremented schema version to 5; all new fields are additive and backward-compatible.
+- Updated PWA cache version to `mihrab-v33-sanctuary`.
+- Fixed final horizontal-overflow issue by using `overflow-x: clip` containment at the document level; this was verified at 320 / 360 / 375 / 390 / 430px.
 
 # In Progress
-None for the V32 visual polish pass.
+None. V33 is ready for user acceptance testing.
 
 # Next Step
-User visual acceptance review on the deployed target.
-
-# V32 Polish Notes
-- Light theme surfaces now use semantic material tokens rather than fixed dark fills for the primary spatial surfaces.
-- Room constellation is a structured 3×2 spatial grid on desktop and a deliberate single-column sequence on mobile; depth comes from Z translation, not overlap.
-- Topbar primary navigation is larger and utility controls are grouped more quietly.
-- Main Home section spacing is tightened slightly so negative space reads as composition rather than unused area.
-- Light-theme utility controls now use an explicit darkened utility contrast so the topbar remains readable on warm paper backgrounds.
+User review of the deployed build, especially the spiritual-rhythm room on a real phone and the production PWA update lifecycle.
 
 # Known Issues
-- Production service-worker behavior depends on the user's deployed origin and cannot be reproduced exactly in this environment.
+- Production service-worker behavior depends on the user's deployed GitHub Pages origin.
 - Physical touch testing on a real phone/tablet is not available here.
-- Chromium screenshot/compositing in the synthetic CDP document harness can show transition frames before a CSS transition has fully settled; functional DOM/runtime verification is not affected.
+- The arithmetic Hijri calendar can differ from local moon-sighting/adopted calendars; the UI labels it as a planning aid.
+- Prayer times are manually editable in-app reminders, not authoritative astronomical/prayer calculations.
 
 # Verification
 - `node --check app.js`: passed.
-- CSS brace-balance: passed (628 opening / 628 closing braces at the final verification point).
-- JS brace-balance: passed (761 opening / 761 closing braces at the final verification point).
+- CSS brace balance: passed.
+- JS brace balance: passed.
 - One `:root` declaration confirmed.
 - One `pointermove` listener confirmed.
 - One delegated document `click` listener and one delegated document `change` listener confirmed.
 - No global `touch-action:none`.
 - No React/Vue/Svelte/Three.js/WebGL/canvas-loop implementation.
-- Original `assets/mihrab-logo.svg` and `assets/icon.svg` SHA-256 remain `92be1fa93cf8741af027d621d49877aa1b3e2c12f455665b3d2558f76114220e`.
-- Controlled Chromium/CDP browser harness executed the actual JS/CSS and verified boot, entry threshold, six routes, Home composition, generic future Islamic series rendering, session completion, automatic 100% completion, milestones, undated legacy completion, daily momentum persistence/stability, task completion event count, Undo, shared modal, theme/language switching, and runtime errors.
-- Mobile viewport verification at 390x844 confirmed `scrollWidth === clientWidth` and no horizontal overflow.
-- Not verified: physical touch on a real device, production GitHub Pages browser behavior, and production service-worker lifecycle.
+- Controlled Chromium harness executed actual project HTML/CSS/JS and verified: entry threshold; all six routes; no internal route errors; Islamic date; five prayer controls; prayer-to-task sync; Istighfar increment; obligation add/save; Recent Story; Proof Vault; prayer-time settings; Home paper theme.
+- Responsive containment verified at 320 / 360 / 375 / 390 / 430px with `scrollWidth === clientWidth`.
+- Not verified: physical touch, user's production GitHub Pages origin, production service-worker lifecycle.
 
 # Important Decisions
-- Entry scene is shown on each new page load. It is a visual threshold only and does not alter application state.
-- Daily Momentum is persisted separately so its once-per-day behavior is robust even across state reloads.
-- Completed legacy series keep `completionDate: null` when the original record has no historical date.
-- Islamic series are rendered through one generic library model; new Islamic records require no custom renderer.
-- Session progress is append-event driven for long-term history, while current library records remain editable.
-- No backend, framework, WebGL, canvas loop, or particle engine was introduced.
-- Spatial richness is produced with CSS/SVG layers, gradients, masks, transforms, controlled blur, and one pointer engine.
+- The existing task-day logic at 5am was not repurposed for the Islamic-day model. The two concepts remain separate and explicit.
+- Maghrib is the configurable boundary for the spiritual-day calculation.
+- The Hijri conversion is arithmetic/tabular and therefore treated as planning data, not an authority over local moon-sighting.
+- Prayer times are user-editable reminders; the app does not present them as a religious authority.
+- Kaffara/Nadhr storage is deliberately minimal to protect privacy and avoid encoding a fiqh decision into app logic.
+- Fasting tracking is a calm log of opportunities, not an achievement/leaderboard system.
+- No sensitive confessions, names, private client data, passwords, or similar content are encouraged in Proof Vault or private obligations.
+- No backend was introduced.
 
 # Files Changed
 - `index.html`
 - `styles.css`
+- `app.js`
 - `sw.js`
 - `README.md`
 - `progress.md`
 
 # Data / Migration Notes
-No existing storage key was renamed or deleted. The legacy key `dersh-integrated-v4` remains a migration source. The current key remains `study-dashboard-focus-v7`. Daily Momentum uses the additional local key `mihrab.dailyMomentum.v1`. No stored user data is reset by the Sanctuary refactor. New history fields are additive and backward compatible.
+- Existing `study-dashboard-focus-v7` and legacy migration source remain intact.
+- `state.faith` is additive with defaults for: `sunsetMinutes`, `calendarSource`, `prayerTimes`, `prayerLog`, `fastingLog`, `istighfar`, `obligations`, and `proofVault`.
+- Schema version is now 5.
+- No stored user data is reset.
+- Legacy completed series still retain unknown completion dates when the original data contains none.
