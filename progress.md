@@ -38,11 +38,14 @@ Read index.html, app.js (456 lines), styles.css (151 lines → now larger), sw.j
 # Phase Plan
 
 - [x] **Phase 0 — Audit.** Findings above.
-- [x] **Phase 1 — Foundation: material & atmosphere depth (partial, this session).**
-  - Done: split shared card background into two material tiers — primary (`.hero-main`, `.awareness`) vs secondary (`.hero-side`, `.card`, `.section-box`), matching spec section 7 ("do not make every surface identical").
-  - Done: added a third, independently-timed ambient layer (`.app::before`, 46s breathing nebula, heavily damped read of the existing `--px`/`--py`) so the background now has 3 distinct speeds instead of 1, matching spec section 13. No new event listener added — still one pointer engine.
-  - Done: `data-low-power` now also hides the new nebula layer.
-  - **Not yet done in Phase 1:** edge-hierarchy differentiation per component role (spec 18 — currently most cards still share the same border treatment), SVG/mask micro-texture (spec 15–16), holographic `translateZ` on key content (spec 9).
+- [x] **Phase 1 — Foundation: material & atmosphere depth.**
+  - Done: split shared card background into two material tiers — primary (`.hero-main`, `.awareness`) vs secondary (`.hero-side`, `.card`, `.section-box`), matching spec section 7.
+  - Done: added a third, independently-timed ambient layer (`.app::before`, 46s breathing nebula, heavily damped read of `--px`/`--py`). No new listener. Matches spec section 13.
+  - Done: `data-low-power` hides the new nebula layer.
+  - Done: **edge hierarchy** (spec 18) — primary surfaces now have a near-invisible border (38% line opacity, material+shadow define the form) vs secondary surfaces keeping a slightly more present thin edge (88%). Topbar's hard border softened too (55%, "portal" feel per spec 19). Checkbox-checked state now gets a small localized glow ring (a concrete example of the "focused elements: localized energy" tier from spec 7/18), not just a flat color swap.
+  - Done: **cache-busting fix** — bumped `sw.js` cache name (`mihrab-v26-fixed` → `mihrab-v28-spatial`) and `index.html`'s `?v=` query params (25.0 → 28.0) on `styles.css`/`app.js`. This matters: the person reported "not noticing a change" after the first Phase 1 commit, which could genuinely be the subtlety-by-design, but could also just as easily have been a stale service-worker cache or browser HTTP cache serving the old files. Always bump both when shipping a build meant to be visually checked.
+  - **Not yet done in Phase 1 (deferred to a later pass if still wanted):** SVG/mask micro-texture (spec 15–16), holographic `translateZ` on key content (spec 9). These are lower-priority polish; the structural material/edge/atmosphere work above matters more and should be verified first.
+
 - [ ] **Phase 2 — Spatial navigation & hero.** Topbar-as-portal refinement, hero cinematic entrance (blur-to-sharp, no constant animation), page transition choreography (spec 27–30).
 - [ ] **Phase 3 — Task completion "Dark Matter" + stats as instruments.** Replace the current single-stage glow with the staged sequence from spec 24 (ripple → pulse → z-shift → darken → dark matter), add Undo. Rework `.stat-card` toward "precision instrument" treatment (spec 22).
 - [ ] **Phase 4 — Consistency/Analytics engine.** The big net-new feature: weekly/monthly/yearly/all-time tracking, streaks, plan-vs-reality, weekly review, restrained visualizations (heatmap/arc/ring — not a generic dashboard). Needs its own data model design before any UI work — do this as a sub-session on its own.
@@ -55,10 +58,11 @@ Read index.html, app.js (456 lines), styles.css (151 lines → now larger), sw.j
 ---
 
 # Next Step
-Continue Phase 1: edge-hierarchy differentiation (spec 18) — give interactive/focused/completed elements visually distinct edge treatments instead of the current mostly-uniform `1px solid var(--line))` everywhere.
+Phase 1 is now structurally complete (material tiers + 3-speed atmosphere + edge hierarchy + cache-busting fixed). **Before writing more code**, the person should actually open V28 in a browser (after a hard refresh / PWA reinstall now that the cache name changed) and confirm they can see: (a) hero cards look softer-edged than smaller cards, (b) the distant nebula breathing slowly, (c) a small glow ring on checked tasks. If confirmed, move to Phase 2 (spatial navigation & hero / page transitions). If still not visible, the issue is likely something environmental (which browser/how it's being opened — `file://` vs a local server, PWA install cache, etc.) and needs debugging before any more visual work is added on top.
 
 # Known Issues
-- None found that break existing functionality. All changes so far are additive CSS only.
+- Previous session's visual changes may not have been perceptible due to a stale cache (now fixed by bumping cache/version names) — unconfirmed whether that was the actual cause, flagged as the likely explanation, not verified.
+
 
 # Verification (be honest — see spec section 78)
 - ✅ Static: `node --check app.js` passes.
