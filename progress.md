@@ -1,67 +1,78 @@
 # Current State
-Mihrab V30 Final has a single router/render pipeline, the spatial Home composition, local-first history, daily momentum persistence, safe legacy completion handling, System/Auto theme support, and consolidated interaction handling.
+Mihrab Sanctuary Final is implemented from the V30 baseline. The Home experience is a spatial sanctuary rather than a conventional dashboard: a full-screen entry threshold, cinematic portal scene, living atmosphere, Now/Next/Later execution layer, six-room constellation, and deeper daily execution chamber. Islamic Studies is now generic/data-driven and completion history is event-based.
 
 # Architecture
-- Router: single `route()` / `render()` map.
-- Render model: one renderer per existing route; Home uses the spatial composition with shared global helpers for data access.
-- State model: existing storage key `study-dashboard-focus-v7` preserved; state additions are backward-compatible.
-- CSS architecture: one `styles.css`, one `:root`, responsive mobile-first system, no appended legacy override file.
-- Responsive architecture: mobile-first layout, fixed mobile nav, safe-area padding, natural vertical scrolling.
-- Pointer/ambient system: one pointer listener with RAF interpolation/CSS variables plus CSS-only atmospheric layers; disabled/mitigated for non-fine pointer devices and low-power/reduced-motion modes.
-- Modal system: one shared modal overlay and focus overlay.
-- Theme system: manual themes plus `System / Auto`, using `prefers-color-scheme` for the system choice.
-- Content library: generic active / paused / done records; no per-series renderer branches.
-- Series history: completion events are recorded on real transitions only; legacy done records without a date remain undated.
-- Consistency/history: append-style event log with local day keys and daily plan snapshots for periods from the point of adoption; metrics never reconstruct unknown history.
-- PWA: cache namespace updated to V30.
+- router: one hash router in `app.js`
+- render model: one route renderer per main view; Home rebuilt around a spatial sanctuary composition
+- state model: existing localStorage state and legacy migration, with a dedicated persisted Daily Momentum record
+- CSS architecture: one `:root`, one material/atmosphere language, one responsive system with Sanctuary-specific responsive composition
+- responsive architecture: mobile-first behavior at <=840px plus 390px/320px safeguards
+- pointer/ambient system: one centralized pointer RAF engine with CSS variables; no per-card pointer listeners
+- modal system: one shared modal/overlay system
+- theme system: existing theme tokens plus System/Auto behavior
+- content library system: generic library records shared by System and Islamic Studies
+- series progress/completion system: generic session completion, automatic 100% completion, history snapshots, 25/50/75/100 milestones
+- consistency/history system: recorded events + daily plan snapshots; metrics do not infer missing history
+- service-worker/cache system: `mihrab-v31-sanctuary`
 
 # Completed
-- Fixed the V29 Home runtime failure caused by render helpers being trapped inside the runtime IIFE.
-- Verified all six route renderers with a browser-like Node harness: Home, Marketing, Islamic Studies, Qur’an, Courses, System.
-- Verified task completion/uncompletion records exactly one event per toggle.
-- Verified daily momentum is stable within a day.
-- Verified legacy completed series does not receive a fabricated completion date.
-- Verified a newly completed series records a completion event and timestamp.
-- Added local-day event keys to avoid UTC-midnight date drift.
-- Added System / Auto theme support and system/light-dark behavior.
-- Consolidated document click interaction handling.
-- Removed inline today-checkbox handling in favor of delegated data attributes.
-- Fixed V30 cache/version references.
+- Added full-screen Mihrab-native entry threshold and entry/skip transitions.
+- Entry uses the exact original Mihrab SVG geometry and exact Arabic/English brand treatment.
+- Rebuilt Home spatial composition around a central portal, Now/Next/Later, six rooms, and protected execution.
+- Added layered aurora, architectural mesh, micro-stars, rings, living surface motion, and low-power/reduced-motion handling.
+- Added deliberate mobile composition and verified no horizontal overflow at 390px.
+- Added persisted Daily Momentum using `mihrab.dailyMomentum.v1`.
+- Fixed task interaction so checkbox changes are handled by one delegated change listener and each completion generates one event.
+- Added completion Undo with a short toast window.
+- Added generic Islamic Studies library renderer with active/paused/completed states and importance badges.
+- Added generic session completion, automatic 100% completion, history snapshots, and 25/50/75/100 milestone records.
+- Preserved undated legacy completed records without synthesizing dates.
+- Added Recently Completed and Achievement Timeline surfaces in System.
+- Expanded local-first consistency metrics to week/month/quarter/year/all-time with tracked-vs-unknown behavior.
+- Updated service worker cache to `mihrab-v31-sanctuary`.
+- Updated README and progress handoff documentation.
 
 # In Progress
-Real-device / real-touch verification remains outside this environment; all available static/browser-like checks below pass.
+None for the Sanctuary implementation phase.
 
 # Next Step
-Deploy V30 to GitHub Pages, clear/update the existing PWA cache if needed, then open the deployed build and test the six routes, scrolling, touch, installation, and offline behavior on the target phone.
+Deploy the exact package to the user's target GitHub Pages repository and perform real-device touch testing.
 
 # Known Issues
-- Chromium in the model environment is blocked from loading local/file URLs by an organization policy, so full browser rendering could not be driven end-to-end here.
-- Physical phone/touch testing has not been performed in this environment.
-- Historical analytics before the new event/plan snapshots are intentionally unknown rather than fabricated.
+- Production service-worker behavior depends on the user's deployed origin and cannot be reproduced exactly in this environment.
+- Physical touch testing on a real phone/tablet is not available here.
+- Chromium screenshot/compositing in the synthetic CDP document harness can show transition frames before a CSS transition has fully settled; functional DOM/runtime verification is not affected.
 
 # Verification
 - `node --check app.js`: passed.
-- Browser-like execution harness: passed boot and all six routes without the application's error fallback.
-- Interaction harness: task complete/uncomplete event logging passed.
-- Legacy completion-date safety test: passed.
-- New series completion recording: passed.
-- Daily momentum repeatability test: passed.
-- Static checks: one CSS `:root`, one document click delegation path, no global `touch-action:none`, no permanent body scroll lock, asset references present.
-- Browser/mobile/real-device verification: not completed because the environment blocks local page loading and physical device access is unavailable.
+- CSS brace-balance: passed (605 opening / 605 closing braces at the final verification point).
+- JS brace-balance: passed (761 opening / 761 closing braces at the final verification point).
+- One `:root` declaration confirmed.
+- One `pointermove` listener confirmed.
+- One delegated document `click` listener and one delegated document `change` listener confirmed.
+- No global `touch-action:none`.
+- No React/Vue/Svelte/Three.js/WebGL/canvas-loop implementation.
+- Original `assets/mihrab-logo.svg` and `assets/icon.svg` SHA-256 remain `92be1fa93cf8741af027d621d49877aa1b3e2c12f455665b3d2558f76114220e`.
+- Controlled Chromium/CDP browser harness executed the actual JS/CSS and verified boot, entry threshold, six routes, Home composition, generic future Islamic series rendering, session completion, automatic 100% completion, milestones, undated legacy completion, daily momentum persistence/stability, task completion event count, Undo, shared modal, theme/language switching, and runtime errors.
+- Mobile viewport verification at 390x844 confirmed `scrollWidth === clientWidth` and no horizontal overflow.
+- Not verified: physical touch on a real device, production GitHub Pages browser behavior, and production service-worker lifecycle.
 
 # Important Decisions
-- Never fabricate historical completion dates or historical activity.
-- Preserve existing storage key and merge new fields additively.
-- Keep six existing routes and existing DOM shells.
-- Use CSS/SVG/Vanilla JS only; no React, Vue, Three.js, WebGL, or canvas animation loops.
-- System/Auto follows the OS color preference only when that theme is explicitly selected.
+- Entry scene is shown on each new page load. It is a visual threshold only and does not alter application state.
+- Daily Momentum is persisted separately so its once-per-day behavior is robust even across state reloads.
+- Completed legacy series keep `completionDate: null` when the original record has no historical date.
+- Islamic series are rendered through one generic library model; new Islamic records require no custom renderer.
+- Session progress is append-event driven for long-term history, while current library records remain editable.
+- No backend, framework, WebGL, canvas loop, or particle engine was introduced.
+- Spatial richness is produced with CSS/SVG layers, gradients, masks, transforms, controlled blur, and one pointer engine.
 
 # Files Changed
 - `index.html`
-- `styles.css`
 - `app.js`
+- `styles.css`
 - `sw.js`
+- `README.md`
 - `progress.md`
 
 # Data / Migration Notes
-New `history.plans`, `history.events[].day`, and `dailyMomentum` fields are additive. Existing task/library/theme/language state is preserved. Legacy completed series without a real completion timestamp remain undated.
+No existing storage key was renamed or deleted. The legacy key `dersh-integrated-v4` remains a migration source. The current key remains `study-dashboard-focus-v7`. Daily Momentum uses the additional local key `mihrab.dailyMomentum.v1`. No stored user data is reset by the Sanctuary refactor. New history fields are additive and backward compatible.
