@@ -1,4 +1,5 @@
 /* Mihrab — single-source visual system. One theme = two accent colors. */
+@property --p{syntax:'<percentage>';inherits:true;initial-value:0%}
 :root{
   --bg:#080a09;
   --bg-soft:#0d1110;
@@ -29,8 +30,13 @@ body[data-theme="mono"]{--accent:#c9cdd1;--accent-2:#d8bc67}
 
 *{box-sizing:border-box}
 html{min-height:100%;background:var(--bg);scroll-behavior:smooth}
-body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55;overflow-x:hidden;overflow-y:auto;-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility;padding-top:env(safe-area-inset-top)}
-body[dir="rtl"]{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif}
+/* Optional premium Arabic display font — self-hosted only (keeps offline-first principle).
+   Drop a .woff2 file at ./assets/fonts/display-ar.woff2 and uncomment to activate.
+@font-face{font-family:'MihrabDisplay';src:url('./assets/fonts/display-ar.woff2') format('woff2');font-display:swap;font-weight:400 700}
+*/
+body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Arabic","Segoe UI","Noto Sans Arabic","Noto Kufi Arabic",Tahoma,ui-sans-serif,system-ui,Arial,sans-serif;line-height:1.6;overflow-x:hidden;overflow-y:auto;-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility;padding-top:env(safe-area-inset-top)}
+body[dir="rtl"]{font-family:-apple-system,BlinkMacSystemFont,"SF Arabic",Inter,"Segoe UI","Noto Sans Arabic","Noto Kufi Arabic",Tahoma,ui-sans-serif,system-ui,Arial,sans-serif}
+.brand-ar{font-family:'MihrabDisplay',-apple-system,BlinkMacSystemFont,"SF Arabic","Segoe UI","Noto Sans Arabic",Tahoma,sans-serif}
 button,input,select,textarea{font:inherit;color:inherit}
 button,a,input,select,textarea{touch-action:manipulation}
 a{color:inherit;text-decoration:none}
@@ -104,7 +110,17 @@ main{padding:18px 0 18px}.view{display:none}.view.active{display:block}.view[hid
 
 .mihrab-overlay,.focus-mode{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(4,6,5,.65);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:18px}.mihrab-overlay.open,.focus-mode.open{display:flex}.mihrab-modal{width:min(680px,100%);max-height:min(88vh,760px);overflow:auto;border:1px solid var(--line);border-radius:24px;background:var(--surface-2);box-shadow:0 35px 90px rgba(0,0,0,.45)}.mihrab-modal-head{display:flex;gap:10px;align-items:center;padding:13px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:color-mix(in srgb,var(--surface-2) 94%,transparent);backdrop-filter:blur(14px);z-index:2}.mihrab-modal-head input{flex:1;border:0;outline:0;background:transparent;padding:8px;font-size:13px}.mihrab-close{width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.04);color:var(--muted);font-size:18px}.modal-body{padding:14px}.command-list{padding:8px}.command-item{display:flex;align-items:center;justify-content:space-between;width:100%;padding:12px 10px;border-radius:11px;color:var(--text);text-align:start}.command-item:hover{background:var(--surface-3)}.command-item small{color:var(--accent)}
 .focus-shell{width:min(660px,100%);padding:30px;text-align:center;border:1px solid color-mix(in srgb,var(--accent) 18%,var(--line));border-radius:28px;background:var(--surface-2);box-shadow:0 40px 100px rgba(0,0,0,.45)}.focus-shell h2{font-size:24px;line-height:1.2;max-width:540px;margin:10px auto}.focus-kicker{font-size:9px;letter-spacing:.2em;color:var(--accent);font-weight:900}.focus-timer{font-size:72px;line-height:1;letter-spacing:-.06em;margin:20px 0;background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}.focus-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
-.just-checked{animation:check-pop .5s ease}.just-checked::before{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent),0 0 28px color-mix(in srgb,var(--accent) 14%,transparent);pointer-events:none}@keyframes check-pop{0%{transform:scale(1)}45%{transform:scale(1.012)}100%{transform:scale(1)}}
+.just-checked{animation:check-pop .65s cubic-bezier(.22,1,.36,1)}
+.just-checked::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;animation:glow-bloom 1.15s ease-out}
+@keyframes check-pop{0%{transform:scale(1)}38%{transform:scale(1.016)}100%{transform:scale(1)}}
+@keyframes glow-bloom{0%{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 55%,transparent),0 0 6px color-mix(in srgb,var(--accent) 12%,transparent)}32%{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 62%,transparent),0 0 38px color-mix(in srgb,var(--accent) 40%,transparent),0 0 70px color-mix(in srgb,var(--accent-2) 16%,transparent)}100%{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 18%,transparent),0 0 0 color-mix(in srgb,var(--accent) 0%,transparent)}}
+.ring{transition:box-shadow .5s ease}
+.ring.burst{animation:ring-burst-shell 1.5s cubic-bezier(.22,1,.36,1)}
+.ring.burst::after{animation:ring-burst-core 1.5s cubic-bezier(.22,1,.36,1)}
+.ring.burst b{animation:ring-burst-text 1.5s cubic-bezier(.22,1,.36,1)}
+@keyframes ring-burst-shell{0%{box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 16%,transparent),0 0 45px color-mix(in srgb,var(--accent) 10%,transparent)}28%{box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent),0 0 100px color-mix(in srgb,var(--accent-2) 55%,transparent),0 0 160px color-mix(in srgb,var(--accent) 30%,transparent)}100%{box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 16%,transparent),0 0 45px color-mix(in srgb,var(--accent) 10%,transparent)}}
+@keyframes ring-burst-core{0%,100%{box-shadow:inset 0 0 30px rgba(0,0,0,.25)}28%{box-shadow:inset 0 0 30px rgba(0,0,0,.25),0 0 46px color-mix(in srgb,var(--accent-2) 48%,transparent)}}
+@keyframes ring-burst-text{0%,100%{transform:scale(1)}28%{transform:scale(1.08)}}
 .error-box{border-color:color-mix(in srgb,var(--accent-2) 20%,var(--line))}
 footer{padding:14px 2px;color:var(--muted);font-size:9px;text-align:center;border-top:1px solid var(--line);margin-top:16px}
 

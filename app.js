@@ -326,9 +326,47 @@ function renderSystemBase(){
     updateRing();
   }
   function togglePlan(id){state.plan[id]=!state.plan[id];save();const row=document.querySelector(`[data-plan-row="${CSS.escape(id)}"]`);row?.classList.toggle('done',!!state.plan[id]);const badge=row?.closest('.week-card')?.querySelector('summary .badge');if(badge){const inputs=[...row.closest('.week-card').querySelectorAll('[data-plan-id]')];const ids=inputs.map(i=>i.dataset.planId);const p=pct(ids,state.plan);badge.textContent=`${p.p}% · ${p.n}/${p.total}`} }
+  let ringAnimHandle=null;
+  function easeOutCubic(t){return 1-Math.pow(1-t,3)}
+  function animateRingTo(ring,fromP,toP,fromN,toN,total){
+    if(ringAnimHandle) cancelAnimationFrame(ringAnimHandle);
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      ring.style.setProperty('--p',toP+'%');
+      ring.querySelector('b')?.replaceChildren(document.createTextNode(toP+'%'));
+      ring.querySelector('span')?.replaceChildren(document.createTextNode(`${toN} / ${total}`));
+      return;
+    }
+    const dur=850, start=performance.now();
+    const bEl=ring.querySelector('b'), spanEl=ring.querySelector('span');
+    function frame(now){
+      const t=Math.min(1,(now-start)/dur), e=easeOutCubic(t);
+      const curP=fromP+(toP-fromP)*e;
+      const curN=Math.round(fromN+(toN-fromN)*e);
+      ring.style.setProperty('--p',curP.toFixed(1)+'%');
+      if(bEl) bEl.textContent=Math.round(curP)+'%';
+      if(spanEl) spanEl.textContent=`${curN} / ${total}`;
+      if(t<1){ringAnimHandle=requestAnimationFrame(frame)}
+      else{
+        ring.style.setProperty('--p',toP+'%');
+        if(bEl) bEl.textContent=toP+'%';
+        if(spanEl) spanEl.textContent=`${toN} / ${total}`;
+        ringAnimHandle=null;
+        if(toP>=100 && fromP<100){
+          ring.classList.remove('burst'); void ring.offsetWidth; ring.classList.add('burst');
+          setTimeout(()=>ring.classList.remove('burst'),1600);
+        }
+      }
+    }
+    ringAnimHandle=requestAnimationFrame(frame);
+  }
   function updateRing(){
     const items=dayTasks(todayName()), p=pct(items.map(x=>x[0]),state.today); const ring=$('#view-home .ring');
-    if(ring){ring.style.setProperty('--p',p.p+'%');ring.querySelector('b')?.replaceChildren(document.createTextNode(p.p+'%'));ring.querySelector('span')?.replaceChildren(document.createTextNode(`${p.n} / ${p.total}`));}
+    if(ring){
+      const fromP=parseFloat(ring.style.getPropertyValue('--p'))||0;
+      const spanEl=ring.querySelector('span');
+      const fromN=spanEl?(parseInt((spanEl.textContent||'0').split('/')[0].trim(),10)||0):0;
+      animateRingTo(ring,fromP,p.p,fromN,p.n,p.total);
+    }
     $('#view-home .stat-card:nth-child(1) strong')?.replaceChildren(document.createTextNode(`${p.n}/${p.total}`));
     $('#view-home .stat-card:nth-child(2) strong')?.replaceChildren(document.createTextNode(String(Math.max(p.total-p.n,0))));
   }
