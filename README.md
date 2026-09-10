@@ -1,44 +1,105 @@
-# Mihrab — Sanctuary V37
+# Mihrab
 
-A mobile-first spatial redesign of Mihrab built only with HTML, CSS, SVG, and Vanilla JavaScript.
+**بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.**
 
-## What changed in V37
+Mihrab is a local-first PWA designed to stay useful for the long run: today-first execution, protected essentials, adaptive day modes, editable content tracks, backups, focus mode, and Arabic/English UI.
 
-V37 keeps the Sanctuary direction and focuses on polish, tactility, and performance:
+## Deploy
+- Push the repository to GitHub.
+- Connect GitHub directly to Cloudflare Pages.
+- No build command; publish the repository root.
 
-- The mobile sanctuary is lighter and shorter, while retaining the portal identity.
-- Atmospheric drift/breathe is slower; broad permanent `will-change` hints are removed.
-- Low Power is one consolidated performance override: it removes continuous compositor-heavy effects without flattening the material language.
-- Tasks use an accessible custom checkbox treatment plus tactile press, hover illumination, completion ripple/rail/sink motion, and Undo.
-- Desktop Now/Next/Later notes drift slowly and deliberately rather than snapping.
-- Pointer inertia is softer and remains RAF-batched.
-- Responsive media rules for 840px, 390px, and reduced motion are consolidated into single blocks.
+## GitHub Pages
+- Enable Pages from `main` / root for a project-site preview.
 
-## Architecture
+## Local preview
+- Open `index.html` for a basic preview.
+- PWA installation/service worker require HTTPS or localhost.
 
-The app remains HTML/CSS/SVG/Vanilla JavaScript. No React, Vue, Svelte, Three.js, WebGL, Canvas loops, or particle engine was introduced.
+## Data
+- Progress and settings are stored locally in the browser.
+- Use System → Backup & restore to export/import a JSON backup.
+- Content Library lets you add, edit, activate, pause, replace, and complete tracks without editing code. Archive finished tracks instead of deleting them.
 
-The existing localStorage model, routes, brand SVG, Rafiq bridge, content library, history, Focus Mode, themes, language switching, and PWA structure remain in place.
-
-## Data safety
-
-Historical completion data is event-based where available. Legacy completed records without a recorded completion date remain undated; the app does not synthesize a historical completion date.
-
-## Verification actually performed for V37
-
-- `node --check app.js`: PASS.
-- CSS brace balance: PASS.
-- One `:root`: PASS.
-- One 840px responsive block: PASS.
-- One 390px responsive block: PASS.
-- One reduced-motion block: PASS.
-- One consolidated Low Power architecture: PASS.
-- No broad permanent `will-change` usage: PASS.
-- Manifest JSON: PASS.
-- Local asset references in `index.html`: checked.
-
-Not verified in this environment: physical touch on a real device, GitHub Pages production behavior, and service-worker update lifecycle on the deployed origin. The environment blocked reliable Chromium navigation to the local project, so no browser/device claims are made here.
+## Rafiq Quran
+- Rafiq remains an external Cloudflare site and can be opened or embedded from the Qur'an section.
 
 
-### Development checks
-Run `node check-i18n.js` to verify required Arabic/English UI translation keys and prevent the known hardcoded UI labels from reappearing.
+## Performance
+- System → Performance includes Low Power Mode to disable the ambient canvas and reduce live effects.
+- Live effects respect `prefers-reduced-motion` and are paused while the tab is hidden.
+
+## Lifelong use
+- Day modes are per-day overrides; they do not rewrite the base plan.
+- Missed daily work is not carried forward as debt.
+- Content tracks are separate from the schedule so you can swap finished content without changing the code.
+- Close Today records the day without moving unfinished work forward. It is a gentle end-of-day ritual, not a reset penalty.
+- Daily notes and track notes keep small insights close to the relevant day or content path without becoming a second task manager.
+- The Year Journey turns the marketing curriculum into four visible stages so small daily work stays connected to a long-term direction.
+
+## Momentum features
+- A rotating daily signal, a personal opening line, and 5/15/30/60-minute launch buttons make reopening the app feel useful immediately.
+- A local Proof Vault stores links, output locations, and short notes for work you have actually produced.
+- Recent Story keeps a compact local timeline of saved proof and intentionally closed days.
+- Signature and Calm visual modes let you choose between a rich live atmosphere and a quieter experience; sound and vibration confirmations are optional.
+- Installed-app shortcuts can open Focus or Quick Capture directly where the platform supports PWA shortcuts.
+- A 25-minute reminder is available only while the open app remains active. Reliable background scheduling and native home-screen widgets require a native mobile app.
+
+## Signature visual layer
+- The interface uses slow ambient light, travelling edge lighting, layered glass, cinematic view transitions, and animated progress illumination.
+- Arabic headings use an elegant local-font stack; no remote font service is required, so the app remains private and works offline with its system fallbacks.
+- All live visual effects respect `prefers-reduced-motion`, Calm mode, and Low Power Mode.
+
+
+
+
+Architecture note: styles.css was consolidated into one token/theme layer and one responsive/interaction layer. Legacy stacked override blocks were removed.
+
+### Mobile-first navigation
+On screens up to 840px, Mihrab switches to a native-feeling bottom navigation bar. The desktop navigation is hidden and the same navigation state is rendered into the mobile bar, so page switching works reliably on touch devices.
+
+
+## Mobile-first performance
+- The primary UX is the mobile layout with a fixed bottom navigation.
+- The dashboard renders only the active view instead of rebuilding all views.
+- Ambient motion is CSS-only; there is no continuous canvas particle loop.
+- Heavy backdrop blur is limited to the topbar and primary hero.
+- Reduced-motion and Low Power Mode disable ambient animation.
+
+## Visual polish
+- The refreshed interface uses a subtle architectural background pattern, layered colour light, and a calmer animated pulse around key progress elements.
+- Cards, action buttons, and completed tasks provide clear touch and keyboard feedback without relying on costly effects.
+- The design adapts its spacing, navigation, visual density, and effects below 840px so it feels native on a phone while retaining a spacious laptop layout.
+- All decorative effects are CSS-only. `prefers-reduced-motion` and Low Power Mode turn off the moving accents.
+
+
+Mihrab V12 adds a single touch-first mobile navigation engine, two-accent theme discipline, daily momentum signals, completion micro-feedback, and mobile-specific performance safeguards.
+
+
+## V13 final polish
+- Single navigation router with capture-phase mobile touch handling.
+- Theme-aware two-accent palette with one shared interaction accent.
+- Dynamic greeting, task completion sweep, progress shimmer, 100% ring finale, and micro-dot pattern.
+- Mobile uses a dedicated bottom navigation shell; desktop navigation remains unchanged.
+
+
+## V14 notes
+- Mobile navigation uses native hash links with one router; no touch-event hijacking.
+- Track titles in Content Library open structured details.
+- Visual micro-interactions are theme-aware with a strict two-accent + shared interaction tone system.
+
+
+## V16 notes
+- Mobile navigation uses native hash links with a single router path; no competing click/pointer listeners.
+- Theme accents are intentionally limited to the primary `--a` and gold `--c`.
+- Mobile-only effects are reduced to keep interaction responsive.
+
+
+## V17 interaction polish
+Theme-aware title gradient, subtle task completion sweep/pop, progress shimmer, 100% ring burst, micro-dot background, and reduced-motion/low-power guards.
+
+
+## V25 visual correction
+- Completed tasks now use a clearly darker surface while preserving the accent/check state.
+- Rafiq bridge has a living accent line and soft glow under the message.
+- Pointer ambient listener is single-source to avoid duplicate animation work.
