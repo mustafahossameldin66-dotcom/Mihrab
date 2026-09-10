@@ -1,5 +1,5 @@
 # Current State
-Mihrab Sanctuary Final is implemented from the V30 baseline. The Home experience is a spatial sanctuary rather than a conventional dashboard: a full-screen entry threshold, cinematic portal scene, living atmosphere, Now/Next/Later execution layer, six-room constellation, and deeper daily execution chamber. Islamic Studies is now generic/data-driven and completion history is event-based.
+Mihrab V32 Refined Sanctuary is implemented from the V30 baseline. The Home experience is a spatial sanctuary rather than a conventional dashboard: a full-screen entry threshold, cinematic portal scene, living atmosphere, Now/Next/Later execution layer, six-room constellation, and deeper daily execution chamber. Islamic Studies is now generic/data-driven and completion history is event-based.
 
 # Architecture
 - router: one hash router in `app.js`
@@ -13,7 +13,7 @@ Mihrab Sanctuary Final is implemented from the V30 baseline. The Home experience
 - content library system: generic library records shared by System and Islamic Studies
 - series progress/completion system: generic session completion, automatic 100% completion, history snapshots, 25/50/75/100 milestones
 - consistency/history system: recorded events + daily plan snapshots; metrics do not infer missing history
-- service-worker/cache system: `mihrab-v31-sanctuary`
+- service-worker/cache system: `mihrab-v32-sanctuary`
 
 # Completed
 - Added full-screen Mihrab-native entry threshold and entry/skip transitions.
@@ -29,14 +29,21 @@ Mihrab Sanctuary Final is implemented from the V30 baseline. The Home experience
 - Preserved undated legacy completed records without synthesizing dates.
 - Added Recently Completed and Achievement Timeline surfaces in System.
 - Expanded local-first consistency metrics to week/month/quarter/year/all-time with tracked-vs-unknown behavior.
-- Updated service worker cache to `mihrab-v31-sanctuary`.
+- Updated service worker cache to `mihrab-v32-sanctuary`.
 - Updated README and progress handoff documentation.
 
 # In Progress
-None for the Sanctuary implementation phase.
+None for the V32 visual polish pass.
 
 # Next Step
-Deploy the exact package to the user's target GitHub Pages repository and perform real-device touch testing.
+User visual acceptance review on the deployed target.
+
+# V32 Polish Notes
+- Light theme surfaces now use semantic material tokens rather than fixed dark fills for the primary spatial surfaces.
+- Room constellation is a structured 3×2 spatial grid on desktop and a deliberate single-column sequence on mobile; depth comes from Z translation, not overlap.
+- Topbar primary navigation is larger and utility controls are grouped more quietly.
+- Main Home section spacing is tightened slightly so negative space reads as composition rather than unused area.
+- Light-theme utility controls now use an explicit darkened utility contrast so the topbar remains readable on warm paper backgrounds.
 
 # Known Issues
 - Production service-worker behavior depends on the user's deployed origin and cannot be reproduced exactly in this environment.
@@ -45,7 +52,7 @@ Deploy the exact package to the user's target GitHub Pages repository and perfor
 
 # Verification
 - `node --check app.js`: passed.
-- CSS brace-balance: passed (605 opening / 605 closing braces at the final verification point).
+- CSS brace-balance: passed (628 opening / 628 closing braces at the final verification point).
 - JS brace-balance: passed (761 opening / 761 closing braces at the final verification point).
 - One `:root` declaration confirmed.
 - One `pointermove` listener confirmed.
@@ -68,7 +75,6 @@ Deploy the exact package to the user's target GitHub Pages repository and perfor
 
 # Files Changed
 - `index.html`
-- `app.js`
 - `styles.css`
 - `sw.js`
 - `README.md`
