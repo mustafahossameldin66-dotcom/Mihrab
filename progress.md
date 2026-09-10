@@ -42,23 +42,28 @@ Read index.html, app.js (456 lines), styles.css (151 lines → now larger), sw.j
   - Done: split shared card background into two material tiers — primary (`.hero-main`, `.awareness`) vs secondary (`.hero-side`, `.card`, `.section-box`), matching spec section 7.
   - Done: added a third, independently-timed ambient layer (`.app::before`, 46s breathing nebula, heavily damped read of `--px`/`--py`). No new listener. Matches spec section 13.
   - Done: `data-low-power` hides the new nebula layer.
-  - Done: **edge hierarchy** (spec 18) — primary surfaces now have a near-invisible border (38% line opacity, material+shadow define the form) vs secondary surfaces keeping a slightly more present thin edge (88%). Topbar's hard border softened too (55%, "portal" feel per spec 19). Checkbox-checked state now gets a small localized glow ring (a concrete example of the "focused elements: localized energy" tier from spec 7/18), not just a flat color swap.
-  - Done: **cache-busting fix** — bumped `sw.js` cache name (`mihrab-v26-fixed` → `mihrab-v28-spatial`) and `index.html`'s `?v=` query params (25.0 → 28.0) on `styles.css`/`app.js`. This matters: the person reported "not noticing a change" after the first Phase 1 commit, which could genuinely be the subtlety-by-design, but could also just as easily have been a stale service-worker cache or browser HTTP cache serving the old files. Always bump both when shipping a build meant to be visually checked.
-  - **Not yet done in Phase 1 (deferred to a later pass if still wanted):** SVG/mask micro-texture (spec 15–16), holographic `translateZ` on key content (spec 9). These are lower-priority polish; the structural material/edge/atmosphere work above matters more and should be verified first.
+  - Done: **edge hierarchy** (spec 18) — primary surfaces now have a near-invisible border (38% line opacity, material+shadow define the form) vs secondary surfaces keeping a slightly more present thin edge (88%). Topbar's hard border softened too (55%, "portal" feel per spec 19). Checkbox-checked state now gets a small localized glow ring, not just a flat color swap.
+  - Done: **cache-busting fix** — bumped `sw.js` cache name (`mihrab-v26-fixed` → `mihrab-v28-spatial`) and `index.html`'s `?v=` query params (25.0 → 28.0). Matters because "no visible change" reports can just as easily be a stale cache as a genuinely-too-subtle effect — always bump both when shipping a build meant to be visually checked.
+  - Deferred (lower priority polish, not blocking): SVG/mask micro-texture (spec 15–16), holographic `translateZ` on key content (spec 9).
 
-- [ ] **Phase 2 — Spatial navigation & hero.** Topbar-as-portal refinement, hero cinematic entrance (blur-to-sharp, no constant animation), page transition choreography (spec 27–30).
+- [~] **Phase 2 — Spatial navigation & hero (started).**
+  - Done: **page entrance choreography** (spec 27–30). Navigating to a view now plays a one-shot 420ms blur→sharp, scale(.985)→1, fade-in settle (`view-settle` keyframe) instead of an instant `display:block` swap. Verified this is scoped correctly: `toggleToday`/`togglePlan` do surgical DOM patches (not full re-render), so this animation only fires on genuine navigation (`route()`), never on checking a task — confirmed by reading the click/change delegated-listener code before adding this, not assumed.
+  - Done: `.hero-side` gets the same settle animation with a 60ms stagger relative to `.hero-main`, giving Home a touch of spatial depth on entry — matches spec 30's "stagger only for major surfaces, not every row."
+  - Done: respects `data-low-power` and the existing global `prefers-reduced-motion` rule.
+  - **Not yet done in Phase 2:** hero cinematic typography treatment beyond the inherited settle-animation (spec 20's "rare highlight sweep" not implemented), topbar depth/haze beyond the Phase-1 edge softening, Quick Capture "quick surface emergence" vs modal "material expansion" (spec 28) — both still share one generic overlay fade, not yet differentiated.
+
 - [ ] **Phase 3 — Task completion "Dark Matter" + stats as instruments.** Replace the current single-stage glow with the staged sequence from spec 24 (ripple → pulse → z-shift → darken → dark matter), add Undo. Rework `.stat-card` toward "precision instrument" treatment (spec 22).
-- [ ] **Phase 4 — Consistency/Analytics engine.** The big net-new feature: weekly/monthly/yearly/all-time tracking, streaks, plan-vs-reality, weekly review, restrained visualizations (heatmap/arc/ring — not a generic dashboard). Needs its own data model design before any UI work — do this as a sub-session on its own.
-- [ ] **Phase 5 — Achievement history.** Dedicated "Recently Completed" + milestone timeline, built on top of the existing `state.library` status model (no data migration needed, additive only).
-- [ ] **Phase 6 — Focus Mode "light tunnel" + Now/Next/Later + 15-min/No-Energy modes.** Audit what already exists here first (marked unconfirmed in Phase 0) before writing new code.
+- [ ] **Phase 4 — Consistency/Analytics engine.** The big net-new feature: weekly/monthly/yearly/all-time tracking, streaks, plan-vs-reality, weekly review, restrained visualizations. Needs its own data model design before any UI work — do this as a sub-session on its own.
+- [ ] **Phase 5 — Achievement history.** Dedicated "Recently Completed" + milestone timeline, built on top of the existing `state.library` status model (additive only, no migration).
+- [ ] **Phase 6 — Focus Mode "light tunnel" + Now/Next/Later + 15-min/No-Energy modes.** Audit what already exists here first (unconfirmed in Phase 0) before writing new code.
 - [ ] **Phase 7 — Modal/boot/empty-state unification pass.**
 - [ ] **Phase 8 — System/Auto theme (`prefers-color-scheme`).**
-- [ ] **Phase 9 — Final quality audit** (spec section 77) + honest testing report (spec section 78 — static syntax checks only were run so far; no real browser/device testing has occurred yet in any session).
+- [ ] **Phase 9 — Final quality audit** (spec 77) + honest testing report (spec 78 — only static syntax checks run so far; no real browser/device testing in any session yet).
 
 ---
 
 # Next Step
-Phase 1 is now structurally complete (material tiers + 3-speed atmosphere + edge hierarchy + cache-busting fixed). **Before writing more code**, the person should actually open V28 in a browser (after a hard refresh / PWA reinstall now that the cache name changed) and confirm they can see: (a) hero cards look softer-edged than smaller cards, (b) the distant nebula breathing slowly, (c) a small glow ring on checked tasks. If confirmed, move to Phase 2 (spatial navigation & hero / page transitions). If still not visible, the issue is likely something environmental (which browser/how it's being opened — `file://` vs a local server, PWA install cache, etc.) and needs debugging before any more visual work is added on top.
+Phase 2 continues: differentiate the Quick Capture and modal-open transition signatures from each other (spec 28), and add the hero highlight-sweep (spec 20). **Still unconfirmed:** the person has not yet explicitly confirmed they can see the Phase 1 material/edge/atmosphere changes or the new Phase 2 page-entrance animation in a real browser. Ask for a straight yes/no confirmation before Phase 3, since Phase 3 (task completion rework) touches interaction the person uses constantly — worth being sure the visual foundation actually reads correctly first.
 
 # Known Issues
 - Previous session's visual changes may not have been perceptible due to a stale cache (now fixed by bumping cache/version names) — unconfirmed whether that was the actual cause, flagged as the likely explanation, not verified.
@@ -67,7 +72,7 @@ Phase 1 is now structurally complete (material tiers + 3-speed atmosphere + edge
 # Verification (be honest — see spec section 78)
 - ✅ Static: `node --check app.js` passes.
 - ✅ Static: CSS brace count balanced (330/330) after edits.
-- ❌ NOT verified: no real browser rendering, no mobile device test, no visual review of the new nebula layer's actual on-screen appearance. Treat Phase 1's visual result as unverified until you look at it yourself and report back.
+- ❌ NOT verified: no real browser rendering, no mobile device test, no visual review of Phase 1 or Phase 2 effects on-screen. Treat all visual results as unverified until confirmed by the person directly.
 
 # Important Decisions
 - Treating this as a multi-session project with an explicit phase plan, per the person's own stated priority order (Qur'an memorization > study-period system > this).
