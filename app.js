@@ -18,7 +18,7 @@ const SHARI_MAP={'السبت':'زاد (تفريغ) + أحمد السيد + أي�
 const AWARENESS=[1,2,3,4,5,6,7,8,9];
 const OLD_KEY='dersh-integrated-v4';
 const KEY='study-dashboard-focus-v7';
-let state={theme:'mono',lang:'ar',view:'home',dayType:'كلية',todayDate:'',today:{},plan:{},weekly:{marketingHours:0,mckinsey:false,dose:false,review:false,rating:'',cert:false},weekDayTypes:{},quranFrameOpen:false,mode:'normal',modeDate:'',schemaVersion:3,settings:{lowPower:false},inbox:[],library:[],backupAt:'',metrics:{focusMinutes:0,sessions:0},history:{}};
+let state={theme:'mono',lang:'ar',view:'home',dayType:'كلية',todayDate:'',today:{},plan:{},weekly:{marketingHours:0,mckinsey:false,dose:false,review:false,rating:'',cert:false},weekDayTypes:{},quranFrameOpen:false,mode:'normal',modeDate:'',schemaVersion:3,settings:{lowPower:false,hijriAdjustDays:0},inbox:[],library:[],backupAt:'',metrics:{focusMinutes:0,sessions:0},history:{}};
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function effectiveDate(){const d=new Date();if(d.getHours()<5)d.setDate(d.getDate()-1);return d}
@@ -156,6 +156,23 @@ function taskHTML(items){return '<div class="tasks">'+items.map(([id,text])=>{co
 // Once it's checked, Zad content rolls forward to the next named day (Thursday → Friday's 3 lectures,
 // Friday → Saturday's single lecture), even though the app's own "day" doesn't flip until 5am.
 function zadDay(day){return (state.today&&state.today.pr_m)?DAYS[(DAYS.indexOf(day)+1)%DAYS.length]:day}
+// Hijri date — same Maghreb-shift concept as zadDay, applied to the real calendar (the Sharia day
+// runs Maghreb-to-Maghreb, not the app's 5am cutoff). Uses the browser's built-in Islamic calendar
+// (Umm al-Qura via Intl) — no network call, no bundled table. A manual ±day correction exists in
+// System for when local moon-sighting announcements diverge from the calculated date.
+function shariBaseDate(){const d=effectiveDate();if(state.today&&state.today.pr_m)d.setDate(d.getDate()+1);return d}
+function shariHijriAdjustedDate(){const d=shariBaseDate();const adj=(state.settings&&state.settings.hijriAdjustDays)||0;if(adj)d.setDate(d.getDate()+adj);return d}
+function hijriParts(date){
+  const fmt=new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura',{day:'numeric',month:'numeric',year:'numeric'});
+  const p=fmt.formatToParts(date), get=t=>Number(p.find(x=>x.type===t)?.value);
+  return {day:get('day'),month:get('month'),year:get('year')}; // month is 1-12
+}
+function hijriToday(){return hijriParts(shariHijriAdjustedDate())}
+function hijriLabel(){
+  const en=state.lang==='en', {year}=hijriToday();
+  const fmt=new Intl.DateTimeFormat(en?'en-US-u-ca-islamic-umalqura':'ar-SA-u-ca-islamic-umalqura',{day:'numeric',month:'long'});
+  return `${fmt.format(shariHijriAdjustedDate())} ${year}${en?' AH':' هـ'}`;
+}
 function zadTaskEntry(day){
  const en=state.lang==='en', isFriday=zadDay(day)==='الجمعة';
  const text=isFriday
@@ -208,7 +225,7 @@ function renderHome(){
  :{start:'ابدأ ↓',marketing:'التسويق ↗',shari:'الشرعي ↗',quran:'القرآن ↗',today:'اليوم',remaining:'باقي',hours:'س',target:'الهدف',execute:'⚡ تنفيذ اليوم',list:'فروض اليوم وبناء النفس',next:'صناعة الأثر والاستقلال',rule:'الأركان والمبادئ الثابتة',r1:'المراجعات قبل الجديد',r2:'الشرعي والقرآن ثابتان',r3:'الكورسات تتقلص أولًا',ess:'الأساسيات أولًا',done:'خلصت يومك',left:'بنود باقية',focus:'ركز على اللي مطلوب النهارده فقط. الأساسيات أولًا، والباقي ياخد مساحته لما تفضى.'};
  return `<div class="hero">
    <section class="hero-main">
-     <div class="kicker">● ${esc(en?translateText(day):day)} · ${esc(en?translateText(todayDayType()):todayDayType())}</div>
+     <div class="kicker">● ${esc(en?translateText(day):day)} · ${esc(en?translateText(todayDayType()):todayDayType())} · ${esc(hijriLabel())}</div>
      <h1>${en?'Shape your day.<br><span class="hero-accent">Keep it simple.</span>':'رتّب يومك.<br><span class="hero-accent">وخلّيه بسيط.</span>'}</h1>
      <p>${T.focus}</p>
      <div class="hero-actions">
@@ -334,7 +351,7 @@ function renderSystemBase(){
  <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h2 style="font-size:20px">🔎 ${state.lang==='en'?'Weekly review':'التقييم الأسبوعي'}</h2><p>${state.lang==='en'?'Choose your real weekly rating — it saves and counts as the weekly review.':'اختار تقييمك الحقيقي للأسبوع — الاختيار بيتحفظ ويُعتبر المراجعة الأسبوعية منجزة.'}</p></div><span class="badge ${rating?'core':''}">${rating?(state.lang==='en'?'Saved':'محفوظ'):(state.lang==='en'?'Not rated':'لم يُقيَّم')}</span></div><div class="review-grid">${reviewChoices.map(([id,e,t,d])=>`<label class="review-choice ${rating===id?'selected':''}"><input type="radio" name="weekly-rating" value="${id}" ${rating===id?'checked':''} onchange="setWeeklyRating('${id}')"><span class="emoji">${e}</span><b>${t}</b><small>${d}</small></label>`).join('')}</div><div class="note" style="margin-top:11px">${state.lang==='en'?'Weekly review: 10–15 minutes. Ask: what was easy to sustain, what kept slipping, and what will you reduce or lock in next week?':'المراجعة الأسبوعية: 10–15 دقيقة. اسأل نفسك: ماذا التزمت به بسهولة؟ ماذا ظل يتأجل؟ وما الذي سأخففه أو أثبته الأسبوع القادم؟'}</div></section>
  ${consistencySection()}
  ${achievementSection()}
- <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 8px"><div><h3 style="margin:0">📱 ${state.lang==='en'?'Use it as an app':'استخدمها كتطبيق'}</h3><p>${state.lang==='en'?'Install Mihrab on your phone home screen as a standalone app.':'ثبّت Mihrab على شاشة الموبايل لفتحها كتطبيق مستقل بدل المتصفح.'}</p></div><span class="badge">PWA</span></div><button class="btn primary" onclick="installPWA()" id="installBtn">${state.lang==='en'?'Install on device ↗':'تثبيت على الجهاز ↗'}</button><div class="tiny muted" style="margin-top:8px">${state.lang==='en'?'Home-screen install: yes. A live home-screen widget requires a native app; this board is designed as a lightweight, installable PWA.':'الهوم سكرين: نعم. Widget حيّ فوق الشاشة الرئيسية يحتاج تطبيقًا أصليًا؛ اللوحة هنا مصممة لتكون PWA خفيفة وقابلة للتثبيت.'}</div></section><section class="section-box power-card" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h3>⚡ ${state.lang==='en'?'Performance':'الأداء'}</h3><p>${state.lang==='en'?'Control live effects without changing your plan.':'تحكم في المؤثرات الحية من غير ما تغيّر الخطة.'}</p></div><span class="badge">${state.settings.lowPower?(state.lang==='en'?'Low power':'توفير'): (state.lang==='en'?'Live':'حي')}</span></div><label class="switch"><input type="checkbox" ${state.settings.lowPower?'checked':''} onchange="state.settings.lowPower=this.checked;save();document.body.dataset.lowPower=this.checked?'true':'false';renderAll()"> ${state.lang==='en'?'Low Power Mode — reduce canvas/glow effects':'وضع توفير الطاقة — يقلل الـCanvas والـglow'}</label></section>
+ <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 8px"><div><h3 style="margin:0">📱 ${state.lang==='en'?'Use it as an app':'استخدمها كتطبيق'}</h3><p>${state.lang==='en'?'Install Mihrab on your phone home screen as a standalone app.':'ثبّت Mihrab على شاشة الموبايل لفتحها كتطبيق مستقل بدل المتصفح.'}</p></div><span class="badge">PWA</span></div><button class="btn primary" onclick="installPWA()" id="installBtn">${state.lang==='en'?'Install on device ↗':'تثبيت على الجهاز ↗'}</button><div class="tiny muted" style="margin-top:8px">${state.lang==='en'?'Home-screen install: yes. A live home-screen widget requires a native app; this board is designed as a lightweight, installable PWA.':'الهوم سكرين: نعم. Widget حيّ فوق الشاشة الرئيسية يحتاج تطبيقًا أصليًا؛ اللوحة هنا مصممة لتكون PWA خفيفة وقابلة للتثبيت.'}</div></section><section class="section-box power-card" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h3>⚡ ${state.lang==='en'?'Performance':'الأداء'}</h3><p>${state.lang==='en'?'Control live effects without changing your plan.':'تحكم في المؤثرات الحية من غير ما تغيّر الخطة.'}</p></div><span class="badge">${state.settings.lowPower?(state.lang==='en'?'Low power':'توفير'): (state.lang==='en'?'Live':'حي')}</span></div><label class="switch"><input type="checkbox" ${state.settings.lowPower?'checked':''} onchange="state.settings.lowPower=this.checked;save();document.body.dataset.lowPower=this.checked?'true':'false';renderAll()"> ${state.lang==='en'?'Low Power Mode — reduce canvas/glow effects':'وضع توفير الطاقة — يقلل الـCanvas والـglow'}</label></section><section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h3>🌙 ${state.lang==='en'?'Hijri date':'التاريخ الهجري'}</h3><p>${state.lang==='en'?'Calculated (Umm al-Qura). If your local moon-sighting announcement differs, correct it here.':'محسوب حسابيًا (أم القرى). لو إعلان الرؤية المحلي عندك اختلف، ظبّطه من هنا.'}</p></div></div><div style="display:flex;align-items:center;gap:12px"><button class="btn" onclick="state.settings.hijriAdjustDays--;save();rerender()">−1 ${state.lang==='en'?'day':'يوم'}</button><b style="min-width:170px;text-align:center">${esc(hijriLabel())}</b><button class="btn" onclick="state.settings.hijriAdjustDays++;save();rerender()">+1 ${state.lang==='en'?'day':'يوم'}</button></div>${state.settings.hijriAdjustDays?`<div class="tiny muted" style="margin-top:8px">${state.lang==='en'?'Current correction':'التعديل الحالي'}: ${state.settings.hijriAdjustDays>0?'+':''}${state.settings.hijriAdjustDays}</div>`:''}</section>
  <div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>📊 ${state.lang==='en'?'Marketing this week':'التسويق هذا الأسبوع'}</h3><div class="progress-head"><span>${state.lang==='en'?'Hours':'الساعات'}</span><b>${state.weekly.marketingHours||0} / 12</b></div><div class="progress"><i style="width:${Math.min(100,(state.weekly.marketingHours||0)/12*100)}%"></i></div><div class="field" style="margin-top:10px"><label>${state.lang==='en'?'Enter actual hours':'أدخل الساعات الفعلية'}</label><input type="number" min="0" step="0.5" value="${state.weekly.marketingHours||0}" onchange="state.weekly.marketingHours=parseFloat(this.value)||0;save();renderAll()"></div></section><section class="section-box"><h3>🛡️ ${state.lang==='en'?'Energy modes':'أوضاع الطاقة'}</h3><p><b>🟢 ${state.lang==='en'?'Normal:':'طبيعي:'}</b> ${state.lang==='en'?'Full plan.':'الخطة كاملة.'}</p><p><b>🟡 ${state.lang==='en'?'Low energy:':'منخفض الطاقة:'}</b> ${state.lang==='en'?'Prayer/adhkar + some Qur’an + small marketing output + old Anki only. Side content pauses first.':'الصلاة/الأذكار + قدر من القرآن + إنتاج تسويق صغير + Anki قديم فقط. المحتوى الجانبي يتوقف أولًا.'}</p><p><b>🔴 ${state.lang==='en'?'Exceptional:':'استثنائي:'}</b> ${state.lang==='en'?'Prayer + adhkar + a little Qur’an + rest.':'الصلاة + الأذكار + قرآن يسير + راحة.'}</p></section></div>
  <div class="section-box" style="margin-top:12px"><h3>🧩 ${state.lang==='en'?'Operating rules':'قواعد التشغيل'}</h3><div class="grid grid-2"><div>${(state.lang==='en'?['Sleep 6–8 hours.','During exams: regular Anki continues; new production reduces first.','If two days are lost in a row: no forced catch-up; review why.']:['النوم 6–8 ساعات.','امتحانات: Anki regular مستمر، والإنتاج الجديد يقل أولًا.','لو يومان ضاعا وراء بعض: لا تعويض قهري؛ راجع السبب.']).map(x=>`<p>${x}</p>`).join('')}</div><div>${(state.lang==='en'?['Islamic studies stay fixed.','Qur’an stays fixed but timing is flexible.','Marketing is the professional priority; McKinsey and Dose shrink first.']:['الشرعي ثابت.','القرآن ثابت لكن توقيته مرن.','Marketing هو الأولوية المهنية؛ McKinsey وDose أول من يتقلص.']).map(x=>`<p>${x}</p>`).join('')}</div></div></div>`;
 }
@@ -358,7 +375,7 @@ function renderSystemBase(){
     state.plan ||= {};
     state.weekly={marketingHours:0,mckinsey:false,dose:false,review:false,rating:'',cert:false,...(state.weekly||{})};
     state.weekDayTypes ||= {};
-    state.settings={lowPower:false,...(state.settings||{})};
+    state.settings={lowPower:false,hijriAdjustDays:0,...(state.settings||{})};
     state.inbox ||= [];
     state.library ||= [];
     state.metrics={focusMinutes:0,sessions:0,...(state.metrics||{})};
@@ -505,8 +522,19 @@ function renderSystemBase(){
 
   function toggleToday(id){
     const was=!!state.today[id]; state.today[id]=!was; save();
+    // Only custom (non-systemSeed) tracks have an unambiguous 1:1 id↔record link — fixes the
+    // long-standing "completedSessions never increments" gap for the class of tracks it's safe to
+    // fix (seeded tracks share ids with other logic, see Phase 5 notes; not guessed at here).
+    const lib=state.library.find(x=>x.id===id&&!x.systemSeed);
+    if(lib){ lib.completedSessions=Math.max(0,(lib.completedSessions||0)+(was?-1:1)); save(); }
     const row=document.querySelector(`[data-task-id="${CSS.escape(id)}"]`);
     if(row){
+      // A real click already syncs the checkbox's native `checked` automatically, but any
+      // programmatic call (Undo, and only Undo today) must sync it explicitly — otherwise the
+      // checkbox visually stays checked while state.today has already flipped, and the next real
+      // click reads the wrong `was` and re-fires the completion effect on what looks like an
+      // uncheck. Root cause of two separate bug reports; this one line fixes both.
+      const cb=row.querySelector('input[type="checkbox"]'); if(cb) cb.checked=state.today[id];
       row.classList.toggle('done',state.today[id]);
       if(state.today[id]){
         row.classList.remove('just-checked'); void row.offsetWidth; row.classList.add('just-checked');
@@ -589,11 +617,13 @@ function renderSystemBase(){
     const item=id?taskObjects().find(x=>x.id===id):nowNextLater()[0]; if(!item){infoModal(state.lang==='en'?'Core is complete.':'الأساسيات خلصت.');return;}
     const overlay=$('#focusMode'),shell=$('#focusShell'); overlay.classList.add('open');
     let end=Date.now()+(item.duration||25)*60000, done=false;
+    window.__mihrabFocusEnd=()=>end;
+    window.__mihrabExtendFocus=addMs=>{ end+=addMs; }; // extendFocus mutates *this* closure's `end` directly — paint() reads the same variable, so the running RAF loop picks it up on its very next frame with no restart needed
     function paint(){const left=Math.max(0,Math.ceil((end-Date.now())/1000));shell.querySelector('.focus-timer').textContent=`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;if(left<=0){if(!done){done=true;state.metrics.focusMinutes+=item.duration||25;state.metrics.sessions++;save()}return;} window.__mihrabFocusRAF=requestAnimationFrame(paint)}
     shell.innerHTML=`<div class="focus-kicker">${state.lang==='en'?'MIHRAB FOCUS':'تركيز مِحْرَاب'}</div><h2>${esc(item.label)}</h2><div class="focus-timer">25:00</div><div class="focus-actions"><button class="btn primary" onclick="finishFocus('${esc(item.id)}');closeFocus()">${state.lang==='en'?'Mark done':'تم'}</button><button class="btn" onclick="extendFocus(5)">+5m</button><button class="btn" onclick="closeFocus()">${state.lang==='en'?'Exit':'خروج'}</button></div>`;
-    paint(); window.__mihrabFocusEnd=()=>end; window.__mihrabFocusPaint=paint;
+    paint(); window.__mihrabFocusPaint=paint;
   }
-  function extendFocus(min){if(window.__mihrabFocusEnd){const end=window.__mihrabFocusEnd()+min*60000;window.__mihrabFocusEnd=()=>end;cancelAnimationFrame(window.__mihrabFocusRAF||0);window.__mihrabFocusPaint?.();}}
+  function extendFocus(min){window.__mihrabExtendFocus?.(min*60000);}
   function closeFocus(){$('#focusMode')?.classList.remove('open');cancelAnimationFrame(window.__mihrabFocusRAF||0);}
   function finishFocus(id){state.today[id]=true;save();closeFocus();rerender()}
   window.startFocus=startFocus;window.extendFocus=extendFocus;window.closeFocus=closeFocus;window.finishFocus=finishFocus;
