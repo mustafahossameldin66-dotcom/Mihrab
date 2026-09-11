@@ -18,12 +18,115 @@ const SHARI_MAP={'السبت':'زاد (تفريغ) + أحمد السيد + أي�
 const AWARENESS=[1,2,3,4,5,6,7,8,9];
 const OLD_KEY='dersh-integrated-v4';
 const KEY='study-dashboard-focus-v7';
-let state={theme:'mono',lang:'ar',view:'home',dayType:'كلية',todayDate:'',today:{},plan:{},weekly:{marketingHours:0,mckinsey:false,dose:false,review:false,rating:'',cert:false},weekDayTypes:{},quranFrameOpen:false,mode:'normal',modeDate:'',schemaVersion:3,settings:{lowPower:false},inbox:[],library:[],backupAt:'',metrics:{focusMinutes:0,sessions:0}};
+let state={theme:'mono',lang:'ar',view:'home',dayType:'كلية',todayDate:'',today:{},plan:{},weekly:{marketingHours:0,mckinsey:false,dose:false,review:false,rating:'',cert:false},weekDayTypes:{},quranFrameOpen:false,mode:'normal',modeDate:'',schemaVersion:3,settings:{lowPower:false},inbox:[],library:[],backupAt:'',metrics:{focusMinutes:0,sessions:0},history:{}};
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function effectiveDate(){const d=new Date();if(d.getHours()<5)d.setDate(d.getDate()-1);return d}
 function keyDate(){return effectiveDate().toLocaleDateString('en-CA')}
-function resetDay(){const k=keyDate();if(state.todayDate!==k){state.todayDate=k;state.today={};save()}}
+/* Append-only daily history (spec 45–53): committed exactly once, when the day that just ended
+   rolls over — never rewritten afterward. Gaps (app not opened that day) are left absent, not
+   fabricated as failures, per "never fabricate historical data". */
+function commitDaySnapshot(dateKey,todayState,dayName){
+  const items=dayTasks(dayName); const core=items.filter(([id])=>coreIds.has(id));
+  const coreDone=core.filter(([id])=>!!todayState[id]).length;
+  const allDone=items.filter(([id])=>!!todayState[id]).length;
+  state.history[dateKey]={coreDone,coreTotal:core.length,allDone,allTotal:items.length,coreComplete:core.length>0&&coreDone===core.length};
+}
+function resetDay(){
+  const k=keyDate();
+  if(state.todayDate!==k){
+    if(state.todayDate){ // skip on very first-ever load — there's no prior day to record
+      const prevDayName=JS_WEEKDAY_AR[new Date(state.todayDate+'T12:00:00').getDay()];
+      commitDaySnapshot(state.todayDate,state.today,prevDayName);
+    }
+    state.todayDate=k; state.today={}; save();
+  }
+}
+function liveTodayRecord(){
+  const items=dayTasks(todayName()); const core=items.filter(([id])=>coreIds.has(id));
+  const coreDone=core.filter(([id])=>!!state.today[id]).length;
+  const allDone=items.filter(([id])=>!!state.today[id]).length;
+  return {coreDone,coreTotal:core.length,allDone,allTotal:items.length,coreComplete:core.length>0&&coreDone===core.length};
+}
+function computeStreak(){
+  let streak=coreCompleteNow()?1:0;
+  const today=effectiveDate();
+  for(let i=1;i<400;i++){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const rec=state.history[d.toLocaleDateString('en-CA')];
+    if(rec&&rec.coreComplete) streak++; else break;
+  }
+  return streak;
+}
+function computeBestStreak(){ // not yet surfaced in the UI — held for Phase 5's achievement view
+  const dates=Object.keys(state.history).sort();
+  let best=0,cur=0,prevKey=null;
+  for(const dk of dates){
+    if(state.history[dk].coreComplete){
+      const diff=prevKey?Math.round((new Date(dk+'T12:00:00')-new Date(prevKey+'T12:00:00'))/86400000):1;
+      cur=diff===1?cur+1:1; best=Math.max(best,cur); prevKey=dk;
+    } else { cur=0; prevKey=null; }
+  }
+  return Math.max(best,computeStreak());
+}
+function weekBounds(){ // Arabic week starts Saturday (DAYS[0])
+  const today=effectiveDate(); const idx=DAYS.indexOf(JS_WEEKDAY_AR[today.getDay()]);
+  const start=new Date(today); start.setDate(start.getDate()-idx); return start;
+}
+// Generic period rollup (spec 46–47): every week/month/year/all-time number below is this same
+// function applied to a different date range — one implementation, not four parallel ones.
+function periodSummary(startDate,endDate){
+  const todayKey=keyDate(), endKey=endDate.toLocaleDateString('en-CA'); const cursor=new Date(startDate);
+  let elapsed=0,activeDays=0,doneDays=0;
+  while(true){
+    const k=cursor.toLocaleDateString('en-CA');
+    if(k>endKey||k>todayKey) break; // compare date-keys, not Date magnitudes — a Date carries today's
+    elapsed++;                      // real clock time while cursor sits at a fixed time-of-day, so a
+    const rec=(k===todayKey)?liveTodayRecord():state.history[k]; // magnitude compare could drop "today"
+    if(rec){ if(rec.allDone>0) activeDays++; if(rec.coreComplete) doneDays++; }             // before noon
+    cursor.setDate(cursor.getDate()+1);
+  }
+  return {elapsed,activeDays,doneDays,pct:elapsed?Math.round(doneDays/elapsed*100):0};
+}
+function weekSummary(){ const start=weekBounds(); const end=new Date(start); end.setDate(end.getDate()+6); return periodSummary(start,end); }
+function monthBounds(){ const t=effectiveDate(); return {start:new Date(t.getFullYear(),t.getMonth(),1),end:new Date(t.getFullYear(),t.getMonth()+1,0)}; }
+function monthSummary(){ const {start,end}=monthBounds(); return periodSummary(start,end); }
+function yearBounds(){ const t=effectiveDate(); return {start:new Date(t.getFullYear(),0,1),end:new Date(t.getFullYear(),11,31)}; }
+function yearSummary(){ const {start,end}=yearBounds(); return periodSummary(start,end); }
+function firstTrackedKey(){ const keys=Object.keys(state.history).sort(); return keys.length?keys[0]:keyDate(); }
+function allTimeSummary(){ const first=firstTrackedKey(); return {...periodSummary(new Date(first+'T12:00:00'),effectiveDate()),firstDate:first}; }
+function monthlyBreakdown(){ // one row per calendar month from the first tracked day through the current month
+  const first=firstTrackedKey(); const firstD=new Date(first+'T12:00:00'), now=effectiveDate();
+  const out=[]; let y=firstD.getFullYear(), m=firstD.getMonth();
+  while(y<now.getFullYear()||(y===now.getFullYear()&&m<=now.getMonth())){
+    const start=new Date(y,m,1), end=new Date(y,m+1,0);
+    out.push({ym:`${y}-${String(m+1).padStart(2,'0')}`,...periodSummary(start,end)});
+    m++; if(m>11){m=0;y++;}
+  }
+  return out;
+}
+function strongestWeakestMonth(){ // never fabricated: only considers months with real recorded activity (spec 46)
+  const rows=monthlyBreakdown().filter(r=>r.activeDays>0);
+  if(!rows.length) return {strongest:null,weakest:null};
+  let strongest=rows[0],weakest=rows[0];
+  for(const r of rows){ if(r.pct>strongest.pct) strongest=r; if(r.pct<weakest.pct) weakest=r; }
+  return {strongest,weakest};
+}
+function monthHeatmapCells(){ // restrained activity heatmap for the current calendar month (spec 48)
+  const t=effectiveDate(), y=t.getFullYear(), m=t.getMonth();
+  const daysInMonth=new Date(y,m+1,0).getDate(), todayKey=keyDate();
+  let cells='';
+  for(let day=1;day<=daysInMonth;day++){
+    const k=new Date(y,m,day).toLocaleDateString('en-CA');
+    let cls='hm-future';
+    if(k<=todayKey){
+      const rec=(k===todayKey)?liveTodayRecord():state.history[k];
+      cls=rec?(rec.coreComplete?'hm-done':(rec.allDone>0?'hm-active':'hm-empty')):'hm-empty';
+    }
+    cells+=`<span class="hm-cell ${cls}" title="${esc(k)}"></span>`;
+  }
+  return cells;
+}
 function todayName(){return JS_WEEKDAY_AR[effectiveDate().getDay()]}
 function todayDayType(){return state.weekDayTypes[todayName()]||state.dayType||'كلية'}
 function marketingTarget(){const t=todayDayType();return t==='كلية'?'45–60 دقيقة':t==='بدون كلية'?'2–2.5 ساعة':'3.5–4 ساعات'}
@@ -44,13 +147,26 @@ const TASK_EN={
  pr_f:'Fajr — on time',pr_d:'Dhuhr — on time',pr_a:'Asr — on time',pr_m:'Maghrib — on time',pr_i:'Isha — on time',
  azkar:'Morning/evening adhkar + du‘a for family and the deceased',bro:'Brother’s wird — Qur’an / night prayer / adhkar',rafiq:'Rafiq Qur’an project',quran:'Qur’an review — prayer room between lectures/sections or during transit',
  marketing:'Marketing — '+marketingTarget(),anki:'Anki — due reviews first; new cards within budget',easy:'EasyPeasy Way to Quit — today’s reading',mouth:'Oral-care routine — morning & evening',skin:'Skincare routine — morning & evening',hair:'Hair routine — according to your routine',
- aw:'Building the Contemporary Muslim’s Awareness — today’s session',zad:'Zad Academy — 3 lectures',taj:'Tajweed — video',azb:'Al-Azbi training transcription into Anki — ~1 hour',linkedin:'Weekly LinkedIn post',review:'Weekly review — 10–15 minutes'
+ aw:'Building the Contemporary Muslim’s Awareness — today’s session',taj:'Tajweed — video',azb:'Al-Azbi training transcription into Anki — ~1 hour',linkedin:'Weekly LinkedIn post',review:'Weekly review — 10–15 minutes'
 };
 function taskHTML(items){return '<div class="tasks">'+items.map(([id,text])=>{const done=tChecked(id);const badge=taskBadge(id);const label=(state.lang==='en'&&TASK_EN[id])?TASK_EN[id]:text;return `<div class="task-item ${done?'done':''}" data-task-id="${esc(id)}"><input type="checkbox" id="task_${esc(id)}" ${done?'checked':''} onchange="toggleToday('${esc(id)}')"><label class="task-text" for="task_${esc(id)}">${esc(label)}</label>${badge?`<span class="mihrab-badge badge-${badge[1]}">${esc(badge[0])}</span>`:''}</div>`}).join('')+'</div>'}
+// Zad Academy runs on the Sharia day, not the app's 5am-cutoff calendar day: a Sharia day begins at
+// that evening's Maghreb. We don't calculate real Maghreb times, so we use the Maghreb prayer checkbox
+// (pr_m) — already logged by the user every day — as the real-world signal that Maghreb has passed.
+// Once it's checked, Zad content rolls forward to the next named day (Thursday → Friday's 3 lectures,
+// Friday → Saturday's single lecture), even though the app's own "day" doesn't flip until 5am.
+function zadDay(day){return (state.today&&state.today.pr_m)?DAYS[(DAYS.indexOf(day)+1)%DAYS.length]:day}
+function zadTaskEntry(day){
+ const en=state.lang==='en', isFriday=zadDay(day)==='الجمعة';
+ const text=isFriday
+  ?(en?'🎓 Zad Academy — 3 lectures (Friday)':'🎓 أكاديمية زاد — 3 محاضرات (الجمعة)')
+  :(en?'🎓 Zad Academy — today’s lecture':'🎓 أكاديمية زاد — محاضرة اليوم');
+ return ['zad',text]
+}
 function dayTasks(day){
  const base=[['pr_f','🕌 الفجر — في وقتها'],['pr_d','🕌 الظهر — في وقتها'],['pr_a','🕌 العصر — في وقتها'],['pr_m','🕌 المغرب — في وقتها'],['pr_i','🕌 العشاء — في وقتها'],['azkar','📿 أذكار الصباح والمساء + الدعاء للأهل والأموات'],['bro','🤲 ورد أخي — قرآن / قيام / أذكار'],['rafiq','✨ مشروع رفيق القرآن'],['quran','📖 مراجعة القرآن — المصلى بين المحاضرات/السكاشن أو المواصلات'],['marketing','💻 التسويق — '+marketingTarget()],['anki','🧠 Anki — المستحق أولًا، والجديد حسب الميزانية'],['easy','📗 EasyPeasy Way to Quit — قراءة اليوم'],['mouth','🪥 روتين الفم — صباحًا ومساءً'],['skin','🧴 روتين البشرة — صباحًا ومساءً'],['hair','💆 روتين الشعر — حسب روتينك']];
- const extra={'السبت':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الأحد':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة'],['linkedin','📝 بوست LinkedIn الأسبوعي'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الاثنين':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الثلاثاء':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الأربعاء':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الخميس':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة'],['zad','🎓 أكاديمية زاد — 3 محاضرات']], 'الجمعة':[['aw','🧭 تأسيس وعي المسلم المعاصر — حصة أطول'],['review','🔍 المراجعة الأسبوعية — 10–15 دقيقة ليلاً'],['zad','🎓 أكاديمية زاد — اختياري: تعويض محاضرة فاتت فقط']]};
- return base.concat(extra[day]||[])
+ const extra={'السبت':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم']], 'الأحد':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة'],['linkedin','📝 بوست LinkedIn الأسبوعي']], 'الاثنين':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم']], 'الثلاثاء':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة']], 'الأربعاء':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم']], 'الخميس':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة']], 'الجمعة':[['aw','🧭 تأسيس وعي المسلم المعاصر — حصة أطول'],['review','🔍 المراجعة الأسبوعية — 10–15 دقيقة ليلاً']]};
+ return base.concat(extra[day]||[]).concat([zadTaskEntry(day)])
 }
 function shariItems(day){if(day==='الجمعة')return [['sz1','زاد — محاضرة 1'],['sz2','زاد — محاضرة 2'],['sz3','زاد — محاضرة 3'],['st','تدبر — أحمد عبد المنعم']];const raw=SHARI_MAP[day]||'';const arr=raw.replace(/^زاد \(تفريغ\) \+ /,'').split(' + ');return [['z','زاد — محاضرة اليوم'],['s2',arr[0]||'المصدر الثاني'],['s3',arr[1]||'المصدر الثالث']]}
 function applyLanguage(){document.documentElement.lang=state.lang;document.documentElement.dir=state.lang==='en'?'ltr':'rtl';document.body.dataset.lang=state.lang;document.body.dataset.theme=state.theme;document.documentElement.style.colorScheme=state.theme==='paper'?'light':'dark';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=getComputedStyle(document.body).getPropertyValue('--bg').trim()||'#0b0f12';const tag=document.getElementById('brandTagline');if(tag)tag.textContent=state.lang==='en'?'Build yourself. Create impact. Earn independence.':'بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.';}
@@ -83,6 +199,7 @@ function setTheme(t){const allowed=['aurora','midnight','sunrise','paper','mono'
 function cycleTheme(){const arr=['aurora','midnight','sunrise','paper','mono'];setTheme(arr[(arr.indexOf(state.theme)+1)%arr.length])}
 function renderHome(){
  const day=todayName(), items=dayTasks(day), pr=pct(items.map(x=>x[0]),state.today);
+ const ws=weekSummary(), streak=computeStreak();
  const done=pr.n, total=pr.total, remaining=Math.max(total-done,0);
  const modes=['كلية','بدون كلية','ديب وورك'];
  const en=state.lang==='en';
@@ -111,6 +228,8 @@ function renderHome(){
    <div class="stat-card"><small>${T.remaining}</small><strong>${remaining}</strong></div>
    <div class="stat-card"><small>${en?'Marketing':'التسويق'}</small><strong>${state.weekly.marketingHours||0}${T.hours}</strong></div>
    <div class="stat-card"><small>${T.target}</small><strong>12${T.hours}</strong></div>
+   <div class="stat-card" title="${ws.doneDays}/${ws.elapsed} ${en?'days':'أيام'}"><small>${en?'This week':'الأسبوع ده'}</small><strong>${ws.pct}%</strong></div>
+   <div class="stat-card"><small>${en?'Current streak':'التتابع الحالي'}</small><strong>${streak} ${en?'d':'يوم'}</strong></div>
  </div>
  ${smart()}
  <div class="section-title" id="todayTasks"><div><h2>${T.execute}</h2><p>${esc(en?translateText(day):day)} · ${T.ess}.</p></div></div>
@@ -148,6 +267,32 @@ function renderQuran(){
  ${open?`<div class="section-title"><div><h2>✦ رفيق القرآن</h2><p>يُحمّل الإطار فقط عند طلبه حتى تظل اللوحة سريعة وخفيفة.</p></div><span class="badge">Cloudflare</span></div><div class="iframe-wrap"><div class="iframe-head"><b>رفيق القرآن</b><div style="display:flex;gap:7px;align-items:center"><span class="badge">Live</span><button class="icon-btn" onclick="toggleRafiqFrame()" aria-label="إغلاق">×</button></div></div><iframe id="rafiqFrame" title="رفيق القرآن داخل Mihrab" src="${RAFIQ_URL}" loading="lazy" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe></div>`:''}`;
 }
 function renderCourses(){return `<div class="section-title"><div><h2>📚 الكورسات والأنظمة المساندة</h2><p>مساندة لا تسبق الأساسيات.</p></div></div><div class="grid grid-3"><section class="section-box"><h3>🧠 Anki</h3><p>المراجعة المستحقة أولًا. الجديد بميزانية ثابتة. أماكنه المفضلة: المواصلات، المصلى، والفواصل.</p></section><section class="section-box"><h3>🚀 McKinsey Forward</h3><p>حوالي ساعتين أسبوعيًا. أول ما ينكمش عند ضغط الدراسة.</p><label class="task ${state.weekly.mckinsey?'done':''}"><input type="checkbox" ${state.weekly.mckinsey?'checked':''} onchange="state.weekly.mckinsey=this.checked;save();renderAll()"><span>أنجزت نصيب الأسبوع</span></label></section><section class="section-box"><h3>💊 The Pharmacist's Guide to Dose Calculations</h3><p>2:41 ساعة إجماليًا · جلسات قصيرة 10–15 دقيقة تقريبًا. أيضًا من أول الأشياء التي يمكن تأجيلها عند الضغط.</p><label class="task ${state.weekly.dose?'done':''}"><input type="checkbox" ${state.weekly.dose?'checked':''} onchange="state.weekly.dose=this.checked;save();renderAll()"><span>أنجزت نصيب الأسبوع</span></label></section></div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🎓 HubSpot / Google</h3><p>20–30 دقيقة وقت الفراغ، بالتوازي مع المعسكر، بدون إعادة شرح ما تدرسه بالفعل.</p><label class="task ${state.weekly.cert?'done':''}"><input type="checkbox" ${state.weekly.cert?'checked':''} onchange="state.weekly.cert=this.checked;save();renderAll()"><span>أنجزت نصيب الشهادة الموازية</span></label></section><section class="section-box"><h3>📗 EasyPeasy</h3><p>يظل موجودًا كقراءة خفيفة داخل اليوم، ولا يضخم الخطة الرئيسية.</p></section></div><div class="section-box" style="margin-top:12px;border-color:color-mix(in srgb,var(--c) 28%,var(--line))"><h3>⏸️ Drug Commercialization</h3><p>مؤجل إلى ما بعد معسكر التسويق.</p></div>`}
+function consistencySection(){
+ const en=state.lang==='en';
+ const ws=weekSummary(), ms=monthSummary(), ys=yearSummary(), as=allTimeSummary();
+ const streak=computeStreak(), best=computeBestStreak();
+ const {strongest,weakest}=strongestWeakestMonth();
+ const monthName=new Date().toLocaleDateString(en?'en-US':'ar-EG',{month:'long',year:'numeric'});
+ const ymLabel=ym=>{ const [y,m]=ym.split('-').map(Number); return new Date(y,m-1,1).toLocaleDateString(en?'en-US':'ar-EG',{month:'long',year:'numeric'}); };
+ return `<section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 8px"><div><h3 style="margin:0">📈 ${en?'Consistency over time':'الالتزام مع الوقت'}</h3><p>${en?'Based on days actually recorded — gaps are left unknown, never counted against you.':'مبني على الأيام المسجَّلة فعليًا — الفجوات بتتسجل كـ"غير معروف"، مش ضدك.'}</p></div></div>
+ <div class="stats-grid">
+   <div class="stat-card" title="${ws.doneDays}/${ws.elapsed} ${en?'days':'أيام'}"><small>${en?'This week':'الأسبوع ده'}</small><strong>${ws.pct}%</strong></div>
+   <div class="stat-card" title="${ms.doneDays}/${ms.elapsed} ${en?'days':'أيام'}"><small>${en?'This month':'الشهر ده'}</small><strong>${ms.pct}%</strong></div>
+   <div class="stat-card" title="${ys.doneDays}/${ys.elapsed} ${en?'days':'أيام'}"><small>${en?'This year':'السنة دي'}</small><strong>${ys.pct}%</strong></div>
+   <div class="stat-card" title="${en?'Since':'من'} ${as.firstDate}"><small>${en?'All-time':'إجمالي'}</small><strong>${as.pct}%</strong></div>
+ </div>
+ <div class="grid grid-2" style="margin-top:10px">
+   <div class="stat-card"><small>${en?'Current streak':'التتابع الحالي'}</small><strong>${streak} ${en?'d':'يوم'}</strong></div>
+   <div class="stat-card"><small>${en?'Best streak':'أفضل تتابع'}</small><strong>${best} ${en?'d':'يوم'}</strong></div>
+ </div>
+ ${strongest?`<div class="grid grid-2" style="margin-top:10px">
+   <div class="stat-card"><small>${en?'Strongest month':'أقوى شهر'}</small><strong>${strongest.pct}%</strong><div class="tiny muted" style="margin-top:2px">${esc(ymLabel(strongest.ym))}</div></div>
+   <div class="stat-card"><small>${en?'Weakest month':'أضعف شهر'}</small><strong>${weakest.pct}%</strong><div class="tiny muted" style="margin-top:2px">${esc(ymLabel(weakest.ym))}</div></div>
+ </div>`:`<div class="note" style="margin-top:10px">${en?'Not enough recorded months yet to compare — this fills in over time.':'لسه مفيش شهور مسجَّلة كفاية للمقارنة — هتتظهر مع الوقت.'}</div>`}
+ <div class="tiny muted" style="margin-top:12px;margin-bottom:6px">${esc(monthName)}</div>
+ <div class="month-heatmap">${monthHeatmapCells()}</div>
+ </section>`;
+}
 function renderSystemBase(){
  const themes = state.lang==='en'
   ? [['aurora','Aurora','Emerald + Gold'],['midnight','Midnight','Indigo + Gold'],['sunrise','Velvet','Amber + Burgundy'],['paper','Champagne','Ivory + Gold'],['mono','Obsidian','Platinum + Gold']]
@@ -168,6 +313,7 @@ function renderSystemBase(){
  <div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🗓️ ${state.lang==='en'?'Day types':'نوع كل يوم'}</h3>${DAYS.map(d=>`<div class="quote-settings"><div><b>${dayLabels[d]}</b><div class="tiny muted">${state.lang==='en'?'Sets the marketing dose for that day':'يحدد جرعة التسويق لذلك اليوم'}</div></div><select aria-label="${state.lang==='en'?'Day type for ':'نوع يوم '}${dayLabels[d]}" onchange="state.weekDayTypes['${d}']=this.value;save();renderAll()">${['كلية','بدون كلية','ديب وورك','راحة'].map(v=>`<option value="${v}" ${(state.weekDayTypes[d]||'كلية')===v?'selected':''}>${dayTypeLabels[v]}</option>`).join('')}</select></div>`).join('')}</section>
  <section class="section-box"><h3>🎨 ${state.lang==='en'?'Board identity':'هوية اللوحة'}</h3><p class="muted" style="margin-top:-3px">${state.lang==='en'?'Themes, language, and day types live here. The plan itself stays fixed.':'الثيمات واللغة ونوع كل يوم هنا. الخطة نفسها تفضل ثابتة.'}</p><div class="note">${state.lang==='en'?'These controls change presentation and operation only while keeping your plan intact.':'التغيير هنا بصري وتشغيلي فقط: الثيم يغيّر الخلفية والزجاج والحدود والظلال والإضاءة مع الحفاظ على نفس المحتوى.'}</div></section></div>
  <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h2 style="font-size:20px">🔎 ${state.lang==='en'?'Weekly review':'التقييم الأسبوعي'}</h2><p>${state.lang==='en'?'Choose your real weekly rating — it saves and counts as the weekly review.':'اختار تقييمك الحقيقي للأسبوع — الاختيار بيتحفظ ويُعتبر المراجعة الأسبوعية منجزة.'}</p></div><span class="badge ${rating?'core':''}">${rating?(state.lang==='en'?'Saved':'محفوظ'):(state.lang==='en'?'Not rated':'لم يُقيَّم')}</span></div><div class="review-grid">${reviewChoices.map(([id,e,t,d])=>`<label class="review-choice ${rating===id?'selected':''}"><input type="radio" name="weekly-rating" value="${id}" ${rating===id?'checked':''} onchange="setWeeklyRating('${id}')"><span class="emoji">${e}</span><b>${t}</b><small>${d}</small></label>`).join('')}</div><div class="note" style="margin-top:11px">${state.lang==='en'?'Weekly review: 10–15 minutes. Ask: what was easy to sustain, what kept slipping, and what will you reduce or lock in next week?':'المراجعة الأسبوعية: 10–15 دقيقة. اسأل نفسك: ماذا التزمت به بسهولة؟ ماذا ظل يتأجل؟ وما الذي سأخففه أو أثبته الأسبوع القادم؟'}</div></section>
+ ${consistencySection()}
  <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 8px"><div><h3 style="margin:0">📱 ${state.lang==='en'?'Use it as an app':'استخدمها كتطبيق'}</h3><p>${state.lang==='en'?'Install Mihrab on your phone home screen as a standalone app.':'ثبّت Mihrab على شاشة الموبايل لفتحها كتطبيق مستقل بدل المتصفح.'}</p></div><span class="badge">PWA</span></div><button class="btn primary" onclick="installPWA()" id="installBtn">${state.lang==='en'?'Install on device ↗':'تثبيت على الجهاز ↗'}</button><div class="tiny muted" style="margin-top:8px">${state.lang==='en'?'Home-screen install: yes. A live home-screen widget requires a native app; this board is designed as a lightweight, installable PWA.':'الهوم سكرين: نعم. Widget حيّ فوق الشاشة الرئيسية يحتاج تطبيقًا أصليًا؛ اللوحة هنا مصممة لتكون PWA خفيفة وقابلة للتثبيت.'}</div></section><section class="section-box power-card" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h3>⚡ ${state.lang==='en'?'Performance':'الأداء'}</h3><p>${state.lang==='en'?'Control live effects without changing your plan.':'تحكم في المؤثرات الحية من غير ما تغيّر الخطة.'}</p></div><span class="badge">${state.settings.lowPower?(state.lang==='en'?'Low power':'توفير'): (state.lang==='en'?'Live':'حي')}</span></div><label class="switch"><input type="checkbox" ${state.settings.lowPower?'checked':''} onchange="state.settings.lowPower=this.checked;save();document.body.dataset.lowPower=this.checked?'true':'false';renderAll()"> ${state.lang==='en'?'Low Power Mode — reduce canvas/glow effects':'وضع توفير الطاقة — يقلل الـCanvas والـglow'}</label></section>
  <div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>📊 ${state.lang==='en'?'Marketing this week':'التسويق هذا الأسبوع'}</h3><div class="progress-head"><span>${state.lang==='en'?'Hours':'الساعات'}</span><b>${state.weekly.marketingHours||0} / 12</b></div><div class="progress"><i style="width:${Math.min(100,(state.weekly.marketingHours||0)/12*100)}%"></i></div><div class="field" style="margin-top:10px"><label>${state.lang==='en'?'Enter actual hours':'أدخل الساعات الفعلية'}</label><input type="number" min="0" step="0.5" value="${state.weekly.marketingHours||0}" onchange="state.weekly.marketingHours=parseFloat(this.value)||0;save();renderAll()"></div></section><section class="section-box"><h3>🛡️ ${state.lang==='en'?'Energy modes':'أوضاع الطاقة'}</h3><p><b>🟢 ${state.lang==='en'?'Normal:':'طبيعي:'}</b> ${state.lang==='en'?'Full plan.':'الخطة كاملة.'}</p><p><b>🟡 ${state.lang==='en'?'Low energy:':'منخفض الطاقة:'}</b> ${state.lang==='en'?'Prayer/adhkar + some Qur’an + small marketing output + old Anki only. Side content pauses first.':'الصلاة/الأذكار + قدر من القرآن + إنتاج تسويق صغير + Anki قديم فقط. المحتوى الجانبي يتوقف أولًا.'}</p><p><b>🔴 ${state.lang==='en'?'Exceptional:':'استثنائي:'}</b> ${state.lang==='en'?'Prayer + adhkar + a little Qur’an + rest.':'الصلاة + الأذكار + قرآن يسير + راحة.'}</p></section></div>
  <div class="section-box" style="margin-top:12px"><h3>🧩 ${state.lang==='en'?'Operating rules':'قواعد التشغيل'}</h3><div class="grid grid-2"><div>${(state.lang==='en'?['Sleep 6–8 hours.','During exams: regular Anki continues; new production reduces first.','If two days are lost in a row: no forced catch-up; review why.']:['النوم 6–8 ساعات.','امتحانات: Anki regular مستمر، والإنتاج الجديد يقل أولًا.','لو يومان ضاعا وراء بعض: لا تعويض قهري؛ راجع السبب.']).map(x=>`<p>${x}</p>`).join('')}</div><div>${(state.lang==='en'?['Islamic studies stay fixed.','Qur’an stays fixed but timing is flexible.','Marketing is the professional priority; McKinsey and Dose shrink first.']:['الشرعي ثابت.','القرآن ثابت لكن توقيته مرن.','Marketing هو الأولوية المهنية؛ McKinsey وDose أول من يتقلص.']).map(x=>`<p>${x}</p>`).join('')}</div></div></div>`;
@@ -196,6 +342,7 @@ function renderSystemBase(){
     state.inbox ||= [];
     state.library ||= [];
     state.metrics={focusMinutes:0,sessions:0,...(state.metrics||{})};
+    state.history ||= {};
     state.schemaVersion=3;
   }
 
@@ -393,6 +540,10 @@ function renderSystemBase(){
     }
     $('#view-home .stat-card:nth-child(1) strong')?.replaceChildren(document.createTextNode(`${p.n}/${p.total}`));
     $('#view-home .stat-card:nth-child(2) strong')?.replaceChildren(document.createTextNode(String(Math.max(p.total-p.n,0))));
+    const ws=weekSummary(), streak=computeStreak(), en=state.lang==='en';
+    const wsCard=$('#view-home .stat-card:nth-child(5)'), streakCard=$('#view-home .stat-card:nth-child(6) strong');
+    if(wsCard){ wsCard.title=`${ws.doneDays}/${ws.elapsed} ${en?'days':'أيام'}`; wsCard.querySelector('strong')?.replaceChildren(document.createTextNode(`${ws.pct}%`)); }
+    streakCard?.replaceChildren(document.createTextNode(`${streak} ${en?'d':'يوم'}`));
   }
   window.toggleToday=toggleToday;window.togglePlan=togglePlan;window.updateRing=updateRing;
   function setWeeklyRating(v){state.weekly.rating=v;state.weekly.review=true;save();rerender()}
@@ -464,6 +615,11 @@ function renderSystemBase(){
   migrate();librarySeeds();applyLanguage();applyTheme();ensureModals();
   const initial=validView((location.hash||'').slice(1)||state.view);route(initial,{scroll:false,push:false});
   bindThemePointer();
+  // Day boundary was previously only checked at page load — if the tab/PWA stayed open across
+  // the 5am cutoff, today's checklist (and now the history snapshot it feeds) would silently stay
+  // stale until a manual reload. Poll cheaply, and catch up immediately when the tab regains focus.
+  setInterval(()=>{ if(keyDate()!==state.todayDate){ resetDay(); rerender(); } },60000);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden && keyDate()!==state.todayDate){ resetDay(); rerender(); } });
 })();
 
 
