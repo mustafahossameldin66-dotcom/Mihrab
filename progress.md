@@ -64,8 +64,7 @@ Read index.html, app.js (456 lines), styles.css (151 lines → now larger), sw.j
   - Done: **Undo** (spec 24's explicit requirement, previously missing). `toggleToday` now calls `showUndo(id,label)` only on the false→true transition (never on unchecking). A single shared `#undoToast` pill (created once, reused) shows the task's own label + an Undo button, auto-dismisses after 4.2s, sits above the mobile nav bar on small screens. Clicking Undo calls `undoLastCheck(id)`, which re-runs `toggleToday` (so the same code path handles both directions — no parallel "undo" state machine).
   - Done: `.stat-card` reworked toward spec 22's "precision instrument" language — layered gradient using the existing `--surface-3` token (no new color), inset top highlight + bottom shadow for a bezel feel, a thin luminous baseline (reusing the same hairline-gradient language as the task-row hover line elsewhere, so it reads as the same visual system, not a new one), `tabular-nums` on the numbers so they don't jitter in width as they animate.
   - Done: bumped cache again (`mihrab-v28-spatial` → `mihrab-v28-phase3`, index.html `?v=28.0`→`28.1`) — this is now the established per-build habit from Phase 1's lesson, not a one-off.
-  - **Found, not fixed (logged for Phase 7, not fixed now to keep this phase's diff scoped and easy to verify in isolation):**
-    - `app.js` line ~300 has a delegated listener for `input[type="checkbox"][data-today-id]` — grepped the whole file, **nothing renders that attribute** (only `data-task-id` is ever set). This listener is dead code.
+  - **Resolved in Phase 7:** the stale `data-today-id` delegated listener was removed; today task rows use `data-task-id` plus their native change handler.
     - `styles.css` comma-groups almost every task-row rule across four selectors: `.task-item, .mtask, .lecture, .task`. Grepped for where `.mtask`/`.lecture`/`.task` markup is actually generated — **found none**; every real checklist row in the current codebase renders as `.task-item`. These three extra selector names appear to be dead CSS from an earlier markup version. Safe to remove (they match nothing), but left alone this phase to avoid mixing unrelated cleanup into a phase that's supposed to be about completion/stats only.
 
 - [~] **Phase 4 — Consistency/Analytics engine (foundation done — "Phase 4a"; the rest is "Phase 4b", not started).**
@@ -113,7 +112,17 @@ Read index.html, app.js (456 lines), styles.css (151 lines → now larger), sw.j
 
 - [ ] **Phase 6c — Prayer-time sequencing (new request, not previously scoped).** The person wants prayer checkboxes to actually respect time-of-day: can't check Maghreb before Asr, etc., and each prayer should show "it's your time now" rather than just being five flat checkboxes. Needs a real prayer-time calculation (standard astronomical method, pure JS, no network — e.g. the widely-used PrayTimes.org formulas) driven by `navigator.geolocation`, with a graceful, non-breaking fallback (existing plain checkboxes, no sequencing enforced) if location is denied or unavailable — this must never brick the five prayer checkboxes for someone who says no to location. Design this fully (method choice, madhhab-dependent Asr timing, high-latitude edge cases are NOT a concern for this person's location but keep the formula generic) before writing UI. Not started.
 
-- [ ] **Phase 6d — Sunnah content (from the person's own pasted planning conversation; verbatim scope below so nothing is lost or re-litigated). Depends on Phase 6b's Hijri date (done) for anything date-based.**
+- [x] **Phase 6c — Prayer-time sequencing and live prayer state.**
+  - Added a pure-JS local prayer-time engine based on the PrayTimes astronomical approach, with the Egyptian General Authority of Survey as the default calculation method (19.5° Fajr / 17.5° Isha) and a Muslim World League option. The Asr juristic choice is explicitly configurable: Standard (shadow factor 1; Shafi‘i/Maliki/Hanbali) or Hanafi (shadow factor 2). citeturn978085search0turn978085search1
+  - Added device geolocation as an optional runtime input. Coordinates are not written into app state/localStorage; the app only uses them in memory to calculate today's times. If geolocation is unsupported, denied, times cannot be calculated, or the permission is unavailable, the five prayer checkboxes intentionally fall back to the old unrestricted behavior instead of being blocked.
+  - Prayer rows now show the calculated time plus a live state: upcoming, current ("وقت الصلاة الآن"), late, or completed. The current prayer gets a restrained visual emphasis rather than a distracting animation.
+  - Added sequencing enforcement: after Fajr starts it can be logged normally; Dhuhr requires Fajr to be logged; Asr requires Dhuhr; Maghrib requires Asr; Isha requires Maghrib. A later prayer is disabled until its predecessor is checked, while an already-started/missed prayer remains loggable so the checklist can still record reality.
+  - Added System controls for calculation method, Asr method, and refreshing the device location. Settings persist, but the actual coordinates do not.
+  - Added a lightweight 30-second clock poll so the Home prayer state crosses from upcoming → current → late without a page reload; it rerenders only the active Home view. At the existing 5am day-boundary reset, the normal day-reset path remains the source of truth.
+  - Verification: `node --check app.js` passes for both `app.js` and `sw.js`. The embedded calculation formula was numerically sanity-checked for a generic Egyptian coordinate and produced plausible ordered times (Fajr → Sunrise → Dhuhr → Asr → Maghrib → Isha). A headless-browser smoke test was attempted, but this execution environment blocked navigation to the local test server (`ERR_BLOCKED_BY_ADMINISTRATOR`), so real browser geolocation/permission and visual mobile rendering remain unverified and are not claimed as tested.
+  - Cache bumped: `mihrab-v28-phase6b` → `mihrab-v28-phase6c`; asset query `28.6` → `28.7`.
+
+- [x] **Phase 6d — Sunnah content (from the person's own pasted planning conversation; verbatim scope below so nothing is lost or re-litigated). Depends on Phase 6b's Hijri date (done) for anything date-based.**
   - **Sunnah fasting** (data-driven, per `PRODUCT_PRINCIPLES.md` #9 "content can evolve without code changes" — a data table, not hardcoded logic): Monday+Thursday (weekly); the White Days 13/14/15 of every Hijri month; six days of Shawwal (any 6 days in the month, not consecutive, not tied to right-after-Eid — track as a simple counter, not date-specific); Day of Arafah (9 Dhul Hijjah, for non-pilgrims); Ashura (10 Muharram) + the day before or after (9 or 11); the first ten days of Dhul Hijjah (especially Arafah); fasting often in Sha'ban (no specific day, a general encouragement); Dawud fasting as an explicit **opt-in**, not a default (alternate-day fasting — advanced/optional).
   - **Nawafil/sunnah prayers**: the 12-rak'ah rawatib (2 before Fajr, 4 before + 2 after Dhuhr, 2 after Maghreb, 2 after Isha); **Shaf' and Witr together** (the person was explicit: not Witr alone); Qiyam al-layl/Tahajjud; Duha; greeting-the-mosque + sunnah of wudu.
   - **Kaffarat al-yamin (oath expiation)**: a 3-day counter, and per the person's explicit ruling-choice (not Claude's to decide — the person said this, not a fiqh opinion Claude is asserting): **consecutive days, out of caution** (avoiding the scholarly disagreement by taking the stricter view). If a day is missed, the counter resets — don't soften this.
@@ -123,22 +132,49 @@ Read index.html, app.js (456 lines), styles.css (151 lines → now larger), sw.j
   - **Istighfar tally**: one-tap counter, quiet, no animation fanfare — fits `PRODUCT_PRINCIPLES.md` #6 "quiet by default."
   - Not started. This is a genuinely large, mostly-independent feature set — likely deserves its own multi-step breakdown the way Phase 4 got 4a/4b, not one sitting.
 
-- [ ] **Phase 7 — Modal/boot/empty-state unification pass** (+ the dead-code removal logged in Phase 3: `data-today-id` listener, `.mtask`/`.lecture`/`.task` selector groups).
-- [ ] **Phase 8 — System/Auto theme (`prefers-color-scheme`).**
-- [ ] **Phase 9 — Final quality audit** (spec 77) + honest testing report (spec 78).
+- **Phase 6d — implementation notes:** added a persisted `state.sunnah` layer with data-driven fasting suggestions (Monday/Thursday, White Days, Shawwal counter, Arafah, Ashura window, first ten of Dhu al-Hijjah, Sha‘ban encouragement, optional Dawud), daily rawatib/nawafil checklist, the explicitly requested kaffarat-al-yamin 3-day consecutive tracker with missed-gap reset behavior, independent nadhr owed/fulfilled counters, a rotating quiet reminder tied to the seven-shaded hadith theme, and a quiet one-tap istighfar tally. The feature is intentionally framed as tracking rather than issuing fiqh rulings. All new data is backward-compatible through `ensureState()` and is included automatically in existing JSON backups.
+- **Phase 6d — UX placement:** the whole feature lives inside the existing Islamic Studies view rather than adding a new navigation tab, keeping the board's primary information architecture intact. Date-sensitive fasting suggestions use the already-shipped Hijri date/correction system.
+- **Phase 6d — verification:** `node --check app.js` and `node --check sw.js` pass after the feature work. Browser/mobile rendering remains unverified because the local headless navigation is blocked in this environment.
+
+- [x] **Phase 7 — Modal/boot/empty-state unification pass** (+ the dead-code removal logged in Phase 3: `data-today-id` listener, `.mtask`/`.lecture`/`.task` selector groups).
+  - Done: removed the stale delegated `data-today-id` checkbox listener; current today-task rendering already routes through native onchange handlers.
+  - Done: consolidated the duplicate checkbox-row visual classes (`.mtask`, `.lecture`, `.task`) into the shared `.check-row` style while keeping `.task-item` for the app daily-task cards.
+  - Done: added one `emptyState()` renderer and used it for empty task lists, empty library tabs, and a cleared inbox instead of ad-hoc `.note` placeholders.
+  - Done: modal shell now exposes a real nested dialog target with tabindex, toggles `aria-hidden` on open/close, and focuses the modal after opening while preserving the existing single modal system and its two animation variants.
+  - Done: consolidated boot: service-worker registration now happens inside the single app boot path alongside state migration, modal creation, initial routing, prayer refresh, and pointer setup; removed the separate window-load registration listener.
+  - Verification: `node --check app.js` and `node --check sw.js` pass; CSS brace balance is 426/426; final ZIP integrity test passes. Browser/mobile rendering is still not claimed as verified.
+
+- [x] **Phase 8 — System/Auto theme (`prefers-color-scheme`).**
+  - Added persisted `system` theme preference resolving to existing `paper` on light OS preference and `mono` on dark OS preference.
+  - Added live `matchMedia` listener for device theme changes.
+  - Added System/Auto to theme cycle and settings grid; existing named palettes unchanged.
+  - Synchronized PWA `theme-color` with resolved palette.
+- [x] **Phase 9 — Final quality audit + bug-fix pass.**
+  - Audited the current Phase 8 build before entering Style/Visual Polish.
+  - Fixed a real persistence regression risk in `librarySeeds()`: it now merges missing system seed records instead of replacing a custom-only imported library.
+  - Fixed a real consistency bug in the kaffarah tracker: the displayed streak now becomes `0` after a missed day; manual reset also clears its `lastDate`, and the destructive `−` control was removed so the sequence cannot silently disagree with its date record.
+  - Capped Nadhr fulfilled at the owed amount so the UI/data cannot drift to `fulfilled > owed`.
+  - Made the Sunnah day key locale-independent (`YYYY-MM-DD`).
+  - Made weekly fasting suggestions use the same Maghrib-aware Sharia-day concept as the Hijri date instead of the 5am app-day weekday.
+  - Added the missing Arabic System/Auto theme option and changed the desktop theme grid to six columns to match the six theme choices.
+  - Fixed an undefined CSS variable in the Drug Commercialization card border (`--c` → `--accent`).
+  - Removed the unused `prayerDateKey()` helper.
+  - Updated the Service Worker precache to include the exact versioned `app.js`/`styles.css` URLs requested by `index.html`.
+  - Verified `node --check app.js`, `node --check sw.js`, ZIP integrity, asset references, CSS variable references, and deterministic logic tests (library seed merge, kaffarah gap reset, Hijri suggestion execution, and prayer-time calculation).
+  - Real browser rendering/navigation still could not be completed in this environment: headless Chromium hung during local HTTP navigation, so no claim is made for full visual/mobile/geolocation verification.
 
 ---
 
 # Next Step
 **First real usage signal arrived this session** — the person is actually using the app on a device and reported concrete, specific bugs (see Phase 6b) rather than a general "does it look right." That's a meaningfully different, more valuable kind of feedback than the repeated "كمل" of earlier phases — worth treating as the new default going forward: real usage bugs, when they arrive, jump the queue ahead of the phase plan, exactly as happened this session.
-Immediate next: Phase 6c (prayer-time sequencing) and Phase 6d (sunnah content) are both real, both wanted, both correctly deferred rather than rushed — pick whichever the person wants first next session (6c is more technical/self-contained; 6d is larger but well-specified already, verbatim, above). Phase 7 (modal/boot/empty-state unification) remains queued after those unless the person says otherwise.
+Immediate next: Phase 9 — final quality audit and honest testing report. After Phase 9, begin the dedicated Style / Visual Polish stage.
 
 # Known Issues
-- Dead code from Phase 3 (`data-today-id` listener, `.mtask`/`.lecture`/`.task` selectors) — still deferred, still first on Phase 7's list.
+- Phase 7 dead code (`data-today-id` listener, `.mtask`/`.lecture`/`.task` selector duplication) has been removed/consolidated.
 - Plan-vs-Reality (spec 47) and a dedicated consistency-focused weekly review UI are still not built.
 - Seeded library tracks (`lib_zad`/`lib_ayman`/`lib_awareness`/`lib_aqeedah`) still have no safe way to auto-increment `completedSessions` — needs an explicit `taskId` link added to those four records (a small schema decision) before it can be done without guessing. Custom tracks already work correctly (fixed this session).
 - Pre-existing paren-count mismatch in `styles.css` (cosmetic, brace-balance is what's structurally meaningful and that's fine) — flagged for Phase 9's final sweep, not chased down.
-- Prayer checkboxes still have no time-of-day awareness (Phase 6c) — this is what the person hit and reported; not yet fixed, just scoped.
+- Prayer-time sequencing is implemented in Phase 6c; remaining limitation is real-device geolocation/browser verification.
 
 # Verification (be honest — see spec section 78)
 - ✅ Static: `node --check app.js` passes on every edit this session.
@@ -152,7 +188,25 @@ Immediate next: Phase 6c (prayer-time sequencing) and Phase 6d (sunnah content) 
 - The sunnah-content fiqh choices (kaffarat al-yamin consecutive, nadhr non-consecutive, shaf'+witr together) are the person's own explicit statements, not something decided or assumed on their behalf — recorded verbatim in Phase 6d so a future session implements *their* stated rule, not a plausible-sounding guess.
 
 # Files Changed
-**Phase 6b (this session):** `app.js` — `toggleToday` now syncs the checkbox's native `checked` property (fixes the Undo-desync bug and its downstream re-trigger bug) and increments/decrements `completedSessions` for custom library tracks; `extendFocus`/`startFocus` rewritten so both share the same `end` closure (fixes "+5m" doing nothing); added `shariBaseDate()`, `shariHijriAdjustedDate()`, `hijriParts()`, `hijriToday()`, `hijriLabel()`; `state.settings` gains `hijriAdjustDays:0` (migrated in `ensureState()`); Home's kicker now shows the Hijri date; System gained a ±1-day Hijri corrector control. `sw.js`/`index.html` — cache/version bump to `mihrab-v28-phase6b` / `28.6`.
+**Phase 6b/6c (this session):** `app.js` — `toggleToday` now syncs the checkbox's native `checked` property (fixes the Undo-desync bug and its downstream re-trigger bug) and increments/decrements `completedSessions` for custom library tracks; `extendFocus`/`startFocus` rewritten so both share the same `end` closure (fixes "+5m" doing nothing); added `shariBaseDate()`, `shariHijriAdjustedDate()`, `hijriParts()`, `hijriToday()`, `hijriLabel()`; `state.settings` gains `hijriAdjustDays:0` (migrated in `ensureState()`); Home's kicker now shows the Hijri date; System gained a ±1-day Hijri corrector control. `sw.js`/`index.html` — cache/version bump to `mihrab-v28-phase6c` / `28.7`.
 
 # Data / Migration Notes
 - **New field**: `state.settings.hijriAdjustDays` (number, default `0`). Backward-compatible via `ensureState()`. No other schema changes this session.
+
+
+## Phase 9 Audit Notes
+- ✅ No `TODO/FIXME/HACK/XXX` markers in source beyond historical references in this progress log.
+- ✅ All HTML-referenced local assets exist.
+- ✅ `app.js` and `sw.js` pass Node syntax checks.
+- ✅ Final archive passes `unzip -t`.
+- ✅ Core logic tests pass under `TZ=Africa/Cairo`; Egyptian prayer-time output for Luxor on 11 Sep 2026 is consistent with current published tables within about a minute.
+- ⚠️ Full real-device visual/geolocation validation remains pending because the execution environment cannot complete the local headless browser navigation.
+
+
+- [x] **Phase 10 — Style / Visual Polish.**
+  - Added a consolidated visual-polish layer without changing the application data model or interaction logic.
+  - Refined hierarchy, spacing, type scale, surface treatment, controls, focus states, touch targets, themes, modals, completion states, and responsive breakpoints.
+  - Kept the existing two-accent theme discipline and reduced decorative intensity in the paper/light theme.
+  - Updated asset query versions to `28.11` so the new CSS/JS are not masked by stale browser cache.
+  - Reduced-motion behavior remains authoritative; no new runtime animation listeners were introduced.
+  - Browser screenshot/navigation remains unverified in this execution environment because Chromium hangs during local app navigation.
