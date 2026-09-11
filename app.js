@@ -203,7 +203,7 @@ function renderHome(){
  const done=pr.n, total=pr.total, remaining=Math.max(total-done,0);
  const modes=['كلية','بدون كلية','ديب وورك'];
  const en=state.lang==='en';
- const smart=()=>`<section class="focus-banner"><b>${en?'Momentum':'دفعة اليوم'} · ${esc((()=>{const h=new Date().getHours(); if(h<11)return en?'Start clean and protect the essentials.':'ابدأ بهدوء واحفظ الأساسيات. '; if(h<17)return en?'Keep the important work moving.':'كمّل المهم وخلي الباقي ياخد مساحته.'; return en?'Close the day without overloading it.':'اقفل يومك من غير ما تحمّله فوق طاقته.'})())}</b><span>${en?'Today-first · no catch-up sprint.':'اليوم أولًا · مفيش تعويض اندفاعي.'}</span></section><div class="quick-grid"><button class="quick-action" onclick="smartTime(15)"><b>15m</b><small>${en?'I have 15 minutes':'عندي 15 دقيقة'}</small></button><button class="quick-action" onclick="smartTime(30)"><b>30m</b><small>${en?'I have 30 minutes':'عندي 30 دقيقة'}</small></button><button class="quick-action" onclick="setMode('busy')"><b>${en?'Low energy':'مفيش طاقة'}</b><small>${en?'Lighter useful work':'هات الأسهل المفيد'}</small></button><button class="quick-action" onclick="startFocus()"><b>${en?'Focus':'تركيز'}</b><small>${en?'One task only':'مهمة واحدة فقط'}</small></button></div>${coreCompleteNow()?`<div class="focus-banner soft"><b>${en?'Enough for today.':'كفاية لحد هنا.'}</b><span>${en?'Core is complete. Everything else can wait.':'الأساسيات خلصت. والباقي يستنى براحتك.'}</span></div>`:''}`
+ const smart=()=>`<section class="focus-banner"><b>${en?'Momentum':'دفعة اليوم'} · ${esc((()=>{const h=new Date().getHours(); if(h<11)return en?'Start clean and protect the essentials.':'ابدأ بهدوء واحفظ الأساسيات. '; if(h<17)return en?'Keep the important work moving.':'كمّل المهم وخلي الباقي ياخد مساحته.'; return en?'Close the day without overloading it.':'اقفل يومك من غير ما تحمّله فوق طاقته.'})())}</b><span>${en?'Today-first · no catch-up sprint.':'اليوم أولًا · مفيش تعويض اندفاعي.'}</span></section><div class="quick-grid"><button class="quick-action" onclick="smartTime(15)"><b>15m</b><small>${en?'I have 15 minutes':'عندي 15 دقيقة'}</small></button><button class="quick-action" onclick="smartTime(30)"><b>30m</b><small>${en?'I have 30 minutes':'عندي 30 دقيقة'}</small></button><button class="quick-action" onclick="noEnergyMode()"><b>${en?'Low energy':'مفيش طاقة'}</b><small>${en?'Lighter useful work':'هات الأسهل المفيد'}</small></button><button class="quick-action" onclick="startFocus()"><b>${en?'Focus':'تركيز'}</b><small>${en?'One task only':'مهمة واحدة فقط'}</small></button></div>${coreCompleteNow()?`<div class="focus-banner soft"><b>${en?'Enough for today.':'كفاية لحد هنا.'}</b><span>${en?'Core is complete. Everything else can wait.':'الأساسيات خلصت. والباقي يستنى براحتك.'}</span></div>`:''}`
  const T=en?{start:'Start today ↓',marketing:'Marketing ↗',shari:'Islamic studies ↗',quran:'Qur’an ↗',today:'Today',remaining:'Remaining',hours:'h',target:'Target',execute:'Today’s execution',list:'Daily duties & self-building',next:'Impact & independence',rule:'Fixed pillars & principles',r1:'Reviews before new cards',r2:'Islamic studies + Qur’an stay fixed',r3:'Courses shrink first',ess:'Essentials first',done:'You’re done for today',left:'items left',focus:'Focus only on what matters today. Protect the essentials, and let the rest wait for space.'}
  :{start:'ابدأ ↓',marketing:'التسويق ↗',shari:'الشرعي ↗',quran:'القرآن ↗',today:'اليوم',remaining:'باقي',hours:'س',target:'الهدف',execute:'⚡ تنفيذ اليوم',list:'فروض اليوم وبناء النفس',next:'صناعة الأثر والاستقلال',rule:'الأركان والمبادئ الثابتة',r1:'المراجعات قبل الجديد',r2:'الشرعي والقرآن ثابتان',r3:'الكورسات تتقلص أولًا',ess:'الأساسيات أولًا',done:'خلصت يومك',left:'بنود باقية',focus:'ركز على اللي مطلوب النهارده فقط. الأساسيات أولًا، والباقي ياخد مساحته لما تفضى.'};
  return `<div class="hero">
@@ -232,6 +232,7 @@ function renderHome(){
    <div class="stat-card"><small>${en?'Current streak':'التتابع الحالي'}</small><strong>${streak} ${en?'d':'يوم'}</strong></div>
  </div>
  ${smart()}
+ ${nowNextLaterCard()}
  <div class="section-title" id="todayTasks"><div><h2>${T.execute}</h2><p>${esc(en?translateText(day):day)} · ${T.ess}.</p></div></div>
  <div class="bento">
    <section class="card tall"><h3>${T.list}</h3>${taskHTML(items)}</section>
@@ -413,6 +414,21 @@ function renderSystemBase(){
     openModal(`<div class="mihrab-modal-head"><b>${en?`Good fits for ${min} minutes`:`مناسب لـ ${min} دقيقة`}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="command-list">${list}</div>`);
   }
   function nowNextLater(){return taskObjects().filter(x=>!x.done).sort((a,b)=>a.duration-b.duration).slice(0,3)}
+  function nowNextLaterCard(){
+    const en=state.lang==='en',items=nowNextLater();
+    if(!items.length)return '';
+    const tags=en?['Now','Next','Later']:['دلوقتي','بعدها','بعد كده'];
+    const rows=items.map((x,i)=>`<button class="nnl-row" onclick="startFocus('${esc(x.id)}')"><span class="nnl-tag">${tags[i]}</span><span class="nnl-label">${esc(x.label)}</span><span class="nnl-dur">${x.duration}${en?'m':'د'}</span></button>`).join('');
+    return `<section class="section-box nnl-card"><h3>${en?'What matters now':'الأهم دلوقتي'}</h3><div class="nnl-list">${rows}</div></section>`;
+  }
+  function noEnergyMode(){
+    const en=state.lang==='en';
+    const candidates=taskObjects().filter(x=>!x.done&&x.duration<=15&&x.priority!=='optional').sort((a,b)=>a.duration-b.duration).slice(0,6);
+    if(!candidates.length){infoModal(en?'Nothing light enough right now — resting is a valid option.':'مفيش حاجة خفيفة كفاية دلوقتي — الراحة كمان اختيار سليم.');return;}
+    const list=candidates.map(x=>`<button class="command-item" onclick="closeMihrabModal();startFocus('${esc(x.id)}')"><span>${esc(x.label)}</span><small>${x.duration}${en?'m':'د'}</small></button>`).join('');
+    openModal(`<div class="mihrab-modal-head"><b>${en?'Light, still meaningful':'خفيف بس له معنى'}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="command-list">${list}</div>`);
+  }
+  window.noEnergyMode=noEnergyMode;
   function coreDone(){const core=taskObjects().filter(x=>x.priority==='core');return core.length>0&&core.every(x=>x.done)}
 
   function render(id){
@@ -452,6 +468,7 @@ function renderSystemBase(){
   window.toggleRafiqFrame=()=>{state.quranFrameOpen=!state.quranFrameOpen;save();rerender()};
   window.setMode=mode=>{state.mode=['normal','busy','exam','survival','rest'].includes(mode)?mode:'normal';state.modeDate=keyDate();save();rerender()};
   window.smartTime=smartTime;
+  window.nowNextLaterCard=nowNextLaterCard;
 
   // One delegated interaction layer. No per-render listeners, no duplicated nav systems.
   document.addEventListener('click',e=>{
