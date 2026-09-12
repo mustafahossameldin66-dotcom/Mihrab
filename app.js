@@ -18,7 +18,7 @@ const SHARI_MAP={'السبت':'زاد (تفريغ) + أحمد السيد + أي�
 const AWARENESS=[1,2,3,4,5,6,7,8,9];
 const OLD_KEY='dersh-integrated-v4';
 const KEY='study-dashboard-focus-v7';
-let state={theme:'mono',lang:'ar',view:'home',dayType:'كلية',todayDate:'',today:{},plan:{},weekly:{marketingHours:0,mckinsey:false,dose:false,review:false,rating:'',cert:false},weekDayTypes:{},quranFrameOpen:false,mode:'normal',modeDate:'',schemaVersion:3,settings:{lowPower:false,hijriAdjustDays:0},inbox:[],library:[],backupAt:'',metrics:{focusMinutes:0,sessions:0},history:{}};
+let state={theme:'mono',lang:'ar',view:'home',dayType:'كلية',todayDate:'',today:{},plan:{},weekly:{marketingHours:0,mckinsey:false,dose:false,review:false,rating:'',cert:false},weekDayTypes:{},quranFrameOpen:false,mode:'normal',modeDate:'',schemaVersion:3,settings:{lowPower:false,hijriAdjustDays:0,geo:null,sunnahCounters:{},kaffaraYameen:{count:0,lastDate:''},nadhr:{owed:0,fulfilled:0},istighfarCount:0},inbox:[],library:[],backupAt:'',metrics:{focusMinutes:0,sessions:0},history:{}};
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function effectiveDate(){const d=new Date();if(d.getHours()<5)d.setDate(d.getDate()-1);return d}
@@ -149,65 +149,16 @@ const TASK_EN={
  marketing:'Marketing — '+marketingTarget(),anki:'Anki — due reviews first; new cards within budget',easy:'EasyPeasy Way to Quit — today’s reading',mouth:'Oral-care routine — morning & evening',skin:'Skincare routine — morning & evening',hair:'Hair routine — according to your routine',
  aw:'Building the Contemporary Muslim’s Awareness — today’s session',taj:'Tajweed — video',azb:'Al-Azbi training transcription into Anki — ~1 hour',linkedin:'Weekly LinkedIn post',review:'Weekly review — 10–15 minutes'
 };
-
-const PRAYER_DEFS=[
- {id:'pr_f',ar:'الفجر',en:'Fajr',key:'fajr'},
- {id:'pr_d',ar:'الظهر',en:'Dhuhr',key:'dhuhr'},
- {id:'pr_a',ar:'العصر',en:'Asr',key:'asr'},
- {id:'pr_m',ar:'المغرب',en:'Maghrib',key:'maghrib'},
- {id:'pr_i',ar:'العشاء',en:'Isha',key:'isha'}
-];
-let prayerRuntime={available:false,times:null,lat:null,lng:null,error:''};
-function prayerTimeToMinutes(v){
- if(typeof v!=='string'||!v.includes(':')) return NaN;
- const [h,m]=v.split(':').map(Number);
- return Number.isFinite(h)&&Number.isFinite(m)?h*60+m:NaN;
+function taskHTML(items){
+  const cp=currentPrayerId(); // null if no geo yet — badge logic below simply doesn't fire, no fallback branching needed
+  return '<div class="tasks">'+items.map(([id,text])=>{
+    const done=tChecked(id);
+    let badge=taskBadge(id);
+    if(cp&&id===cp&&!done) badge=[state.lang==='en'?'Now':'الآن','now']; // only while unchecked — no point flagging "now" on a done prayer
+    const label=(state.lang==='en'&&TASK_EN[id])?TASK_EN[id]:text;
+    return `<div class="task-item ${done?'done':''}" data-task-id="${esc(id)}"><input type="checkbox" id="task_${esc(id)}" ${done?'checked':''} onchange="toggleToday('${esc(id)}')"><label class="task-text" for="task_${esc(id)}">${esc(label)}</label>${badge?`<span class="mihrab-badge badge-${badge[1]}">${esc(badge[0])}</span>`:''}</div>`;
+  }).join('')+'</div>';
 }
-function prayerClockLabel(v){
- const mins=prayerTimeToMinutes(v); if(!Number.isFinite(mins)) return '—';
- const h=Math.floor(mins/60)%24, m=mins%60;
- return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-}
-function prayerPreviousId(id){
- const i=PRAYER_DEFS.findIndex(p=>p.id===id); return i>0?PRAYER_DEFS[i-1].id:null;
-}
-function prayerStatus(id){
- const def=PRAYER_DEFS.find(p=>p.id===id);
- if(!def) return {disabled:false,label:'',kind:''};
- if(!prayerRuntime.available||!prayerRuntime.times) return {disabled:false,label:state.lang==='en'?'Time calculation unavailable':'التوقيت غير متاح',kind:'fallback',time:'—'};
- const now=new Date();
- const nowM=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
- const cur=prayerTimeToMinutes(prayerRuntime.times[def.key]);
- const i=PRAYER_DEFS.indexOf(def);
- const nextKey=id==='pr_f'?'sunrise':(i===1?'asr':(i===2?'maghrib':(i===3?'isha':null)));
- const next=nextKey?prayerTimeToMinutes(prayerRuntime.times[nextKey]):Infinity;
- const prev=prayerPreviousId(id);
- const prevDone=!prev||!!state.today[prev];
- if(!Number.isFinite(cur)) return {disabled:false,label:state.lang==='en'?'Time unavailable':'الوقت غير متاح',kind:'fallback',time:'—'};
- const started=id==='pr_i'?(nowM>=cur||nowM<prayerTimeToMinutes(prayerRuntime.times.fajr)):nowM>=cur;
- const active=id==='pr_i'?started:(started&&nowM<next);
- let label,kind;
- if(state.today[id]) { label=state.lang==='en'?'Done':'تمت'; kind='done'; }
- else if(!started) { label=state.lang==='en'?`Starts ${prayerClockLabel(prayerRuntime.times[def.key])}`:`تبدأ ${prayerClockLabel(prayerRuntime.times[def.key])}`; kind='upcoming'; }
- else if(active) { label=state.lang==='en'?'It’s time now':'وقت الصلاة الآن'; kind=prevDone?'current':'locked-current'; }
- else { label=state.lang==='en'?'Late':'متأخرة'; kind=prevDone?'late':'locked-late'; }
- return {
-   disabled:!state.today[id]&&!prevDone&&!((id==='pr_f')&&started),
-   label,kind,time:prayerClockLabel(prayerRuntime.times[def.key]),
-   current:active
- };
-}
-function prayerTaskHTML(id,text){
- const def=PRAYER_DEFS.find(p=>p.id===id), done=tChecked(id), s=prayerStatus(id), en=state.lang==='en';
- const label=en?`${def.en} — ${s.kind==='current'||s.kind==='locked-current'?'It’s time now':'on time'}`:text;
- const meta=s.time&&s.time!=='—'?`<span class="prayer-time">${esc(s.time)}</span>`:'';
- const status=s.label?`<small class="prayer-status prayer-${s.kind}">${esc(s.label)}</small>`:'';
- const disabled=s.disabled?'disabled':'';
- return `<div class="task-item prayer-item ${done?'done':''} ${s.kind?'prayer-state-'+s.kind:''}" data-task-id="${esc(id)}" title="${esc(s.disabled?(en?'Complete the previous prayer first.':'أكمل الصلاة السابقة أولًا.'):s.label||'')}"><input type="checkbox" id="task_${esc(id)}" ${done?'checked':''} ${disabled} onchange="toggleToday('${esc(id)}')"><label class="task-text" for="task_${esc(id)}"><span class="prayer-name">${esc(label)}</span>${status}</label>${meta}<span class="mihrab-badge badge-spirit">${en?'Prayer':'صلاة'}</span></div>`;
-}
-
-function emptyState(message, action=''){return `<div class="empty-state"><span class="empty-state-mark" aria-hidden="true">—</span><p>${esc(message)}</p>${action}</div>`}
-function taskHTML(items){if(!items?.length)return emptyState(state.lang==='en'?'Nothing scheduled for this day.':'مفيش مهام مجدولة لليوم ده.');return '<div class="tasks">'+items.map(([id,text])=>{if(PRAYER_DEFS.some(p=>p.id===id))return prayerTaskHTML(id,text);const done=tChecked(id);const badge=taskBadge(id);const label=(state.lang==='en'&&TASK_EN[id])?TASK_EN[id]:text;return `<div class="task-item ${done?'done':''}" data-task-id="${esc(id)}"><input type="checkbox" id="task_${esc(id)}" ${done?'checked':''} onchange="toggleToday('${esc(id)}')"><label class="task-text" for="task_${esc(id)}">${esc(label)}</label>${badge?`<span class="mihrab-badge badge-${badge[1]}">${esc(badge[0])}</span>`:''}</div>`}).join('')+'</div>'}
 // Zad Academy runs on the Sharia day, not the app's 5am-cutoff calendar day: a Sharia day begins at
 // that evening's Maghreb. We don't calculate real Maghreb times, so we use the Maghreb prayer checkbox
 // (pr_m) — already logged by the user every day — as the real-world signal that Maghreb has passed.
@@ -231,6 +182,202 @@ function hijriLabel(){
   const fmt=new Intl.DateTimeFormat(en?'en-US-u-ca-islamic-umalqura':'ar-SA-u-ca-islamic-umalqura',{day:'numeric',month:'long'});
   return `${fmt.format(shariHijriAdjustedDate())} ${year}${en?' AH':' هـ'}`;
 }
+
+// ---- Prayer-time calculation (Phase 6c) --------------------------------------------------
+// Pure astronomical math, no network call, no bundled table. Standard solar-position formulas
+// (the same general method described publicly by, e.g., PrayTimes.org and NOAA's solar calculator
+// — these are open astronomical equations, not any specific project's proprietary source).
+// Angle parameters (Fajr 19.5°, Isha 17.5°) are the Egyptian General Authority of Survey method,
+// a standard, named calculation method — appropriate for this person's location (Luxor, Egypt).
+// Asr uses the standard (Shafi'i) shadow factor of 1, not the Hanafi factor of 2 — not asked
+// otherwise; flagged in progress.md as a decision, not hidden.
+//
+// ⚠️ Could not be cross-checked against a live source (no network access in this environment).
+// Internally self-consistent (Fajr<Sunrise<Dhuhr<Asr<Maghrib<Isha, Dhuhr tracks solar noon
+// correctly across longitude/season in spot checks) but genuinely unverified against a real
+// prayer-times service — the person should compare against a trusted local source once before
+// relying on the "now" indicator for anything time-sensitive.
+function toRad(d){return d*Math.PI/180}
+function toDeg(r){return r*180/Math.PI}
+function sinD(d){return Math.sin(toRad(d))}
+function cosD(d){return Math.cos(toRad(d))}
+function tanD(d){return Math.tan(toRad(d))}
+function fixHour(h){h=h-24*Math.floor(h/24);return h}
+function julianDay(date){
+  const Y=date.getUTCFullYear(), M=date.getUTCMonth()+1, D=date.getUTCDate();
+  let y=Y, m=M; if(m<=2){y-=1;m+=12}
+  const A=Math.floor(y/100), B=2-A+Math.floor(A/4);
+  return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+D+B-1524.5;
+}
+function sunPosition(jd){
+  const D=jd-2451545.0;
+  const g=(357.529+0.98560028*D)%360;
+  const q=(280.459+0.98564736*D)%360;
+  const L=(q+1.915*sinD(g)+0.020*sinD(2*g))%360;
+  const e=23.439-0.00000036*D;
+  const RA=toDeg(Math.atan2(cosD(e)*sinD(L),cosD(L)))/15;
+  const decl=toDeg(Math.asin(sinD(e)*sinD(L)));
+  const eqt=q/15-fixHour(RA);
+  return {decl,eqt};
+}
+function angleTime(angleDeg,lat,decl){
+  const cosH=(-sinD(angleDeg)-sinD(lat)*sinD(decl))/(cosD(lat)*cosD(decl));
+  if(cosH>1||cosH<-1) return null; // sun never reaches this angle today (not expected at this latitude)
+  return toDeg(Math.acos(cosH))/15;
+}
+function asrTime(lat,decl,shadowFactor){
+  const alt=toDeg(Math.atan(1/(shadowFactor+tanD(Math.abs(lat-decl)))));
+  const cosH=(sinD(alt)-sinD(lat)*sinD(decl))/(cosD(lat)*cosD(decl));
+  return toDeg(Math.acos(Math.max(-1,Math.min(1,cosH))))/15;
+}
+// Returns {fajr,dhuhr,asr,maghrib,isha} as Date objects for local midnight→next-midnight of `date`.
+function computePrayerTimes(lat,lng,date){
+  const noon=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate(),12,0,0));
+  const jd=julianDay(noon);
+  const {decl,eqt}=sunPosition(jd);
+  const tzOffsetHours=-date.getTimezoneOffset()/60;
+  const dhuhrHour=12+tzOffsetHours-lng/15-eqt;
+  const fajrH=angleTime(19.5,lat,decl), ishaH=angleTime(17.5,lat,decl), maghribH=angleTime(0.833,lat,decl), asrH=asrTime(lat,decl,1);
+  if([fajrH,ishaH,maghribH,asrH].some(v=>v===null)) return null; // graceful — caller falls back to no "now" indicator
+  const mk=h=>{const d=new Date(date);d.setHours(0,0,0,0);d.setMinutes(Math.round(h*60));return d};
+  return {fajr:mk(dhuhrHour-fajrH),dhuhr:mk(dhuhrHour),asr:mk(dhuhrHour+asrH),maghrib:mk(dhuhrHour+maghribH),isha:mk(dhuhrHour+ishaH)};
+}
+// One geolocation prompt, cached — never re-asks every load. Resolves null on denial/unsupported/
+// timeout so callers can gracefully skip the "now" indicator; the 5 checkboxes always work either way.
+function ensureGeo(){
+  return new Promise(resolve=>{
+    if(state.settings&&state.settings.geo&&typeof state.settings.geo.lat==='number') return resolve(state.settings.geo);
+    if(typeof navigator==='undefined'||!navigator.geolocation) return resolve(null);
+    navigator.geolocation.getCurrentPosition(
+      pos=>{const geo={lat:pos.coords.latitude,lng:pos.coords.longitude,ts:Date.now()};state.settings.geo=geo;save();resolve(geo);},
+      ()=>resolve(null),
+      {timeout:8000,maximumAge:3600000}
+    );
+  });
+}
+let _prayerTimesCache=null; // {dateKey, times} — recomputed once per calendar day, not per render
+function todaysPrayerTimes(){
+  const geo=state.settings&&state.settings.geo;
+  if(!geo||typeof geo.lat!=='number') return null;
+  const dk=keyDate();
+  if(_prayerTimesCache&&_prayerTimesCache.dateKey===dk) return _prayerTimesCache.times;
+  const times=computePrayerTimes(geo.lat,geo.lng,new Date());
+  _prayerTimesCache={dateKey:dk,times};
+  return times;
+}
+// Which of the 5 is "now"? Isha's window runs to the following Fajr, matching how the day is
+// actually lived, not a hard midnight cutoff.
+function currentPrayerId(){
+  const t=todaysPrayerTimes(); if(!t) return null;
+  const now=new Date();
+  const order=[['pr_f',t.fajr],['pr_d',t.dhuhr],['pr_a',t.asr],['pr_m',t.maghrib],['pr_i',t.isha]];
+  let current=null;
+  for(const [id,time] of order){ if(now>=time) current=id; }
+  return current;
+}
+
+// ---- Sunnah fasting: data-driven, editable without touching the calculation logic below ----
+// (matches the project's own "content can evolve without code changes" principle). Each entry's
+// `type` selects which pure checker function decides if it's due on a given Gregorian date;
+// the hijri fields are looked up via the existing `hijriParts()` — no new calendar dependency.
+const SUNNAH_FASTS=[
+  {id:'mon_thu',title:'الاثنين والخميس',titleEn:'Monday & Thursday',type:'weekday',weekdays:[1,4]},
+  {id:'ayyam_bid',title:'الأيام البيض',titleEn:'The White Days',type:'hijri_days',hijriDays:[13,14,15]},
+  {id:'arafah',title:'يوم عرفة (لغير الحاج)',titleEn:'Day of Arafah (non-pilgrims)',type:'hijri_date',hijriMonth:12,hijriDay:9},
+  {id:'ashura_before',title:'قبل عاشوراء (9 محرم)',titleEn:'Before Ashura (9th Muharram)',type:'hijri_date',hijriMonth:1,hijriDay:9},
+  {id:'ashura',title:'عاشوراء',titleEn:'Ashura',type:'hijri_date',hijriMonth:1,hijriDay:10},
+  {id:'ashura_after',title:'بعد عاشوراء (11 محرم)',titleEn:'After Ashura (11th Muharram)',type:'hijri_date',hijriMonth:1,hijriDay:11},
+  {id:'dhulhijjah10',title:'أول عشر ذي الحجة',titleEn:'First 10 days of Dhul-Hijjah',type:'hijri_range',hijriMonth:12,fromDay:1,toDay:9},
+  {id:'shaban',title:'أكتر شعبان',titleEn:'Most of Sha\u02bcban',type:'hijri_month_loose',hijriMonth:8},
+  {id:'shawwal6',title:'ست من شوال',titleEn:'Six days of Shawwal',type:'hijri_month_count',hijriMonth:10,target:6},
+];
+function fastDueTypes(date){
+  const h=hijriParts(date), wd=date.getDay(); // JS getDay(): 0=Sun..6=Sat, so Mon=1, Thu=4
+  const due=[];
+  for(const f of SUNNAH_FASTS){
+    if(f.type==='weekday' && f.weekdays.includes(wd)) due.push(f);
+    else if(f.type==='hijri_days' && f.hijriDays.includes(h.day)) due.push(f);
+    else if(f.type==='hijri_date' && h.month===f.hijriMonth && h.day===f.hijriDay) due.push(f);
+    else if(f.type==='hijri_range' && h.month===f.hijriMonth && h.day>=f.fromDay && h.day<=f.toDay) due.push(f);
+    else if(f.type==='hijri_month_loose' && h.month===f.hijriMonth && h.day>=16) due.push(f); // "most of Sha'ban" ≈ back half, loose by design
+  }
+  return due; // hijri_month_count (Shawwal-6) is a monthly tally, not a daily "due" flag — handled separately below
+}
+function shawwal6Progress(date){
+  const h=hijriParts(date);
+  if(h.month!==10) return null; // not Shawwal — nothing to show
+  const key=`shawwal6:${h.year}`;
+  const count=(state.settings.sunnahCounters&&state.settings.sunnahCounters[key])||0;
+  return {count,target:6,key};
+}
+
+// ---- Nawafil / sunnah prayers (Phase 6d-ii): always-due daily items, editable data ----
+const NAWAFIL=[
+  {id:'raw_fajr',title:'راتبة الفجر (ركعتان قبلها)',titleEn:'Fajr sunnah (2 before)'},
+  {id:'raw_dhuhr',title:'راتبة الظهر (4 قبل + 2 بعد)',titleEn:'Dhuhr sunnah (4 before + 2 after)'},
+  {id:'raw_maghrib',title:'راتبة المغرب (ركعتان بعده)',titleEn:'Maghrib sunnah (2 after)'},
+  {id:'raw_isha',title:'راتبة العشاء (ركعتان بعده)',titleEn:'Isha sunnah (2 after)'},
+  {id:'shafwitr',title:'الشفع والوتر',titleEn:'Shaf\u02bc and Witr'},
+  {id:'qiyam',title:'قيام الليل / التهجد',titleEn:'Night prayer / Tahajjud'},
+  {id:'duha',title:'صلاة الضحى',titleEn:'Duha prayer'},
+  {id:'tahiyyat',title:'تحية المسجد وسنة الوضوء',titleEn:'Greeting the mosque + sunnah of wudu'},
+];
+
+// ---- Kaffarat al-yamin (oath expiation): person's explicit choice — consecutive days, resets on
+// a missed day. This is NOT a fiqh ruling Claude is asserting, just implementing what was stated. ----
+function logKaffaraDay(){
+  const dk=keyDate();
+  const k=state.settings.kaffaraYameen||{count:0,lastDate:''};
+  if(k.lastDate===dk) return k; // already logged today, no double-count
+  const yesterday=new Date(effectiveDate()); yesterday.setDate(yesterday.getDate()-1);
+  const consecutive = k.lastDate===dk /*unreachable, kept for clarity*/ || k.lastDate===yesterday.toLocaleDateString('en-CA');
+  const next = (k.count>0 && consecutive) ? {count:k.count+1,lastDate:dk} : {count:1,lastDate:dk};
+  state.settings.kaffaraYameen=next; save();
+  return next;
+}
+function resetKaffara(){ state.settings.kaffaraYameen={count:0,lastDate:''}; save(); }
+
+// ---- Nadhr (vow) fasting: person's own explicit, separate practice — non-consecutive, one day
+// owed per instance of the sin, tracked independently of the kaffara counter above. ----
+function logNadhrOwed(){ state.settings.nadhr=state.settings.nadhr||{owed:0,fulfilled:0}; state.settings.nadhr.owed++; save(); }
+function logNadhrFulfilled(){ state.settings.nadhr=state.settings.nadhr||{owed:0,fulfilled:0}; if(state.settings.nadhr.owed>0){state.settings.nadhr.owed--;state.settings.nadhr.fulfilled++;save();} }
+
+// ---- Istighfar tally: quiet, one-tap, no fanfare (PRODUCT_PRINCIPLES #6 "quiet by default"). ----
+function tapIstighfar(){ state.settings.istighfarCount=(state.settings.istighfarCount||0)+1; save(); return state.settings.istighfarCount; }
+
+// ---- Khalwa/private-sin reminder: rotates daily, references the hadith by name/source rather than
+// Claude transcribing the hadith text itself into a religious app — the exact wording is a slot for
+// the person to fill from a trusted source (Sahih al-Bukhari / Sahih Muslim). Editable data, no code
+// change needed to add more entries. Deliberately no glow/celebration styling on this content. ----
+const KHALWA_REMINDERS=[
+  {id:'r1',ref:'حديث السبعة الذين يظلهم الله (رجل ذكر الله خاليًا ففاضت عيناه) — صحيح البخاري ومسلم',refEn:'Hadith of the Seven Shaded by Allah (a man remembers Allah privately, his eyes well up) — Bukhari & Muslim',text:'[أضف الصياغة الدقيقة من مصدر موثوق]',textEn:'[Add the exact wording from a trusted source]'},
+  {id:'r2',ref:'حديث السبعة الذين يظلهم الله (شاب دعته امرأة ذات منصب وجمال فقال: إني أخاف الله) — صحيح البخاري ومسلم',refEn:'Hadith of the Seven Shaded by Allah (a young man invited by a woman of position and beauty, says he fears Allah) — Bukhari & Muslim',text:'[أضف الصياغة الدقيقة من مصدر موثوق]',textEn:'[Add the exact wording from a trusted source]'},
+  {id:'r3',ref:'اتقِ الله حيثما كنت',refEn:'"Fear Allah wherever you are"',text:'[أضف الصياغة الدقيقة من مصدر موثوق]',textEn:'[Add the exact wording from a trusted source]'},
+];
+function todaysKhalwaReminder(){
+  const idx=Math.floor(effectiveDate().getTime()/86400000)%KHALWA_REMINDERS.length;
+  return KHALWA_REMINDERS[idx];
+}
+
+function worshipExtrasSection(){
+  const en=state.lang==='en';
+  const k=state.settings.kaffaraYameen||{count:0,lastDate:''};
+  const nd=state.settings.nadhr||{owed:0,fulfilled:0};
+  const ist=state.settings.istighfarCount||0;
+  const rem=todaysKhalwaReminder();
+  return `<section class="section-box" style="margin-top:12px">
+    <div class="section-title" style="margin:0 0 8px"><div><h3 style="margin:0">🕊️ ${en?'Worship extras':'ملحقات العبادة'}</h3></div></div>
+    <div class="library-item"><div class="grow"><b>${en?'Kaffarat al-yamin (consecutive)':'كفارة اليمين (متتابعة)'}</b><small>${en?`${k.count}/3 days`:`${k.count}/3 أيام`}</small></div>
+      <button class="tiny-action" onclick="logKaffaraDay();rerender()">${en?'Log today':'سجّل اليوم'}</button></div>
+    <div class="library-item"><div class="grow"><b>${en?'Nadhr fasting (not consecutive)':'صيام النذر (غير متتابع)'}</b><small>${en?`${nd.owed} owed · ${nd.fulfilled} fulfilled`:`${nd.owed} عليّ · ${nd.fulfilled} أوفيت`}</small></div>
+      <span style="display:flex;gap:6px"><button class="tiny-action" onclick="logNadhrOwed();rerender()">${en?'+1 owed':'+1 عليّ'}</button><button class="tiny-action" onclick="logNadhrFulfilled();rerender()">${en?'Log a day':'صمت يوم'}</button></span></div>
+    <div class="library-item"><div class="grow"><b>${en?'Istighfar':'استغفار'}</b><small>${en?`${ist} total`:`${ist} إجمالي`}</small></div>
+      <button class="tiny-action" onclick="tapIstighfar();rerender()">+1</button></div>
+    <div class="note-box" style="margin-top:10px">${esc(en?rem.refEn:rem.ref)}<br><span style="opacity:.8">${esc(en?rem.textEn:rem.text)}</span></div>
+  </section>`;
+}
+window.logKaffaraDay=logKaffaraDay;window.logNadhrOwed=logNadhrOwed;window.logNadhrFulfilled=logNadhrFulfilled;window.tapIstighfar=tapIstighfar;
+
 function zadTaskEntry(day){
  const en=state.lang==='en', isFriday=zadDay(day)==='الجمعة';
  const text=isFriday
@@ -241,48 +388,15 @@ function zadTaskEntry(day){
 function dayTasks(day){
  const base=[['pr_f','🕌 الفجر — في وقتها'],['pr_d','🕌 الظهر — في وقتها'],['pr_a','🕌 العصر — في وقتها'],['pr_m','🕌 المغرب — في وقتها'],['pr_i','🕌 العشاء — في وقتها'],['azkar','📿 أذكار الصباح والمساء + الدعاء للأهل والأموات'],['bro','🤲 ورد أخي — قرآن / قيام / أذكار'],['rafiq','✨ مشروع رفيق القرآن'],['quran','📖 مراجعة القرآن — المصلى بين المحاضرات/السكاشن أو المواصلات'],['marketing','💻 التسويق — '+marketingTarget()],['anki','🧠 Anki — المستحق أولًا، والجديد حسب الميزانية'],['easy','📗 EasyPeasy Way to Quit — قراءة اليوم'],['mouth','🪥 روتين الفم — صباحًا ومساءً'],['skin','🧴 روتين البشرة — صباحًا ومساءً'],['hair','💆 روتين الشعر — حسب روتينك']];
  const extra={'السبت':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم']], 'الأحد':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة'],['linkedin','📝 بوست LinkedIn الأسبوعي']], 'الاثنين':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم']], 'الثلاثاء':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة']], 'الأربعاء':[['aw','🧭 تأسيس وعي المسلم المعاصر — جلسة اليوم']], 'الخميس':[['taj','🎙️ التجويد (فيديو)'],['azb','📝 تفريغ تدريب العزبي في Anki — ~ساعة']], 'الجمعة':[['aw','🧭 تأسيس وعي المسلم المعاصر — حصة أطول'],['review','🔍 المراجعة الأسبوعية — 10–15 دقيقة ليلاً']]};
- return base.concat(extra[day]||[]).concat([zadTaskEntry(day)])
+ const en=state.lang==='en';
+ const fastEntries=fastDueTypes(effectiveDate()).map(f=>['fast_'+f.id,(en?'🌙 Sunnah fast — ':'🌙 صيام — ')+((en&&f.titleEn)?f.titleEn:f.title)]);
+ const sw6=shawwal6Progress(effectiveDate());
+ if(sw6 && sw6.count<sw6.target) fastEntries.push(['fast_shawwal6',(en?`🌙 Fast a day of Shawwal’s Six (${sw6.count}/6)`:`🌙 صيام يوم من ست شوال (${sw6.count}/6)`)]);
+ const nawafilEntries=NAWAFIL.map(n=>['naf_'+n.id,'✨ '+((en&&n.titleEn)?n.titleEn:n.title)]);
+ return base.concat(extra[day]||[]).concat(fastEntries).concat(nawafilEntries).concat([zadTaskEntry(day)])
 }
 function shariItems(day){if(day==='الجمعة')return [['sz1','زاد — محاضرة 1'],['sz2','زاد — محاضرة 2'],['sz3','زاد — محاضرة 3'],['st','تدبر — أحمد عبد المنعم']];const raw=SHARI_MAP[day]||'';const arr=raw.replace(/^زاد \(تفريغ\) \+ /,'').split(' + ');return [['z','زاد — محاضرة اليوم'],['s2',arr[0]||'المصدر الثاني'],['s3',arr[1]||'المصدر الثالث']]}
-const SUNNAH_FASTING=[
- {id:'monday',label:'الاثنين',when:'weekly'},{id:'thursday',label:'الخميس',when:'weekly'},
- {id:'white',label:'الأيام البيض 13–15',when:'white'},{id:'shawwal',label:'ستة من شوال',when:'shawwal'},
- {id:'arafah',label:'يوم عرفة 9 ذو الحجة',when:'arafah'},{id:'ashura',label:'عاشوراء 10 محرم + 9 أو 11',when:'ashura'},
- {id:'dhul',label:'العشر الأوائل من ذي الحجة',when:'dhul'},{id:'shaban',label:'الإكثار من الصيام في شعبان',when:'shaban'}
-];
-const NAWAFIL=[
- ['rawatib_f','ركعتا الفجر','2 قبل الفجر','Fajr sunnah'],['rawatib_d_pre','رواتب الظهر قبلًا','4 قبل الظهر','Dhuhr sunnah before'],['rawatib_d_post','رواتب الظهر بعدًا','2 بعد الظهر','Dhuhr sunnah after'],
- ['rawatib_m','راتبة المغرب','2 بعد المغرب','Maghrib sunnah'],['rawatib_i','راتبة العشاء','2 بعد العشاء','Isha sunnah'],['shaf_witr','الشفع والوتر','معًا','Shaf‘ + Witr together'],
- ['qiyam','قيام الليل / التهجد','ليلًا','Qiyam al-layl / Tahajjud'],['duha','الضحى','صباحًا','Duha'],['masjid','تحية المسجد','عند دخول المسجد','Greeting the mosque'],['wudu','سنة الوضوء','بعد الوضوء','Sunnah of wudu']
-];
-const QUIET_REMINDERS=[
- 'تذكير هادئ: رجل ذكر الله خاليًا ففاضت عيناه — اجعل الخلوة مع الله مساحة صدق.',
- 'تذكير هادئ: من السبعة رجل دعته امرأة ذات منصب وجمال فقال: إني أخاف الله — الخوف من الله يظهر حين لا يراك أحد.',
- 'تذكير هادئ: احفظ قلبك حيث لا يراك الناس، فالله يراك في السر والعلن.',
- 'تذكير هادئ: اتق الله حيثما كنت — وأصلح ما بينك وبين الله قبل أن تبحث عن أثرٍ يراه الناس.'
-];
-function sunnahDateKey(){const d=shariHijriAdjustedDate();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function hijriSuggestion(){const {day,month}=hijriToday();const shariDay=shariBaseDate().getDay();const out=[];if(shariDay===1)out.push('monday');if(shariDay===4)out.push('thursday');if(month===10)out.push('shawwal');if(month===12&&day>=1&&day<=10)out.push(day===9?'arafah':'dhul');if(month===1&&(day===9||day===10||day===11))out.push('ashura');if(month===8)out.push('shaban');if([13,14,15].includes(day))out.push('white');return [...new Set(out)]}
-function sunnahLogged(id){return !!state.sunnah.fastLogs[`${sunnahDateKey()}|${id}`]}
-function toggleSunnahFast(id){const k=`${sunnahDateKey()}|${id}`;state.sunnah.fastLogs[k]=!state.sunnah.fastLogs[k];save();rerender()}
-function setNafila(id){const k=sunnahDateKey();state.sunnah.nawafil[`${k}|${id}`]=!state.sunnah.nawafil[`${k}|${id}`];save();rerender()}
-function changeSunnahCounter(group,key,delta){if(group==='sunnah'){state.sunnah[key]=Math.max(0,(Number(state.sunnah[key])||0)+delta)}else{const obj=state.sunnah[group];const next=Math.max(0,(Number(obj[key])||0)+delta);obj[key]=(group==='nadhr'&&key==='fulfilled'&&delta>0)?Math.min(Number(obj.owed)||0,next):next;if(group==='nadhr'&&key==='owed')obj.fulfilled=Math.min(Number(obj.fulfilled)||0,Number(obj.owed)||0)}save();rerender()}
-function kaffarahStreak(){const k=state.sunnah.kaffarah,today=sunnahDateKey(),last=k.lastDate;if(!last)return 0;const a=new Date(last+'T12:00:00'),b=new Date(today+'T12:00:00');const diff=Math.round((b-a)/86400000);return (diff===0||diff===1)?Math.min(3,Number(k.streak)||0):0}
-function markKaffarahDay(){const today=sunnahDateKey(),k=state.sunnah.kaffarah,last=k.lastDate;if(last===today)return;if(last){const a=new Date(last+'T12:00:00'),b=new Date(today+'T12:00:00');const diff=Math.round((b-a)/86400000);k.streak=diff===1?Math.min(3,(Number(k.streak)||0)+1):1}else k.streak=1;k.lastDate=today;k.days=(Number(k.days)||0)+1;save();rerender()}
-function resetKaffarahSequence(){state.sunnah.kaffarah.streak=0;state.sunnah.kaffarah.lastDate='';save();rerender()}
-function fastSunnahSection(){
- const en=state.lang==='en',suggested=new Set(hijriSuggestion()),labels={monday:en?'Monday fast':'صيام الاثنين',thursday:en?'Thursday fast':'صيام الخميس',white:en?'White Days 13–15':'الأيام البيض 13–15',shawwal:en?'Six days of Shawwal':'ستة من شوال',arafah:en?'Arafah — 9 Dhu al-Hijjah':'عرفة — 9 ذو الحجة',ashura:en?'Ashura — 10 Muharram + 9/11':'عاشوراء — 10 محرم + 9/11',dhul:en?'First ten days of Dhu al-Hijjah':'العشر الأوائل من ذي الحجة',shaban:en?'Frequent fasting in Sha‘ban':'الإكثار من الصيام في شعبان'};
- const row=x=>`<label class="sunnah-row ${suggested.has(x.id)?'recommended':''}"><div><b>${labels[x.id]}</b><small>${x.id==='shawwal'?(en?'Any 6 days in the month.':'أي 6 أيام في الشهر.'):x.id==='ashura'?(en?'Track only; verify your details independently.':'عدّ فقط؛ راجع تفاصيلك بنفسك.'):''}</small></div><input type="checkbox" ${sunnahLogged(x.id)?'checked':''} onchange="toggleSunnahFast('${x.id}')"></label>`;
- const active=SUNNAH_FASTING.filter(x=>suggested.has(x.id)); const standard=SUNNAH_FASTING.filter(x=>!suggested.has(x.id)&&x.id!=='shawwal'); const shaw=Math.min(6,Number(state.sunnah.shawwal)||0);
- return `<section class="section-box sunnah-panel" style="margin-top:12px"><div class="section-title"><div><h2 style="font-size:20px">🌙 ${en?'Sunnah fasting':'صيام السنن'}</h2><p>${en?'Date-aware suggestions; the app counts and does not issue fiqh rulings.':'اقتراحات مرتبطة بالتاريخ؛ التطبيق يعدّ فقط ولا يتبنّى حكمًا فقهيًا من عنده.'}</p></div><span class="badge core">${esc(hijriLabel())}</span></div>${active.length?`<div class="sunnah-callout"><b>${en?'Today':'اليوم'}</b><div>${active.map(x=>labels[x.id]).join(' · ')}</div></div>`:''}<div class="sunnah-list">${active.map(row).join('')}${standard.map(row).join('')}</div><div class="sunnah-counter"><div><b>${en?'Shawwal counter':'عداد شوال'}</b><small>${shaw}/6</small></div><div class="counter-actions"><button class="tiny-action" onclick="changeSunnahCounter('sunnah','shawwal',-1)">−</button><button class="tiny-action" onclick="changeSunnahCounter('sunnah','shawwal',1)">+</button></div></div><div class="sunnah-counter"><div><b>${en?'Dawud fasting':'صيام داود'}</b><small>${en?'Opt-in only.':'اختياري تمامًا.'}</small></div><button class="tiny-action" onclick="state.sunnah.dawud=!state.sunnah.dawud;save();rerender()">${state.sunnah.dawud?(en?'On':'مفعّل'):(en?'Off':'غير مفعّل')}</button></div></section>`;
-}
-function nawafilSection(){const en=state.lang==='en',k=sunnahDateKey();return `<section class="section-box sunnah-panel" style="margin-top:12px"><div class="section-title"><div><h2 style="font-size:20px">🕌 ${en?'Sunnah & nafl prayers':'النوافل والسنن الرواتب'}</h2><p>${en?'Daily checklist for the practices you choose to keep.':'قائمة يومية للممارسات التي تختار تثبيتها.'}</p></div></div><div class="sunnah-list">${NAWAFIL.map(([id,t,d,te])=>`<label class="sunnah-row"><div><b>${en?te:t}</b><small>${en?te:d}</small></div><input type="checkbox" ${state.sunnah.nawafil[`${k}|${id}`]?'checked':''} onchange="setNafila('${id}')"></label>`).join('')}</div></section>`}
-function obligationSection(){const en=state.lang==='en',ka=state.sunnah.kaffarah,na=state.sunnah.nadhr,streak=kaffarahStreak();return `<section class="section-box sunnah-panel" style="margin-top:12px"><div class="section-title"><div><h2 style="font-size:20px">🧾 ${en?'Fasting obligation counters':'عدادات الصيام الواجب'}</h2><p>${en?'These are tracking rules, not a fiqh ruling.':'دي قواعد تتبع، وليست فتوى أو حكمًا فقهيًا من التطبيق.'}</p></div></div><div class="grid grid-2"><div class="counter-card"><b>${en?'Kaffarat al-yamin':'كفارة اليمين'}</b><small>${en?'Consecutive 3-day streak':'3 أيام متتالية'}</small><strong>${streak}/3</strong><div class="counter-actions"><button class="tiny-action" onclick="markKaffarahDay()">+ ${en?'fast today':'صيام اليوم'}</button><button class="tiny-action" onclick="resetKaffarahSequence()">↺</button></div></div><div class="counter-card"><b>${en?'Nadhr':'النذر'}</b><small>${en?'Owed / fulfilled; non-consecutive':'مستحق / مُنجز؛ غير متتابع'}</small><strong>${Math.min(na.fulfilled,na.owed)}/${na.owed}</strong><div class="counter-actions"><button class="tiny-action" onclick="changeSunnahCounter('nadhr','owed',1)">+ ${en?'owed':'مستحق'}</button><button class="tiny-action" onclick="changeSunnahCounter('nadhr','fulfilled',1)">+ ${en?'done':'منجز'}</button><button class="tiny-action" onclick="changeSunnahCounter('nadhr','fulfilled',-1)">−</button></div></div></div><div class="note" style="margin-top:10px">${en?'Kaffarat streak resets after a missed day. Nadhr days remain independent.':'عداد كفارة اليمين يرجع للصفر عند تفويت يوم. أيام النذر مستقلة وغير متتابعة.'}</div></section>`}
-function quietReminderSection(){const en=state.lang==='en',msg=QUIET_REMINDERS[localDaySerial()%QUIET_REMINDERS.length];return `<section class="section-box quiet-reminder" style="margin-top:12px"><div class="section-title"><div><h3 style="margin:0">🤍 ${en?'Quiet reminder':'تذكير هادئ'}</h3><p>${en?'Rotating and deliberately understated.':'متغيّر وهادئ، بدون احتفال أو مؤثرات صاخبة.'}</p></div></div><p style="margin:0;line-height:1.95">${esc(en?msg.replace('تذكير هادئ:','Quiet reminder:'):msg)}</p><small class="muted">${en?'Reference to the hadith of the seven shaded; verify wording independently.':'إشارة إلى حديث السبعة الذين يظلهم الله؛ راجع نص الحديث من مصدرك المعتمد.'}</small></section>`}
-function istighfarSection(){const en=state.lang==='en',n=Number(state.sunnah.istighfar)||0;return `<section class="section-box sunnah-panel" style="margin-top:12px"><div class="section-title"><div><h3 style="margin:0">🤲 ${en?'Istighfar tally':'عداد الاستغفار'}</h3><p>${en?'Quiet one-tap counter.':'عداد هادئ بضغطة واحدة.'}</p></div><strong>${n}</strong></div><div class="counter-actions"><button class="btn primary" onclick="state.sunnah.istighfar=(Number(state.sunnah.istighfar)||0)+1;save();rerender()">+ ${en?'Istighfar':'استغفار'}</button><button class="btn" onclick="state.sunnah.istighfar=0;save();rerender()">↺ ${en?'Reset':'تصفير'}</button></div></section>`}
-function sunnahContentSection(){return fastSunnahSection()+nawafilSection()+obligationSection()+quietReminderSection()+istighfarSection()}
-
-function applyLanguage(){document.documentElement.lang=state.lang;document.documentElement.dir=state.lang==='en'?'ltr':'rtl';document.body.dataset.lang=state.lang;document.body.dataset.theme=state.theme;document.documentElement.style.colorScheme=state.theme==='paper'?'light':'dark';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=getComputedStyle(document.body).getPropertyValue('--bg').trim()||'#0b0f12';const tag=document.getElementById('brandTagline');if(tag)tag.textContent=state.lang==='en'?'Build yourself. Create impact. Earn independence.':'بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.';}
+function applyLanguage(){document.documentElement.lang=state.lang;document.documentElement.dir=state.lang==='en'?'ltr':'rtl';document.body.dataset.lang=state.lang;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=getComputedStyle(document.body).getPropertyValue('--bg').trim()||'#0b0f12';const tag=document.getElementById('brandTagline');if(tag)tag.textContent=state.lang==='en'?'Build yourself. Create impact. Earn independence.':'بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.';}
 const I18N={
 'Mihrab':'Mihrab',
 'بناء النفس، وصناعة الأثر، وتحقيق الاستقلال.':'Build yourself. Create impact. Earn independence.',
@@ -307,14 +421,24 @@ function translateText(t){let s=t;const exact=I18N[s.trim()];if(exact)return exa
  .replaceAll('اليوم','Today').replaceAll('الأسبوع','Week').replaceAll('المحاضرات','lectures').replaceAll('محاضرة','lecture')
  .replaceAll('جلسة','session').replaceAll('حوالي','About').replaceAll('دقيقة','min').replaceAll('ساعة','h').replaceAll('تقدم','Progress').replaceAll('مهمة','task').replaceAll('المحتوى','Content').replaceAll('ملاحظة','Note');}
 function translateRendered(){}
-function resolvedTheme(){
-  if(state.theme==='system'){
-    try{return window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'paper':'mono'}catch(e){return 'mono'}
-  }
-  return state.theme;
+function resolveTheme(t){
+  if(t!=='system') return t;
+  const dark = !window.matchMedia || window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return dark ? 'mono' : 'paper'; // 'mono' as the neutral dark default, 'paper' is the only light theme
 }
-function applyTheme(){const actual=resolvedTheme();applyLanguage();document.body.dataset.theme=actual;document.documentElement.dataset.themePreference=state.theme;document.documentElement.style.colorScheme=actual==='paper'?'light':'dark';const meta=document.querySelector('meta[name=theme-color]');if(meta)meta.content=getComputedStyle(document.body).getPropertyValue('--bg').trim()||'#0b0f12'}
-function setTheme(t){const allowed=['system','aurora','midnight','sunrise','paper','mono'];state.theme=allowed.includes(t)?t:'system';save();applyTheme();renderAll({preserveScroll:true})}
+let _systemThemeListenerBound=false;
+function applyTheme(){
+  applyLanguage();
+  document.body.dataset.theme=resolveTheme(state.theme);
+  document.documentElement.style.colorScheme=resolveTheme(state.theme)==='paper'?'light':'dark';
+  if(state.theme==='system' && !_systemThemeListenerBound && window.matchMedia){
+    _systemThemeListenerBound=true;
+    const mq=window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange=()=>{ if(state.theme==='system'){ document.body.dataset.theme=resolveTheme('system'); document.documentElement.style.colorScheme=resolveTheme('system')==='paper'?'light':'dark'; } };
+    if(mq.addEventListener) mq.addEventListener('change',onChange); else if(mq.addListener) mq.addListener(onChange);
+  }
+}
+function setTheme(t){const allowed=['system','aurora','midnight','sunrise','paper','mono'];state.theme=allowed.includes(t)?t:'mono';save();applyTheme();renderAll({preserveScroll:true})}
 function cycleTheme(){const arr=['system','aurora','midnight','sunrise','paper','mono'];setTheme(arr[(arr.indexOf(state.theme)+1)%arr.length])}
 function renderHome(){
  const day=todayName(), items=dayTasks(day), pr=pct(items.map(x=>x[0]),state.today);
@@ -365,10 +489,10 @@ function renderHome(){
 }
 
 function renderMarketing(){let overallIds=[],out=`<div class="section-title"><div><h2>💻 معسكر التسويق الطبي الرقمي</h2><p>10 أسابيع · 12 ساعة/أسبوع · كل أسبوع يضيف قطعة إلى دراسة حالة واحدة.</p></div><span class="badge core">أولوية مهنية</span></div><section class="awareness" style="margin-bottom:14px"><div class="kicker">THE UNIFIED CASE STUDY</div><h2 style="margin:8px 0">صيدلية الفيروز الإكلينيكية</h2><p class="muted" style="line-height:1.9;margin:0">مشروع موحّد: صيدلية إكلينيكية افتراضية في حي الفيروز، الأقصر، تقدم استشارات دوائية أونلاين ومتابعة للمرضى.</p></section><div class="grid grid-2"><section class="section-box"><h3>🧠 طريقة اليوم</h3><p>🎥 ساعة تعلم بصري/فيديو → 🤖 15 دقيقة عصف AI → ✍️ 15 دقيقة توليف شخصي بإيدك → 🧠 30 دقيقة Anki.</p><div class="note">سؤال التطبيق الثابت: «موضوع النهارده — إزاي بيتطبق على صيدلية الفيروز تحديدًا؟»</div></section><section class="section-box"><h3>🛡️ Buffer Rule</h3><p>فاتك يوم؟ لا تعوضه في اليوم التالي. زحزح الجدول. وقت الضغط يقل الإنتاج الجديد قبل الأساسيات.</p></section></div>`;
- MARKETING.forEach(([phase,weeks])=>{out+=`<div class="section-title"><div><h2>${esc(phase)}</h2></div></div>`;weeks.forEach(([title,days,deep])=>{const ids=days.concat(deep).map(x=>idFor(title,x));const pr=pct(ids,state.plan);overallIds.push(...ids);out+=`<details class="week-card"><summary><span><b>${esc(title)}</b></span><span class="badge">${pr.p}% · ${pr.n}/${pr.total}</span></summary><div class="week-body"><div class="progress-head"><span>تقدم الأسبوع</span><b>${pr.p}%</b></div><div class="progress"><i style="width:${pr.p}%"></i></div><div class="week-grid" style="margin-top:12px"><div class="week-block"><h4>📚 أيام التعلم</h4>${days.map(x=>{const id=idFor(title,x),d=pChecked(id);return `<label class="check-row ${d?'done':''}"><input type="checkbox" ${d?'checked':''} onchange="togglePlan('${id}')"><span>${esc(x)}</span></label>`}).join('')}</div><div class="week-block"><h4>🔻 التطبيق العميق</h4>${deep.map(x=>{const id=idFor(title,x),d=pChecked(id);return `<label class="check-row ${d?'done':''}"><input type="checkbox" ${d?'checked':''} onchange="togglePlan('${id}')"><span>${esc(x)}</span></label>`}).join('')}</div></div></div></details>`})});
+ MARKETING.forEach(([phase,weeks])=>{out+=`<div class="section-title"><div><h2>${esc(phase)}</h2></div></div>`;weeks.forEach(([title,days,deep])=>{const ids=days.concat(deep).map(x=>idFor(title,x));const pr=pct(ids,state.plan);overallIds.push(...ids);out+=`<details class="week-card"><summary><span><b>${esc(title)}</b></span><span class="badge">${pr.p}% · ${pr.n}/${pr.total}</span></summary><div class="week-body"><div class="progress-head"><span>تقدم الأسبوع</span><b>${pr.p}%</b></div><div class="progress"><i style="width:${pr.p}%"></i></div><div class="week-grid" style="margin-top:12px"><div class="week-block"><h4>📚 أيام التعلم</h4>${days.map(x=>{const id=idFor(title,x),d=pChecked(id);return `<label class="mtask ${d?'done':''}"><input type="checkbox" ${d?'checked':''} onchange="togglePlan('${id}')"><span>${esc(x)}</span></label>`}).join('')}</div><div class="week-block"><h4>🔻 التطبيق العميق</h4>${deep.map(x=>{const id=idFor(title,x),d=pChecked(id);return `<label class="mtask ${d?'done':''}"><input type="checkbox" ${d?'checked':''} onchange="togglePlan('${id}')"><span>${esc(x)}</span></label>`}).join('')}</div></div></div></details>`})});
  const ov=pct(overallIds,state.plan);out+=`<div class="section-title"><div><h2>🧠 نظام Anki داخل المعسكر</h2><p>المعلومة التي لا تحتاج الاحتفاظ بها طويلًا لا تتحول تلقائيًا إلى بطاقة.</p></div></div><div class="grid grid-3">${[['Must memorize: 4Ps, STP, SWOT, AIDA, TOFU/MOFU/BOFU, Buyer Persona, USP, CTA, SEO, CAC, LTV, CTR, CPC, CPM, ROAS, Conversion Rate, UTM, SMART, KPIs.'],['Understand and apply: AMA definition, marketing history, Marketing 1.0/2.0/3.0/5.0, evolution stories, and company examples.'],['Reference only: statistics, studies, and long examples.']].map(x=>`<div class="section-box"><p style="line-height:1.85">${esc(x[0])}</p></div>`).join('')}</div><div class="grid grid-2" style="margin-top:12px"><div class="section-box"><h3>✅ بوابة إنشاء البطاقة</h3><p>هل سأحتاجها بعد 3 شهور؟ هل سأستخدمها في شغل حقيقي؟ هل سأضطر للبحث عنها كل مرة؟ نعم على واحدة أو أكثر → بطاقة.</p></div><div class="section-box"><h3>🎯 معيار نجاح المشروع</h3><p>مشكلة واضحة → حل مفهوم → نتيجة موثقة في الـPortfolio.</p></div></div><div class="section-box" style="margin-top:12px"><div class="progress-head"><span>التقدم الكلي</span><b>${ov.p}%</b></div><div class="progress"><i style="width:${ov.p}%"></i></div></div><div class="section-box" style="margin-top:12px;border-color:color-mix(in srgb,var(--c) 28%,var(--line))"><h3>🚀 بعد الأسبوع 10</h3><p>Drug Commercialization مؤجل لما بعد المعسكر. الشهادة الموازية (HubSpot / Google) تظل 20–30 دقيقة وقت الفراغ ولا تكرر محتوى المعسكر.</p></div>`;return out}
 function renderShari(){const day=todayName();const rows=DAYS.map(d=>`<div class="timeline-card ${d===day?'today':''}"><div class="day">${d} ${d===day?'· اليوم':''}</div><ul><li>${esc(SHARI_MAP[d])}</li>${d==='الجمعة'?'<li>جلسة أطول + تدبر</li>':'<li>حوالي 70–85 دقيقة</li>'}</ul></div>`).join('');
- return `<div class="section-title"><div><h2>🕌 العلم الشرعي</h2><p>مسار مستقل وثابت. لا يدخل في منافسة مع التسويق.</p></div><span class="badge core">أساسي</span></div><div class="timeline">${rows}</div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>📚 المصادر الأساسية</h3><p>أحمد السيد — نبدأ بـ «بناء العقيدة للجيل الصاعد».</p><p><b style="color:var(--a)">أيمن عبد الرحيم — مسار أساسي ثابت.</b></p><p>فقه النفس — عبد الرحمن ذاكر.</p><p>الخلفاء الراشدين — راغب السرجاني.</p><p>الجمعة — أحمد عبد المنعم: تدبر وتفسير.</p></section><section class="section-box"><h3>🧭 ترتيب المسارات</h3><p>«تأسيس وعي المسلم المعاصر» موجود هنا كمسار أساسي من محتوى أيمن، وليس بطاقة وهمية في النظام.</p><p>«البيت المسلم» يمكن الرجوع إليه عند الحاجة فقط، وليس مسارًا إلزاميًا موازيًا.</p></section></div><div class="section-title"><div><h2>🧭 تأسيس وعي المسلم المعاصر</h2><p>أيمن عبد الرحيم · 9 محاضرات · الهدف تأسيس/إعادة توجيه الوعي، لا جمع أكبر عدد من المعلومات.</p></div><span class="badge core">Core</span></div><div class="awareness"><div class="grid grid-2"><div><h3 style="margin-top:0">🎯 هدف الدورة</h3><p style="line-height:1.9;margin:0">إعادة أو تأسيس توجه ووعي صحيح — وليس جمع أكبر قدر من المعلومات — مع فهم كيف يؤثر عالم الأفكار في السلوك.</p><p class="muted" style="line-height:1.9;margin:9px 0 0">اللغة + التدين + الثقافة تشكّل عالم الأفكار الذي ينعكس على عالم السلوك، وآخر المحاضرات تركز على ما يمكن فعله بالأفكار الجديدة بعد التعلم.</p></div><div><h3 style="margin-top:0">🧭 مكانها في الخطة</h3><p style="line-height:1.9;margin:0">أيمن عبد الرحيم مسار أساسي ثابت. التنفيذ الأسبوعي الأساسي: السبت والاثنين والأربعاء، مع حصة أطول الجمعة. في ضغط اليوم لا تُلغى هويته من الخطة؛ الذي يمكن ضغطه هو الجرعة التنفيذية.</p></div></div><div class="grid grid-3" style="margin-top:13px"><div class="note"><b>01</b><br>التوجه والوعي قبل الكم المعلوماتي</div><div class="note"><b>02</b><br>تاريخ يشرح أثر عالم الأفكار على السلوك</div><div class="note"><b>03</b><br>الانتقال من الفكرة إلى ما نفعله بها</div></div><div class="lecture-grid">${AWARENESS.map(n=>`<label class="check-row"><input type="checkbox" ${pChecked('aware_'+n)?'checked':''} onchange="togglePlan('aware_${n}')"><span>المحاضرة ${n} من 9</span></label>`).join('')}</div><div class="note" style="margin-top:10px">💡 ملاحظة الدورة: يوجد Trailer منفصل في بعض المنصات، لكنه ليس واحدًا من المحاضرات التسع الأساسية.</div></div><div class="section-title"><div><h2>✅ تنفيذ اليوم الشرعي</h2><p>${day} — علّم البنود لما تخلصها.</p></div></div><section class="section-box">${taskHTML(shariItems(day))}</section>`+sunnahContentSection()}
+ return `<div class="section-title"><div><h2>🕌 العلم الشرعي</h2><p>مسار مستقل وثابت. لا يدخل في منافسة مع التسويق.</p></div><span class="badge core">أساسي</span></div><div class="timeline">${rows}</div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>📚 المصادر الأساسية</h3><p>أحمد السيد — نبدأ بـ «بناء العقيدة للجيل الصاعد».</p><p><b style="color:var(--a)">أيمن عبد الرحيم — مسار أساسي ثابت.</b></p><p>فقه النفس — عبد الرحمن ذاكر.</p><p>الخلفاء الراشدين — راغب السرجاني.</p><p>الجمعة — أحمد عبد المنعم: تدبر وتفسير.</p></section><section class="section-box"><h3>🧭 ترتيب المسارات</h3><p>«تأسيس وعي المسلم المعاصر» موجود هنا كمسار أساسي من محتوى أيمن، وليس بطاقة وهمية في النظام.</p><p>«البيت المسلم» يمكن الرجوع إليه عند الحاجة فقط، وليس مسارًا إلزاميًا موازيًا.</p></section></div><div class="section-title"><div><h2>🧭 تأسيس وعي المسلم المعاصر</h2><p>أيمن عبد الرحيم · 9 محاضرات · الهدف تأسيس/إعادة توجيه الوعي، لا جمع أكبر عدد من المعلومات.</p></div><span class="badge core">Core</span></div><div class="awareness"><div class="grid grid-2"><div><h3 style="margin-top:0">🎯 هدف الدورة</h3><p style="line-height:1.9;margin:0">إعادة أو تأسيس توجه ووعي صحيح — وليس جمع أكبر قدر من المعلومات — مع فهم كيف يؤثر عالم الأفكار في السلوك.</p><p class="muted" style="line-height:1.9;margin:9px 0 0">اللغة + التدين + الثقافة تشكّل عالم الأفكار الذي ينعكس على عالم السلوك، وآخر المحاضرات تركز على ما يمكن فعله بالأفكار الجديدة بعد التعلم.</p></div><div><h3 style="margin-top:0">🧭 مكانها في الخطة</h3><p style="line-height:1.9;margin:0">أيمن عبد الرحيم مسار أساسي ثابت. التنفيذ الأسبوعي الأساسي: السبت والاثنين والأربعاء، مع حصة أطول الجمعة. في ضغط اليوم لا تُلغى هويته من الخطة؛ الذي يمكن ضغطه هو الجرعة التنفيذية.</p></div></div><div class="grid grid-3" style="margin-top:13px"><div class="note"><b>01</b><br>التوجه والوعي قبل الكم المعلوماتي</div><div class="note"><b>02</b><br>تاريخ يشرح أثر عالم الأفكار على السلوك</div><div class="note"><b>03</b><br>الانتقال من الفكرة إلى ما نفعله بها</div></div><div class="lecture-grid">${AWARENESS.map(n=>`<label class="lecture"><input type="checkbox" ${pChecked('aware_'+n)?'checked':''} onchange="togglePlan('aware_${n}')"><span>المحاضرة ${n} من 9</span></label>`).join('')}</div><div class="note" style="margin-top:10px">💡 ملاحظة الدورة: يوجد Trailer منفصل في بعض المنصات، لكنه ليس واحدًا من المحاضرات التسع الأساسية.</div></div><div class="section-title"><div><h2>✅ تنفيذ اليوم الشرعي</h2><p>${day} — علّم البنود لما تخلصها.</p></div></div><section class="section-box">${taskHTML(shariItems(day))}</section>`}
 function renderQuran(){
  const open=!!state.quranFrameOpen;
  return `<div class="section-title"><div><h2>📖 القرآن</h2><p>مراجعة المحفوظ أثناء الدراسة؛ رفيق القرآن يظل أداة مستقلة تدخل لها وقت ما تحتاج.</p></div><span class="badge core">مراجعة فقط</span></div>
@@ -386,7 +510,7 @@ function renderQuran(){
  </div>
  ${open?`<div class="section-title"><div><h2>✦ رفيق القرآن</h2><p>يُحمّل الإطار فقط عند طلبه حتى تظل اللوحة سريعة وخفيفة.</p></div><span class="badge">Cloudflare</span></div><div class="iframe-wrap"><div class="iframe-head"><b>رفيق القرآن</b><div style="display:flex;gap:7px;align-items:center"><span class="badge">Live</span><button class="icon-btn" onclick="toggleRafiqFrame()" aria-label="إغلاق">×</button></div></div><iframe id="rafiqFrame" title="رفيق القرآن داخل Mihrab" src="${RAFIQ_URL}" loading="lazy" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe></div>`:''}`;
 }
-function renderCourses(){return `<div class="section-title"><div><h2>📚 الكورسات والأنظمة المساندة</h2><p>مساندة لا تسبق الأساسيات.</p></div></div><div class="grid grid-3"><section class="section-box"><h3>🧠 Anki</h3><p>المراجعة المستحقة أولًا. الجديد بميزانية ثابتة. أماكنه المفضلة: المواصلات، المصلى، والفواصل.</p></section><section class="section-box"><h3>🚀 McKinsey Forward</h3><p>حوالي ساعتين أسبوعيًا. أول ما ينكمش عند ضغط الدراسة.</p><label class="check-row ${state.weekly.mckinsey?'done':''}"><input type="checkbox" ${state.weekly.mckinsey?'checked':''} onchange="state.weekly.mckinsey=this.checked;save();renderAll()"><span>أنجزت نصيب الأسبوع</span></label></section><section class="section-box"><h3>💊 The Pharmacist's Guide to Dose Calculations</h3><p>2:41 ساعة إجماليًا · جلسات قصيرة 10–15 دقيقة تقريبًا. أيضًا من أول الأشياء التي يمكن تأجيلها عند الضغط.</p><label class="check-row ${state.weekly.dose?'done':''}"><input type="checkbox" ${state.weekly.dose?'checked':''} onchange="state.weekly.dose=this.checked;save();renderAll()"><span>أنجزت نصيب الأسبوع</span></label></section></div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🎓 HubSpot / Google</h3><p>20–30 دقيقة وقت الفراغ، بالتوازي مع المعسكر، بدون إعادة شرح ما تدرسه بالفعل.</p><label class="check-row ${state.weekly.cert?'done':''}"><input type="checkbox" ${state.weekly.cert?'checked':''} onchange="state.weekly.cert=this.checked;save();renderAll()"><span>أنجزت نصيب الشهادة الموازية</span></label></section><section class="section-box"><h3>📗 EasyPeasy</h3><p>يظل موجودًا كقراءة خفيفة داخل اليوم، ولا يضخم الخطة الرئيسية.</p></section></div><div class="section-box" style="margin-top:12px;border-color:color-mix(in srgb,var(--c) 28%,var(--line))"><h3>⏸️ Drug Commercialization</h3><p>مؤجل إلى ما بعد معسكر التسويق.</p></div>`}
+function renderCourses(){return `<div class="section-title"><div><h2>📚 الكورسات والأنظمة المساندة</h2><p>مساندة لا تسبق الأساسيات.</p></div></div><div class="grid grid-3"><section class="section-box"><h3>🧠 Anki</h3><p>المراجعة المستحقة أولًا. الجديد بميزانية ثابتة. أماكنه المفضلة: المواصلات، المصلى، والفواصل.</p></section><section class="section-box"><h3>🚀 McKinsey Forward</h3><p>حوالي ساعتين أسبوعيًا. أول ما ينكمش عند ضغط الدراسة.</p><label class="task ${state.weekly.mckinsey?'done':''}"><input type="checkbox" ${state.weekly.mckinsey?'checked':''} onchange="state.weekly.mckinsey=this.checked;save();renderAll()"><span>أنجزت نصيب الأسبوع</span></label></section><section class="section-box"><h3>💊 The Pharmacist's Guide to Dose Calculations</h3><p>2:41 ساعة إجماليًا · جلسات قصيرة 10–15 دقيقة تقريبًا. أيضًا من أول الأشياء التي يمكن تأجيلها عند الضغط.</p><label class="task ${state.weekly.dose?'done':''}"><input type="checkbox" ${state.weekly.dose?'checked':''} onchange="state.weekly.dose=this.checked;save();renderAll()"><span>أنجزت نصيب الأسبوع</span></label></section></div><div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🎓 HubSpot / Google</h3><p>20–30 دقيقة وقت الفراغ، بالتوازي مع المعسكر، بدون إعادة شرح ما تدرسه بالفعل.</p><label class="task ${state.weekly.cert?'done':''}"><input type="checkbox" ${state.weekly.cert?'checked':''} onchange="state.weekly.cert=this.checked;save();renderAll()"><span>أنجزت نصيب الشهادة الموازية</span></label></section><section class="section-box"><h3>📗 EasyPeasy</h3><p>يظل موجودًا كقراءة خفيفة داخل اليوم، ولا يضخم الخطة الرئيسية.</p></section></div><div class="section-box" style="margin-top:12px;border-color:color-mix(in srgb,var(--c) 28%,var(--line))"><h3>⏸️ Drug Commercialization</h3><p>مؤجل إلى ما بعد معسكر التسويق.</p></div>`}
 function consistencySection(){
  const en=state.lang==='en';
  const ws=weekSummary(), ms=monthSummary(), ys=yearSummary(), as=allTimeSummary();
@@ -433,8 +557,8 @@ function achievementSection(){
 }
 function renderSystemBase(){
  const themes = state.lang==='en'
-  ? [['system','System / Auto','Follow your device light/dark preference'],['aurora','Aurora','Emerald + Gold'],['midnight','Midnight','Indigo + Gold'],['sunrise','Velvet','Amber + Burgundy'],['paper','Champagne','Ivory + Gold'],['mono','Obsidian','Platinum + Gold']]
-  : [['system','تلقائي / نظام الجهاز','يتبع وضع الجهاز: فاتح أو داكن'],['aurora','Aurora','زمرد + ذهب'],['midnight','Midnight','نيلي + ذهب'],['sunrise','Velvet','عنبر + برغندي'],['paper','Champagne','عاجي + ذهب'],['mono','Obsidian','بلاتيني + ذهب']];
+  ? [['system','System','Follows your device'],['aurora','Aurora','Emerald + Gold'],['midnight','Midnight','Indigo + Gold'],['sunrise','Velvet','Amber + Burgundy'],['paper','Champagne','Ivory + Gold'],['mono','Obsidian','Platinum + Gold']]
+  : [['system','النظام','يتبع جهازك'],['aurora','Aurora','زمرد + ذهب'],['midnight','Midnight','نيلي + ذهب'],['sunrise','Velvet','عنبر + برغندي'],['paper','Champagne','عاجي + ذهب'],['mono','Obsidian','بلاتيني + ذهب']];
  const rating=state.weekly.rating||'';
  const reviewChoices=state.lang==='en'
   ? [['excellent','🌟','Excellent','80–90%+ and steady progress'],['good','👍','Very good','Going well with some friction'],['unstable','⚖️','Unstable','Something needs adjustment'],['emergency','🚨','Emergency week','Essentials had priority']]
@@ -450,17 +574,10 @@ function renderSystemBase(){
  <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 7px"><div><h3 style="margin:0">🌐 ${state.lang==='en'?'Interface language':'لغة الواجهة'}</h3><p>${state.lang==='en'?'Switch between Arabic and English any time.':'بدّل بين العربية والإنجليزية في أي وقت.'}</p></div><span class="badge">${state.lang==='en'?'EN':'عربي'}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ${state.lang==='ar'?'primary':''}" onclick="setLang('ar')">العربية</button><button class="btn ${state.lang==='en'?'primary':''}" onclick="setLang('en')">English</button></div></section>
  <div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>🗓️ ${state.lang==='en'?'Day types':'نوع كل يوم'}</h3>${DAYS.map(d=>`<div class="quote-settings"><div><b>${dayLabels[d]}</b><div class="tiny muted">${state.lang==='en'?'Sets the marketing dose for that day':'يحدد جرعة التسويق لذلك اليوم'}</div></div><select aria-label="${state.lang==='en'?'Day type for ':'نوع يوم '}${dayLabels[d]}" onchange="state.weekDayTypes['${d}']=this.value;save();renderAll()">${['كلية','بدون كلية','ديب وورك','راحة'].map(v=>`<option value="${v}" ${(state.weekDayTypes[d]||'كلية')===v?'selected':''}>${dayTypeLabels[v]}</option>`).join('')}</select></div>`).join('')}</section>
  <section class="section-box"><h3>🎨 ${state.lang==='en'?'Board identity':'هوية اللوحة'}</h3><p class="muted" style="margin-top:-3px">${state.lang==='en'?'Themes, language, and day types live here. The plan itself stays fixed.':'الثيمات واللغة ونوع كل يوم هنا. الخطة نفسها تفضل ثابتة.'}</p><div class="note">${state.lang==='en'?'These controls change presentation and operation only while keeping your plan intact.':'التغيير هنا بصري وتشغيلي فقط: الثيم يغيّر الخلفية والزجاج والحدود والظلال والإضاءة مع الحفاظ على نفس المحتوى.'}</div></section></div>
- <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h2 style="font-size:20px">🔎 ${state.lang==='en'?'Weekly review':'التقييم الأسبوعي'}</h2><p>${state.lang==='en'?'Choose your real weekly rating — it saves and counts as the weekly review.':'اختار تقييمك الحقيقي للأسبوع — الاختيار بيتحفظ ويُعتبر المراجعة الأسبوعية منجزة.'}</p></div><span class="badge ${rating?'core':''}">${rating?(state.lang==='en'?'Saved':'محفوظ'):(state.lang==='en'?'Not rated':'لم يُقيَّم')}</span></div><div class="review-grid">${reviewChoices.map(([id,e,t,d])=>`<label class="review-choice ${rating===id?'selected':''}"><input type="radio" name="weekly-rating" value="${id}" ${rating===id?'checked':''} onchange="setWeeklyRating('${id}')"><span class="emoji">${e}</span><b>${t}</b><small>${d}</small></label>`).join('')}</div><div class="note" style="margin-top:11px">${state.lang==='en'?'Weekly review: 10–15 minutes. Ask: what was easy to sustain, what kept slipping, and what will you reduce or lock in next week?':'المراجعة الأسبوعية: 10–15 دقيقة. اسأل نفسك: ماذا التزمت به بسهولة؟ ماذا ظل يتأجل؟ وما الذي سأخففه أو أثبته الأسبوع القادم؟'}</div></section> 
- <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h3 style="margin:0">🕌 ${state.lang==='en'?'Prayer times':'مواقيت الصلاة'}</h3><p>${state.lang==='en'?'Calculated locally from your device location. Coordinates stay on this device.':'المواقيت بتتحسب محليًا من موقع جهازك. الإحداثيات بتفضل على الجهاز.'}</p></div><span class="badge">${prayerRuntime.available?(state.lang==='en'?'Live':'مفعّل'):(state.lang==='en'?'Fallback':'بدون موقع')}</span></div>
-  <div class="grid grid-2">
-   <label class="field-lite"><span>${state.lang==='en'?'Calculation method':'طريقة الحساب'}</span><select onchange="setPrayerMethod(this.value)"><option value="Egypt" ${state.settings.prayerMethod==='Egypt'?'selected':''}>${state.lang==='en'?'Egyptian General Authority':'هيئة المساحة المصرية'}</option><option value="MWL" ${state.settings.prayerMethod==='MWL'?'selected':''}>Muslim World League</option></select></label>
-   <label class="field-lite"><span>${state.lang==='en'?'Asr method':'طريقة العصر'}</span><select onchange="setPrayerAsr(this.value)"><option value="standard" ${state.settings.prayerAsr==='standard'?'selected':''}>${state.lang==='en'?'Standard (Shafi‘i / Maliki / Hanbali)':'قياسي (شافعي/مالكي/حنبلي)'}</option><option value="hanafi" ${state.settings.prayerAsr==='hanafi'?'selected':''}>${state.lang==='en'?'Hanafi':'حنفي'}</option></select></label>
-  </div>
-  <div class="prayer-settings-foot"><span class="tiny muted">${esc(prayerLocationLabel())}</span><button class="btn" onclick="refreshPrayerTimes()">${state.lang==='en'?'Refresh location':'تحديث الموقع'}</button></div>
-  ${!prayerRuntime.available?`<div class="note" style="margin-top:10px">${state.lang==='en'?'Until location is enabled, prayer checkboxes stay unrestricted and work as before.':'لحد ما الموقع يتفعّل، مربعات الصلوات هتفضل بدون تقييد وتشتغل زي الأول.'}</div>`:''}
- </section>
+ <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h2 style="font-size:20px">🔎 ${state.lang==='en'?'Weekly review':'التقييم الأسبوعي'}</h2><p>${state.lang==='en'?'Choose your real weekly rating — it saves and counts as the weekly review.':'اختار تقييمك الحقيقي للأسبوع — الاختيار بيتحفظ ويُعتبر المراجعة الأسبوعية منجزة.'}</p></div><span class="badge ${rating?'core':''}">${rating?(state.lang==='en'?'Saved':'محفوظ'):(state.lang==='en'?'Not rated':'لم يُقيَّم')}</span></div><div class="review-grid">${reviewChoices.map(([id,e,t,d])=>`<label class="review-choice ${rating===id?'selected':''}"><input type="radio" name="weekly-rating" value="${id}" ${rating===id?'checked':''} onchange="setWeeklyRating('${id}')"><span class="emoji">${e}</span><b>${t}</b><small>${d}</small></label>`).join('')}</div><div class="note" style="margin-top:11px">${state.lang==='en'?'Weekly review: 10–15 minutes. Ask: what was easy to sustain, what kept slipping, and what will you reduce or lock in next week?':'المراجعة الأسبوعية: 10–15 دقيقة. اسأل نفسك: ماذا التزمت به بسهولة؟ ماذا ظل يتأجل؟ وما الذي سأخففه أو أثبته الأسبوع القادم؟'}</div></section>
  ${consistencySection()}
  ${achievementSection()}
+ ${worshipExtrasSection()}
  <section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 8px"><div><h3 style="margin:0">📱 ${state.lang==='en'?'Use it as an app':'استخدمها كتطبيق'}</h3><p>${state.lang==='en'?'Install Mihrab on your phone home screen as a standalone app.':'ثبّت Mihrab على شاشة الموبايل لفتحها كتطبيق مستقل بدل المتصفح.'}</p></div><span class="badge">PWA</span></div><button class="btn primary" onclick="installPWA()" id="installBtn">${state.lang==='en'?'Install on device ↗':'تثبيت على الجهاز ↗'}</button><div class="tiny muted" style="margin-top:8px">${state.lang==='en'?'Home-screen install: yes. A live home-screen widget requires a native app; this board is designed as a lightweight, installable PWA.':'الهوم سكرين: نعم. Widget حيّ فوق الشاشة الرئيسية يحتاج تطبيقًا أصليًا؛ اللوحة هنا مصممة لتكون PWA خفيفة وقابلة للتثبيت.'}</div></section><section class="section-box power-card" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h3>⚡ ${state.lang==='en'?'Performance':'الأداء'}</h3><p>${state.lang==='en'?'Control live effects without changing your plan.':'تحكم في المؤثرات الحية من غير ما تغيّر الخطة.'}</p></div><span class="badge">${state.settings.lowPower?(state.lang==='en'?'Low power':'توفير'): (state.lang==='en'?'Live':'حي')}</span></div><label class="switch"><input type="checkbox" ${state.settings.lowPower?'checked':''} onchange="state.settings.lowPower=this.checked;save();document.body.dataset.lowPower=this.checked?'true':'false';renderAll()"> ${state.lang==='en'?'Low Power Mode — reduce canvas/glow effects':'وضع توفير الطاقة — يقلل الـCanvas والـglow'}</label></section><section class="section-box" style="margin-top:12px"><div class="section-title" style="margin:0 0 6px"><div><h3>🌙 ${state.lang==='en'?'Hijri date':'التاريخ الهجري'}</h3><p>${state.lang==='en'?'Calculated (Umm al-Qura). If your local moon-sighting announcement differs, correct it here.':'محسوب حسابيًا (أم القرى). لو إعلان الرؤية المحلي عندك اختلف، ظبّطه من هنا.'}</p></div></div><div style="display:flex;align-items:center;gap:12px"><button class="btn" onclick="state.settings.hijriAdjustDays--;save();rerender()">−1 ${state.lang==='en'?'day':'يوم'}</button><b style="min-width:170px;text-align:center">${esc(hijriLabel())}</b><button class="btn" onclick="state.settings.hijriAdjustDays++;save();rerender()">+1 ${state.lang==='en'?'day':'يوم'}</button></div>${state.settings.hijriAdjustDays?`<div class="tiny muted" style="margin-top:8px">${state.lang==='en'?'Current correction':'التعديل الحالي'}: ${state.settings.hijriAdjustDays>0?'+':''}${state.settings.hijriAdjustDays}</div>`:''}</section>
  <div class="grid grid-2" style="margin-top:12px"><section class="section-box"><h3>📊 ${state.lang==='en'?'Marketing this week':'التسويق هذا الأسبوع'}</h3><div class="progress-head"><span>${state.lang==='en'?'Hours':'الساعات'}</span><b>${state.weekly.marketingHours||0} / 12</b></div><div class="progress"><i style="width:${Math.min(100,(state.weekly.marketingHours||0)/12*100)}%"></i></div><div class="field" style="margin-top:10px"><label>${state.lang==='en'?'Enter actual hours':'أدخل الساعات الفعلية'}</label><input type="number" min="0" step="0.5" value="${state.weekly.marketingHours||0}" onchange="state.weekly.marketingHours=parseFloat(this.value)||0;save();renderAll()"></div></section><section class="section-box"><h3>🛡️ ${state.lang==='en'?'Energy modes':'أوضاع الطاقة'}</h3><p><b>🟢 ${state.lang==='en'?'Normal:':'طبيعي:'}</b> ${state.lang==='en'?'Full plan.':'الخطة كاملة.'}</p><p><b>🟡 ${state.lang==='en'?'Low energy:':'منخفض الطاقة:'}</b> ${state.lang==='en'?'Prayer/adhkar + some Qur’an + small marketing output + old Anki only. Side content pauses first.':'الصلاة/الأذكار + قدر من القرآن + إنتاج تسويق صغير + Anki قديم فقط. المحتوى الجانبي يتوقف أولًا.'}</p><p><b>🔴 ${state.lang==='en'?'Exceptional:':'استثنائي:'}</b> ${state.lang==='en'?'Prayer + adhkar + a little Qur’an + rest.':'الصلاة + الأذكار + قرآن يسير + راحة.'}</p></section></div>
  <div class="section-box" style="margin-top:12px"><h3>🧩 ${state.lang==='en'?'Operating rules':'قواعد التشغيل'}</h3><div class="grid grid-2"><div>${(state.lang==='en'?['Sleep 6–8 hours.','During exams: regular Anki continues; new production reduces first.','If two days are lost in a row: no forced catch-up; review why.']:['النوم 6–8 ساعات.','امتحانات: Anki regular مستمر، والإنتاج الجديد يقل أولًا.','لو يومان ضاعا وراء بعض: لا تعويض قهري؛ راجع السبب.']).map(x=>`<p>${x}</p>`).join('')}</div><div>${(state.lang==='en'?['Islamic studies stay fixed.','Qur’an stays fixed but timing is flexible.','Marketing is the professional priority; McKinsey and Dose shrink first.']:['الشرعي ثابت.','القرآن ثابت لكن توقيته مرن.','Marketing هو الأولوية المهنية؛ McKinsey وDose أول من يتقلص.']).map(x=>`<p>${x}</p>`).join('')}</div></div></div>`;
@@ -485,11 +602,7 @@ function renderSystemBase(){
     state.plan ||= {};
     state.weekly={marketingHours:0,mckinsey:false,dose:false,review:false,rating:'',cert:false,...(state.weekly||{})};
     state.weekDayTypes ||= {};
-    state.settings={lowPower:false,hijriAdjustDays:0,prayerMethod:'Egypt',prayerAsr:'standard',...(state.settings||{})};
-    state.sunnah={fastLogs:{},shawwal:0,nawafil:{},kaffarah:{streak:0,days:0},nadhr:{owed:0,fulfilled:0},istighfar:0,dawud:false,...(state.sunnah||{})};
-    state.sunnah.fastLogs ||= {}; state.sunnah.nawafil ||= {};
-    state.sunnah.kaffarah={streak:0,days:0,...(state.sunnah.kaffarah||{})};
-    state.sunnah.nadhr={owed:0,fulfilled:0,...(state.sunnah.nadhr||{})};
+    state.settings={lowPower:false,hijriAdjustDays:0,geo:null,sunnahCounters:{},kaffaraYameen:{count:0,lastDate:''},nadhr:{owed:0,fulfilled:0},istighfarCount:0,...(state.settings||{})};
     state.inbox ||= [];
     state.library ||= [];
     state.metrics={focusMinutes:0,sessions:0,...(state.metrics||{})};
@@ -510,7 +623,8 @@ function renderSystemBase(){
   }
 
   function librarySeeds(){
-    const seeds=[
+    if(state.library.some(x=>x.systemSeed)) return;
+    state.library=[
       {id:'lib_zad',title:'أكاديمية زاد',titleEn:'ZAD Academy',category:'islamic',group:'zad',days:[...DAYS],duration:30,core:true,status:'active',sessions:0,completedSessions:0,systemSeed:true},
       {id:'lib_ayman',title:'مسار أيمن عبد الرحيم',titleEn:'Ayman Abdel Rahim track',category:'islamic',group:'ayman',days:['السبت','الاثنين','الأربعاء','الجمعة'],duration:30,core:true,status:'active',sessions:9,completedSessions:0,systemSeed:true},
       {id:'lib_awareness',title:'تأسيس وعي المسلم المعاصر',titleEn:'Building the Contemporary Muslim’s Awareness',category:'islamic',group:'awareness',days:['السبت','الاثنين','الأربعاء','الجمعة'],duration:30,core:true,status:'active',sessions:9,completedSessions:0,systemSeed:true},
@@ -518,8 +632,6 @@ function renderSystemBase(){
       {id:'lib_easy',title:'EasyPeasy Way to Quit',titleEn:'EasyPeasy Way to Quit',category:'reading',days:[],duration:10,core:false,status:'active',sessions:0,completedSessions:0,systemSeed:true},
       {id:'lib_google',title:'Google / HubSpot certifications',titleEn:'Google / HubSpot certifications',category:'career',days:[],duration:25,important:true,status:'active',sessions:0,completedSessions:0,systemSeed:true}
     ];
-    state.library ||= [];
-    for(const seed of seeds) if(!state.library.some(x=>x.id===seed.id)) state.library.push(seed);
   }
 
   function activeMode(){return state.modeDate===keyDate()?state.mode:(dayTypeToMode[todayDayType()]||'normal')}
@@ -609,15 +721,11 @@ function renderSystemBase(){
     const taskAction=e.target.closest('[data-action]')?.dataset.action;
     if(taskAction==='focus') startFocus();
   });
-  document.addEventListener('change',e=>{
-    const el=e.target;
-    if(!(el instanceof HTMLInputElement||el instanceof HTMLSelectElement)) return;
-    if(el.matches('input[type="checkbox"][data-plan-id]')) togglePlan(el.dataset.planId);
-    if(el.matches('[data-weekly-key]')){state.weekly[el.dataset.weeklyKey]=el.type==='checkbox'?el.checked:Number(el.value)||0;save();rerender();}
-    if(el.matches('[data-day-type]')){state.weekDayTypes[el.dataset.dayType]=el.value;save();rerender();}
-    if(el.matches('[data-rating]')) setWeeklyRating(el.dataset.rating);
-    if(el.matches('#lowPowerToggle')){state.settings.lowPower=el.checked;save();rerender();}
-  });
+  // Note: no delegated `change` listener here — every checkbox/select in this app wires its own
+  // inline onchange="..." directly (toggleToday, togglePlan, low-power toggle, etc.). A delegated
+  // listener checking data-today-id/data-plan-id/data-weekly-key/data-day-type/data-rating/
+  // #lowPowerToggle used to live here but was confirmed 100% dead (Phase 7 audit — none of those
+  // attributes/ids are ever actually rendered anywhere) and removed rather than kept "just in case."
   window.addEventListener('popstate',()=>route((location.hash||'#home').slice(1),{push:false}));
 
   // Keyboard: Cmd/Ctrl+K opens the command palette; Escape closes whatever overlay is open.
@@ -634,105 +742,35 @@ function renderSystemBase(){
   document.addEventListener('click',e=>{if(e.target.id==='mihrabOverlay')closeModal();});
   window.addEventListener('online',paintNav,{passive:true});window.addEventListener('offline',paintNav,{passive:true});
 
-
-  const PRAYER_METHODS={
-    Egypt:{fajr:19.5,isha:17.5,maghribMinutes:1},
-    MWL:{fajr:18,isha:17,maghribMinutes:1}
-  };
-  function sinDeg(x){return Math.sin(x*Math.PI/180)}
-  function cosDeg(x){return Math.cos(x*Math.PI/180)}
-  function tanDeg(x){return Math.tan(x*Math.PI/180)}
-  function asinDeg(x){return Math.asin(Math.max(-1,Math.min(1,x)))*180/Math.PI}
-  function acosDeg(x){return Math.acos(Math.max(-1,Math.min(1,x)))*180/Math.PI}
-  function atan2Deg(y,x){return Math.atan2(y,x)*180/Math.PI}
-  function fixAngle(a){return ((a%360)+360)%360}
-  function fixHour(a){return ((a%24)+24)%24}
-  function prayJulian(date){
-    return date.getTime()/86400000 + 2440587.5 - date.getTimezoneOffset()/1440;
-  }
-  function sunPosition(jd){
-    const D=jd-2451545.0;
-    const g=fixAngle(357.529+0.98560028*D);
-    const q=fixAngle(280.459+0.98564736*D);
-    const L=fixAngle(q+1.9148*sinDeg(g)+0.0200*sinDeg(2*g));
-    const e=23.4393-0.00000036*D;
-    const RA=fixAngle(atan2Deg(cosDeg(e)*sinDeg(L),cosDeg(L)))/15;
-    const eqt=q/15-RA;
-    const decl=asinDeg(sinDeg(e)*sinDeg(L));
-    return {decl,eqt};
-  }
-  function midDay(jd,t){
-    const s=sunPosition(jd+t);
-    return fixHour(12-s.eqt);
-  }
-  function hourAngle(angle,lat,decl){
-    const top=(-sinDeg(angle)-sinDeg(lat)*sinDeg(decl));
-    const bottom=cosDeg(lat)*cosDeg(decl);
-    const v=top/bottom;
-    return Math.acos(Math.max(-1,Math.min(1,v)))*180/Math.PI/15;
-  }
-  function asrHour(factor,lat,decl){
-    const angle=-atan2Deg(1, factor+tanDeg(Math.abs(lat-decl)));
-    return hourAngle(angle,lat,decl);
-  }
-  function calcPrayerTimes(date,lat,lng,methodName,asrMethod){
-    const method=PRAYER_METHODS[methodName]||PRAYER_METHODS.Egypt;
-    const jd=prayJulian(date), zone=-date.getTimezoneOffset()/60;
-    let times={fajr:5,sunrise:6,dhuhr:12,asr:13,sunset:18,maghrib:18,isha:19};
-    for(let i=0;i<2;i++){
-      const sun=sunPosition(jd+times.dhuhr/24);
-      const noon=midDay(jd,times.dhuhr/24)+zone-lng/15;
-      const sunrise=noon-hourAngle(0.833,lat,sun.decl);
-      const sunset=noon+hourAngle(0.833,lat,sun.decl);
-      const fajr=noon-hourAngle(method.fajr,lat,sun.decl);
-      const factor=asrMethod==='hanafi'?2:1;
-      const asr=noon+asrHour(factor,lat,sun.decl);
-      const isha=noon+hourAngle(method.isha,lat,sun.decl);
-      times={fajr,sunrise,dhuhr:noon,asr,sunset,maghrib:sunset+method.maghribMinutes/60,isha};
-    }
-    const out={};
-    for(const k of ['fajr','sunrise','dhuhr','asr','sunset','maghrib','isha']){
-      const v=times[k]; if(!Number.isFinite(v)) return null;
-      const hh=fixHour(v), h=Math.floor(hh), m=Math.round((hh-h)*60);
-      const hh2=m===60?(h+1)%24:h, mm=m===60?0:m;
-      out[k]=`${String(hh2).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-    }
-    return out;
-  }
-  function prayerSettings(){
-    const method=['Egypt','MWL'].includes(state.settings?.prayerMethod)?state.settings.prayerMethod:'Egypt';
-    const asrMethod=['standard','hanafi'].includes(state.settings?.prayerAsr)?state.settings.prayerAsr:'standard';
-    return {method,asrMethod};
-  }
-  function refreshPrayerTimes({ask=false}={}){
-    if(!navigator.geolocation){
-      prayerRuntime={available:false,times:null,error:'unsupported'};
-      if(ask)rerender();
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(pos=>{
-      const {method,asrMethod}=prayerSettings();
-      const times=calcPrayerTimes(new Date(),pos.coords.latitude,pos.coords.longitude,method,asrMethod);
-      if(!times){prayerRuntime={available:false,times:null,error:'calculation'};rerender();return;}
-      prayerRuntime={available:true,times,lat:pos.coords.latitude,lng:pos.coords.longitude,error:''};
-      rerender();
-    },err=>{
-      prayerRuntime={available:false,times:null,error:err?.code===1?'denied':'unavailable'};
-      if(ask)rerender();
-    },{enableHighAccuracy:false,maximumAge:300000,timeout:10000});
-  }
-  function prayerLocationLabel(){
-    if(!prayerRuntime.available) return state.lang==='en'?'Location not enabled':'الموقع غير مفعّل';
-    const {lat,lng}=prayerRuntime;
-    return `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
-  }
-  window.refreshPrayerTimes=()=>refreshPrayerTimes({ask:true});
-  window.setPrayerMethod=v=>{state.settings.prayerMethod=['Egypt','MWL'].includes(v)?v:'Egypt';save();refreshPrayerTimes();rerender()};
-  window.setPrayerAsr=v=>{state.settings.prayerAsr=['standard','hanafi'].includes(v)?v:'standard';save();refreshPrayerTimes();rerender()};
-  window.prayerLocked=()=>infoModal(state.lang==='en'?'Prayer times are calculated from your device location. The previous prayer must be completed before the next one can be checked.':'مواقيت الصلاة بتتحسب من موقع جهازك. لازم تسجّل الصلاة السابقة قبل ما تقدر تسجّل التالية.');
+  // Five daily prayers must be checked in order — checking Maghrib before Asr is checked is
+  // blocked, not just discouraged. This is independent of real clock time/geolocation on purpose:
+  // it works for everyone immediately, with no permission prompt, no calculation, no fallback path.
+  const PRAYER_ORDER=['pr_f','pr_d','pr_a','pr_m','pr_i'];
+  function earliestMissingPrayer(beforeIdx){for(let i=0;i<beforeIdx;i++){if(!state.today[PRAYER_ORDER[i]])return PRAYER_ORDER[i]}return null}
+  function nudgeTaskRow(id){const row=document.querySelector(`[data-task-id="${CSS.escape(id)}"]`);if(!row)return;row.classList.remove('nudge');void row.offsetWidth;row.classList.add('nudge');setTimeout(()=>row.classList.remove('nudge'),650)}
 
   function toggleToday(id){
+    const seqIdx=PRAYER_ORDER.indexOf(id);
+    if(seqIdx>0 && !state.today[id]){
+      const missing=earliestMissingPrayer(seqIdx);
+      if(missing){
+        // The native checkbox already flipped to checked before this handler ran (browser default
+        // behavior on a real click) — revert it explicitly, same mechanism the Undo-desync fix uses,
+        // so the visual state never lies about what actually got saved (nothing did, here).
+        const row=document.querySelector(`[data-task-id="${CSS.escape(id)}"]`);
+        const cb=row?.querySelector('input[type="checkbox"]'); if(cb) cb.checked=false;
+        nudgeTaskRow(missing);
+        return;
+      }
+    }
     const was=!!state.today[id]; state.today[id]=!was; save();
+    if(id==='fast_shawwal6'){
+      const h=hijriParts(effectiveDate()); const key=`shawwal6:${h.year}`;
+      if(!state.settings.sunnahCounters) state.settings.sunnahCounters={};
+      const cur=state.settings.sunnahCounters[key]||0;
+      state.settings.sunnahCounters[key]=Math.max(0,Math.min(6,cur+(was?-1:1)));
+      save();
+    }
     // Only custom (non-systemSeed) tracks have an unambiguous 1:1 id↔record link — fixes the
     // long-standing "completedSessions never increments" gap for the class of tracks it's safe to
     // fix (seeded tracks share ids with other logic, see Phase 5 notes; not guessed at here).
@@ -754,7 +792,6 @@ function renderSystemBase(){
       }
     }
     updateRing();
-    if(PRAYER_DEFS.some(p=>p.id===id)) rerender();
   }
   let undoTimer=null;
   function showUndo(id,label){
@@ -837,12 +874,12 @@ function renderSystemBase(){
   }
   function extendFocus(min){window.__mihrabExtendFocus?.(min*60000);}
   function closeFocus(){$('#focusMode')?.classList.remove('open');cancelAnimationFrame(window.__mihrabFocusRAF||0);}
-  function finishFocus(id){if(!state.today[id])toggleToday(id);closeFocus();rerender()}
+  function finishFocus(id){state.today[id]=true;save();closeFocus();rerender()}
   window.startFocus=startFocus;window.extendFocus=extendFocus;window.closeFocus=closeFocus;window.finishFocus=finishFocus;
 
-  function openModal(html,variant){ensureModals();const m=$('#mihrabModal'),overlay=$('#mihrabOverlay');m.innerHTML=html;m.className='mihrab-modal'+(variant?(' '+variant):'');overlay.classList.add('open');overlay.setAttribute('aria-hidden','false');requestAnimationFrame(()=>m.focus());}
-  function ensureModals(){if($('#mihrabOverlay'))return;document.body.insertAdjacentHTML('beforeend',`<div class="mihrab-overlay" id="mihrabOverlay" aria-hidden="true"><div class="mihrab-modal" id="mihrabModal" role="dialog" aria-modal="true" tabindex="-1"></div></div><input id="mihrabImportInput" type="file" accept="application/json,.json" hidden><div class="focus-mode" id="focusMode"><div class="focus-shell" id="focusShell"></div></div>`)}
-  function closeModal(){const overlay=$('#mihrabOverlay');if(!overlay)return;overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true')}
+  function openModal(html,variant){ensureModals();const m=$('#mihrabModal');m.innerHTML=html;m.className='mihrab-modal'+(variant?(' '+variant):'');$('#mihrabOverlay').classList.add('open');}
+  function ensureModals(){if($('#mihrabOverlay'))return;document.body.insertAdjacentHTML('beforeend',`<div class="mihrab-overlay" id="mihrabOverlay" role="dialog" aria-modal="true"><div class="mihrab-modal" id="mihrabModal"></div></div><input id="mihrabImportInput" type="file" accept="application/json,.json" hidden><div class="focus-mode" id="focusMode"><div class="focus-shell" id="focusShell"></div></div>`)}
+  function closeModal(){$('#mihrabOverlay')?.classList.remove('open')}
   window.closeMihrabModal=closeModal;
   function infoModal(message,title){const en=state.lang==='en';openModal(`<div class="mihrab-modal-head"><b>${esc(title||(en?'Note':'ملاحظة'))}</b><button class="mihrab-close" onclick="closeMihrabModal()">×</button></div><div class="modal-body"><p style="white-space:pre-line;line-height:1.9;margin:0 0 14px">${esc(message)}</p><div class="modal-actions"><button class="btn primary" onclick="closeMihrabModal()">${en?'OK':'تمام'}</button></div></div>`);}
   window.infoModal=infoModal;
@@ -881,8 +918,8 @@ function renderSystemBase(){
     const actionsFor=x=>x.status==='active'
       ?`<button class="tiny-action" onclick="editContent('${x.id}')">${en?'Edit':'تعديل'}</button><button class="tiny-action" onclick="completeContent('${x.id}')">${en?'Complete':'إنهاء'}</button><button class="tiny-action" onclick="archiveContent('${x.id}')">${en?'Archive':'أرشفة'}</button>`
       :`<button class="tiny-action" onclick="activateContent('${x.id}')">${en?'Reactivate':'استئناف'}</button>`;
-    const list=shown.length?shown.map(x=>`<div class="library-item"><button class="library-title-btn" onclick="openTrackDetails('${x.id}')"><b>${esc(en&&x.titleEn?x.titleEn:x.title)}</b><span>↗</span></button><small>${esc(x.category)} · ${x.duration||30} min · ${(x.days||[]).join(' · ')|| (en?'Unscheduled':'غير مجدول')}</small><div class="library-meta"><span class="library-status ${x.status}">${tabs.find(t=>t[0]===x.status)?.[1]||x.status}</span>${actionsFor(x)}</div></div>`).join(''):emptyState(en?'Nothing here yet.':'مفيش حاجة هنا لسه.');
-    return `<section class="section-box lifecycle-card"><div class="section-title"><div><h2>${en?'Long-run system':'النظام على المدى الطويل'}</h2><p>${en?'The plan stays yours; content can evolve without editing code.':'الخطة ملكك، والمحتوى يتغير من غير لمس الكود.'}</p></div><button class="btn primary" onclick="addContent()">＋ ${en?'Add track':'إضافة مسار'}</button></div><div class="lib-tabs">${tabsHtml}</div><div class="library-list">${list}</div></section><div class="grid grid-2 lifecycle-grid"><section class="section-box"><h3>${en?'Inbox':'صندوق الوارد'}</h3><p class="muted">${en?'Quick ideas land here first.':'أي فكرة سريعة تدخل هنا الأول.'}</p>${inbox.length?inbox.slice(0,8).map(x=>`<div class="inbox-item"><div class="grow"><b>${esc(x.text)}</b><small>${x.duration}m</small></div><button class="tiny-action" onclick="completeInbox('${x.id}')">${en?'Done':'تم'}</button><button class="tiny-action" onclick="deleteInbox('${x.id}')">×</button></div>`).join(''):emptyState(en?'Inbox is clear.':'صندوق الوارد فاضي.')}<button class="btn" onclick="openQuickCapture()">＋ ${en?'Quick capture':'إضافة سريعة'}</button></section><section class="section-box"><h3>${en?'Backup & restore':'النسخ الاحتياطي'}</h3><p class="muted">${en?'Keep a JSON backup before moving devices or making major changes.':'خُد نسخة JSON قبل نقل الجهاز أو أي تغيير كبير.'}</p><div class="modal-actions"><button class="btn primary" onclick="exportMihrab()">${en?'Export JSON':'تصدير JSON'}</button><button class="btn" onclick="openImport()">${en?'Import':'استيراد'}</button></div></section></div>`;
+    const list=shown.length?shown.map(x=>`<div class="library-item"><button class="library-title-btn" onclick="openTrackDetails('${x.id}')"><b>${esc(en&&x.titleEn?x.titleEn:x.title)}</b><span>↗</span></button><small>${esc(x.category)} · ${x.duration||30} min · ${(x.days||[]).join(' · ')|| (en?'Unscheduled':'غير مجدول')}</small><div class="library-meta"><span class="library-status ${x.status}">${tabs.find(t=>t[0]===x.status)?.[1]||x.status}</span>${actionsFor(x)}</div></div>`).join(''):`<div class="note">${en?'Nothing here yet.':'مفيش حاجة هنا لسه.'}</div>`;
+    return `<section class="section-box lifecycle-card"><div class="section-title"><div><h2>${en?'Long-run system':'النظام على المدى الطويل'}</h2><p>${en?'The plan stays yours; content can evolve without editing code.':'الخطة ملكك، والمحتوى يتغير من غير لمس الكود.'}</p></div><button class="btn primary" onclick="addContent()">＋ ${en?'Add track':'إضافة مسار'}</button></div><div class="lib-tabs">${tabsHtml}</div><div class="library-list">${list}</div></section><div class="grid grid-2 lifecycle-grid"><section class="section-box"><h3>${en?'Inbox':'صندوق الوارد'}</h3><p class="muted">${en?'Quick ideas land here first.':'أي فكرة سريعة تدخل هنا الأول.'}</p>${inbox.length?inbox.slice(0,8).map(x=>`<div class="inbox-item"><div class="grow"><b>${esc(x.text)}</b><small>${x.duration}m</small></div><button class="tiny-action" onclick="completeInbox('${x.id}')">${en?'Done':'تم'}</button><button class="tiny-action" onclick="deleteInbox('${x.id}')">×</button></div>`).join(''):`<div class="note">${en?'Inbox is clear.':'صندوق الوارد فاضي.'}</div>`}<button class="btn" onclick="openQuickCapture()">＋ ${en?'Quick capture':'إضافة سريعة'}</button></section><section class="section-box"><h3>${en?'Backup & restore':'النسخ الاحتياطي'}</h3><p class="muted">${en?'Keep a JSON backup before moving devices or making major changes.':'خُد نسخة JSON قبل نقل الجهاز أو أي تغيير كبير.'}</p><div class="modal-actions"><button class="btn primary" onclick="exportMihrab()">${en?'Export JSON':'تصدير JSON'}</button><button class="btn" onclick="openImport()">${en?'Import':'استيراد'}</button></div></section></div>`;
   }
   const renderSystem=()=>renderSystemBase()+systemExtras();
 
@@ -893,31 +930,22 @@ function renderSystemBase(){
     window.addEventListener('pointermove',e=>{tx=e.clientX/Math.max(1,innerWidth);ty=e.clientY/Math.max(1,innerHeight);if(!raf)raf=requestAnimationFrame(tick)},{passive:true});tick();
   }
 
-  function bindSystemTheme(){
-    if(!window.matchMedia) return;
-    const mq=window.matchMedia('(prefers-color-scheme: light)');
-    const onChange=()=>{if(state.theme==='system'){applyTheme();rerender();}};
-    if(mq.addEventListener) mq.addEventListener('change',onChange); else if(mq.addListener) mq.addListener(onChange);
-  }
-
-  function boot(){
-    if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
-    migrate();librarySeeds();applyLanguage();applyTheme();ensureModals();
-    const initial=validView((location.hash||'').slice(1)||state.view);route(initial,{scroll:false,push:false});
-    refreshPrayerTimes();
-    bindThemePointer();
-    bindSystemTheme();
-  }
-  boot();
+  migrate();librarySeeds();applyLanguage();applyTheme();ensureModals();
+  const initial=validView((location.hash||'').slice(1)||state.view);route(initial,{scroll:false,push:false});
+  bindThemePointer();
+  // One-time, non-blocking geolocation request for the prayer "now" indicator. Personal/single-user
+  // app, so prompting on boot (like most prayer apps do) is reasonable rather than surprising. If
+  // denied/unsupported/timed out, ensureGeo() resolves null and nothing else in the app changes —
+  // the 5 prayer checkboxes and their ordering constraint work identically either way.
+  ensureGeo().then(geo=>{ if(geo && state.view==='home') rerender(); });
   // Day boundary was previously only checked at page load — if the tab/PWA stayed open across
   // the 5am cutoff, today's checklist (and now the history snapshot it feeds) would silently stay
   // stale until a manual reload. Poll cheaply, and catch up immediately when the tab regains focus.
-  let lastPrayerMinute=-1;
+  let _lastKnownPrayer=null;
   setInterval(()=>{
     if(keyDate()!==state.todayDate){ resetDay(); rerender(); return; }
-    const now=new Date(), minute=now.getHours()*60+now.getMinutes();
-    if(prayerRuntime.available && minute!==lastPrayerMinute){ lastPrayerMinute=minute; if(state.view==='home') rerender(); }
-  },30000);
+    if(state.view==='home'){ const cp=currentPrayerId(); if(cp!==_lastKnownPrayer){ _lastKnownPrayer=cp; rerender(); } }
+  },60000);
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden && keyDate()!==state.todayDate){ resetDay(); rerender(); } });
 })();
 
@@ -932,3 +960,4 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredIns
 window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;const b=document.querySelector('#installBtn');if(b){b.textContent='✓';b.disabled=true}});
 window.installPWA=async()=>{if(deferredInstallPrompt){await deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;return;}infoModal(state.lang==='en'?'Use the browser menu and choose Install app / Add to Home Screen.':'من قائمة المتصفح اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».')};
 
+window.addEventListener('load',()=>{if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});});
